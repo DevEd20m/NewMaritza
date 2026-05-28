@@ -1,26 +1,107 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800;9..144,900&family=DM+Sans:wght@400;500;600;700&family=Caveat:wght@500;600;700&display=swap');
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Brand anchors */
+  --color-uva: #3D1A3A;
+  --color-uva-deep: #2C1129;
+  --color-uva-soft: #5B3458;
+  --color-crema: #FBF1E2;
+  --color-crema-deep: #F2E4CB;
+  --color-arena: #E8DDC5;
+  --color-blanco: #FFFFFF;
+  --color-tinta: #1A0A18;
+  --color-lima: #C9F048;
+  --color-lima-deep: #A8D02E;
+
+  /* Category palette */
+  --color-cat-coral: #FFB5A8;
+  --color-cat-durazno: #FFD2B0;
+  --color-cat-mostaza: #FFD66B;
+  --color-cat-menta: #B4E5C9;
+  --color-cat-cielo: #BFE0F0;
+  --color-cat-lavanda: #D4C2F0;
+  --color-cat-rosa: #FFC3D0;
+  --color-cat-uva-clara: #E8D5E6;
+
+  /* Semantic */
+  --color-success: #2F8C5A;
+  --color-success-bg: #DFF3E6;
+  --color-warning: #B8870A;
+  --color-warning-bg: #FFF1CC;
+  --color-error: #C2433A;
+  --color-error-bg: #FBE0DC;
+
+  /* Fonts */
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-script: 'Caveat', cursive;
+
+  /* Radius */
+  --radius-pill: 999px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* CSS custom properties for design tokens */
+:root {
+  --liora-uva: #3D1A3A;
+  --liora-uva-deep: #2C1129;
+  --liora-uva-soft: #5B3458;
+  --liora-crema: #FBF1E2;
+  --liora-crema-deep: #F2E4CB;
+  --liora-arena: #E8DDC5;
+  --liora-blanco: #FFFFFF;
+  --liora-tinta: #1A0A18;
+  --liora-lima: #C9F048;
+  --liora-lima-deep: #A8D02E;
+
+  --cat-coral: #FFB5A8;
+  --cat-durazno: #FFD2B0;
+  --cat-mostaza: #FFD66B;
+  --cat-menta: #B4E5C9;
+  --cat-cielo: #BFE0F0;
+  --cat-lavanda: #D4C2F0;
+  --cat-rosa: #FFC3D0;
+  --cat-uva-clara: #E8D5E6;
+
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-script: 'Caveat', cursive;
+
+  --shadow-1: 0 1px 2px rgba(61, 26, 58, 0.06);
+  --shadow-2: 0 8px 24px rgba(61, 26, 58, 0.08);
+  --shadow-3: 0 24px 48px rgba(61, 26, 58, 0.12);
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
+
+*, *::before, *::after { box-sizing: border-box; }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--liora-crema);
+  color: var(--liora-uva);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Fraunces display utility */
+.font-display {
+  font-family: var(--font-display);
+  font-variation-settings: 'opsz' 80, 'SOFT' 60, 'WONK' 0;
+}
+
+.font-display-wonky {
+  font-family: var(--font-display);
+  font-variation-settings: 'opsz' 144, 'SOFT' 80, 'WONK' 1;
+}
+
+.font-script {
+  font-family: var(--font-script);
+}
+
+/* Link underline accent */
+a.underline-lima:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--liora-lima);
+  text-underline-offset: 4px;
 }
