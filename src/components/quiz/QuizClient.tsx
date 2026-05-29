@@ -11,11 +11,12 @@ interface QuizGroup { id: string; title: string; sort_order: number; interstitia
 interface Props {
   templateId: string
   groups: QuizGroup[]
+  isLoggedIn?: boolean
 }
 
 const OPTION_COLORS = ['var(--cat-mostaza)', 'var(--cat-coral)', 'var(--cat-lavanda)', 'var(--cat-menta)', 'var(--cat-cielo)', 'var(--cat-rosa)']
 
-export function QuizClient({ templateId, groups }: Props) {
+export function QuizClient({ templateId, groups, isLoggedIn = false }: Props) {
   const router = useRouter()
   const { addAnswer, setTemplateId, setProfileId, complete } = useQuizStore()
 
@@ -62,6 +63,10 @@ export function QuizClient({ templateId, groups }: Props) {
     setSelected([])
 
     if (isLast) {
+      if (isLoggedIn) {
+        submitLead()
+        return
+      }
       setLeadStep(true)
       return
     }
@@ -74,10 +79,13 @@ export function QuizClient({ templateId, groups }: Props) {
     setTemplateId(templateId)
 
     try {
+      const payload: Record<string, unknown> = { templateId, answers }
+      if (leadEmail) payload.email = leadEmail
+      if (leadPhone) payload.phone = leadPhone
       const res = await fetch('/api/quiz/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ templateId, answers, email: leadEmail, phone: leadPhone || undefined }),
+        body: JSON.stringify(payload),
       })
       const data = await res.json()
       if (!res.ok) {

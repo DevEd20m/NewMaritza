@@ -1,8 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { ProductCard } from '@/components/products/ProductCard'
 import { KitCard } from '@/components/products/KitCard'
+import Link from 'next/link'
 import type { Metadata } from 'next'
 import type { KitWithProducts } from '@/types/database'
+import { Sparkle, ArrowRight } from '@phosphor-icons/react/dist/ssr'
 
 export const metadata: Metadata = {
   title: 'Tienda — Kits y productos',
@@ -81,6 +83,22 @@ export default async function ShopPage({ searchParams }: Props) {
 
   return (
     <div style={{ background: 'var(--liora-crema)', padding: '40px 48px 96px', maxWidth: 1280, margin: '0 auto' }}>
+      {/* Personalize prompt */}
+      <div style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 20, padding: '14px 18px 14px 16px', marginBottom: 28, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0 }}>
+          <span style={{ width: 40, height: 40, borderRadius: 12, background: 'var(--liora-lima)', color: 'var(--liora-uva)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Sparkle size={18} weight="bold" />
+          </span>
+          <div>
+            <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 10, color: 'var(--liora-uva)', opacity: 0.65, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 3 }}>¿No sabes por dónde empezar?</div>
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 17, color: 'var(--liora-uva)', lineHeight: 1.2 }}>Armamos tu kit en 8 preguntas — gratis.</div>
+          </div>
+        </div>
+        <Link href="/cuestionario" style={{ background: 'var(--liora-uva)', color: 'var(--liora-crema)', border: 'none', borderRadius: 999, padding: '10px 18px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 6, textDecoration: 'none' }}>
+          Hacer cuestionario <ArrowRight size={14} weight="bold" />
+        </Link>
+      </div>
+
       <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12 }}>Tienda</div>
       <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 64, lineHeight: 1.1, letterSpacing: '-0.025em', color: 'var(--liora-uva)', margin: 0, paddingBottom: 18, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>
         Compra <span style={{ fontFamily: 'var(--font-script)' }}>por kit</span> o suelto.

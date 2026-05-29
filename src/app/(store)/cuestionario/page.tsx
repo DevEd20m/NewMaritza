@@ -51,6 +51,8 @@ async function getQuizData() {
 }
 
 export default async function QuizPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
   const quizData = await getQuizData()
 
   if (!quizData) {
@@ -63,5 +65,5 @@ export default async function QuizPage() {
     )
   }
 
-  return <QuizClient templateId={quizData.template.id} groups={quizData.groups} />
+  return <QuizClient templateId={quizData.template.id} groups={quizData.groups} isLoggedIn={!!user} />
 }

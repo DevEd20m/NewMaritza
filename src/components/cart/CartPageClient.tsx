@@ -62,6 +62,16 @@ export function CartPageClient() {
       .then((data: KitData) => {
         setKitData(data)
         setSuggestions(data.suggestions ?? [])
+        // Save to localStorage so home page can offer "resume" banner
+        try {
+          const totalCents = (data.kit ?? []).reduce((s, i) => s + i.priceCents, 0)
+          localStorage.setItem('liora-abandoned-kit', JSON.stringify({
+            profileId,
+            productCount: (data.kit ?? []).length,
+            totalCents,
+            savedAt: Date.now(),
+          }))
+        } catch {}
         clearCart()
         for (const item of (data.kit ?? [])) {
           addItem({

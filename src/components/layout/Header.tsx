@@ -11,8 +11,8 @@ interface HeaderProps {
 const NAV_LINKS = [
   { href: '/tienda', label: 'Tienda' },
   { href: '/cuestionario', label: 'Cuestionario' },
-  { href: '/tienda?modo=kits', label: 'Kits' },
   { href: '/nosotros', label: 'Nosotros' },
+  { href: '/ayuda', label: 'Ayuda' },
 ]
 
 export function Header({ user }: HeaderProps) {

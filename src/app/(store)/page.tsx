@@ -6,6 +6,7 @@ import { buildBaseMetadata } from '@/lib/seo/metadata'
 import type { Category } from '@/types/database'
 import { ArrowRight, Star, Play, Heart } from '@phosphor-icons/react/dist/ssr'
 import { CategoryGrid } from '@/components/ui/CategoryGrid'
+import { HomeBanners } from '@/components/home/HomeBanners'
 
 export const metadata: Metadata = buildBaseMetadata()
 
@@ -56,11 +57,50 @@ const TIKTOK_CLIPS = [
   { tag: 'Mi quiz', handle: '@josss', views: '47K', bg: 'var(--cat-menta)', label: 'Resultados' },
 ]
 
+async function getHomeUserData() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { isLoggedIn: false }
+
+  const { data: profile } = await supabase.from('profiles').select('first_name').eq('id', user.id).single()
+  const profileData = profile as { first_name: string | null } | null
+
+  const { data: recentOrder } = await (supabase as any)
+    .from('orders')
+    .select('order_number')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single()
+
+  const { data: rec } = await (supabase as any)
+    .from('recommendations')
+    .select('quiz_profiles(id, quiz_question_answers(quiz_question_options(quiz_questions(categories(name)))))')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single()
+
+  return {
+    isLoggedIn: true,
+    userName: profileData?.first_name ?? undefined,
+    orderNumber: (recentOrder as { order_number: string } | null)?.order_number ?? null,
+    kitTitle: null as string | null,
+  }
+}
+
 export default async function HomePage() {
-  const [products, categories] = await Promise.all([getFeaturedProducts(), getCategories()])
+  const [products, categories, userData] = await Promise.all([getFeaturedProducts(), getCategories(), getHomeUserData()])
 
   return (
     <div>
+      <HomeBanners
+        isLoggedIn={userData.isLoggedIn}
+        userName={userData.isLoggedIn ? userData.userName : undefined}
+        orderNumber={userData.isLoggedIn ? userData.orderNumber : null}
+        kitTitle={userData.isLoggedIn ? userData.kitTitle : null}
+      />
+
       {/* Hero */}
       <section style={{ background: 'var(--liora-crema)', padding: '64px 48px 96px', position: 'relative' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: 48, alignItems: 'center', maxWidth: 1280, margin: '0 auto' }}>

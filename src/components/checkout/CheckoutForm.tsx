@@ -33,6 +33,7 @@ export function CheckoutForm({ prefill }: { prefill: PrefillData | null }) {
   const [error, setError] = useState('')
   const [forSelf, setForSelf] = useState(true)
   const [saveToProfile, setSaveToProfile] = useState(true)
+  const [pendingOrderId, setPendingOrderId] = useState<string | null>(null)
 
   const sub = subtotalCents()
   const discount = discountCents
@@ -80,39 +81,46 @@ export function CheckoutForm({ prefill }: { prefill: PrefillData | null }) {
     setLoading(true)
     setError('')
     try {
-      const orderRes = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          cartSessionToken: sessionToken,
-          address: data.address,
-          couponCode: appliedCouponCode ?? data.couponCode,
-          notes: data.notes,
-          saveToProfile: forSelf && saveToProfile && !!prefill?.isLoggedIn,
-          // ← Fix: send cart items
-          items: items.map((i) => ({
-            variantId: i.variantId,
-            name: i.name,
-            variantName: i.variantName,
-            priceCents: i.priceCents,
-            currency: i.currency,
-            quantity: i.quantity,
-          })),
-        }),
-      })
-      const orderData = await orderRes.json()
-      if (!orderRes.ok) throw new Error(orderData.error ?? 'Error al crear el pedido')
+      let orderId = pendingOrderId
+
+      if (!orderId) {
+        const orderRes = await fetch('/api/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            cartSessionToken: sessionToken,
+            address: data.address,
+            couponCode: appliedCouponCode ?? data.couponCode,
+            notes: data.notes,
+            saveToProfile: forSelf && saveToProfile && !!prefill?.isLoggedIn,
+            items: items.map((i) => ({
+              variantId: i.variantId,
+              name: i.name,
+              variantName: i.variantName,
+              priceCents: i.priceCents,
+              currency: i.currency,
+              quantity: i.quantity,
+            })),
+          }),
+        })
+        const orderData = await orderRes.json()
+        if (!orderRes.ok) throw new Error(orderData.error ?? 'Error al crear el pedido')
+        orderId = orderData.orderId
+        setPendingOrderId(orderId)
+      }
 
       const payRes = await fetch('/api/payment/create-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId: orderData.orderId }),
+        body: JSON.stringify({ orderId }),
       })
       const payData = await payRes.json()
       if (!payRes.ok) throw new Error(payData.error ?? 'Error al iniciar el pago')
 
       trackBeginCheckout(total, items.map((i) => ({ variantId: i.variantId, name: i.name, priceCents: i.priceCents, quantity: i.quantity })))
       clearCart()
+      setPendingOrderId(null)
+      try { localStorage.removeItem('liora-abandoned-kit') } catch {}
       window.location.href = payData.redirectUrl
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error inesperado')
