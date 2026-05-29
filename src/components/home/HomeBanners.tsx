@@ -15,12 +15,13 @@ interface Props {
   userName?: string
   orderNumber?: string | null
   kitTitle?: string | null
+  kitProfileId?: string | null
 }
 
 const STORAGE_KEY = 'liora-abandoned-kit'
 const MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
 
-export function HomeBanners({ isLoggedIn, userName, orderNumber, kitTitle }: Props) {
+export function HomeBanners({ isLoggedIn, userName, orderNumber, kitTitle, kitProfileId }: Props) {
   const router = useRouter()
   const [scenario, setScenario] = useState<'resume' | 'refill' | 'welcome' | null>(null)
   const [abandoned, setAbandoned] = useState<AbandonedKit | null>(null)
@@ -124,10 +125,10 @@ export function HomeBanners({ isLoggedIn, userName, orderNumber, kitTitle }: Pro
             <div className="ckb-strip-desc">Refill 1-clic · sin suscripción</div>
           </div>
           <div className="ckb-strip-helper">
-            <Ticket size={14} /> Cupón CAMI20 aplica
+            <Truck size={14} /> Envío gratis desde S/200
           </div>
           <div className="ckb-strip-actions">
-            <button className="ckb-strip-cta" onClick={() => router.push('/cuenta')}>
+            <button className="ckb-strip-cta" onClick={() => router.push(kitProfileId ? `/carrito?profileId=${kitProfileId}` : '/cuestionario')}>
               Reabastecer <Lightning size={14} weight="bold" />
             </button>
             <button className="ckb-strip-close" onClick={() => setDismissed(true)} aria-label="Cerrar">

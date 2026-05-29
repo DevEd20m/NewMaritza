@@ -9,34 +9,76 @@ const CAT_COLORS: Record<string, string> = {
 }
 
 const SLUG_WEIGHTS: Record<string, Record<string, number>> = {
+  // Objetivos
   gym: { gym: 3 },
-  'alto-rendimiento': { gym: 3 },
-  activo: { gym: 2 },
-  principiante: { gym: 1 },
-  peso: { gym: 2, vitaminas: 1 },
   skin: { 'skin-care': 3 },
+  organico: { organicos: 3 },
+  energia: { vitaminas: 3, organicos: 1 },
+  // Entrenamiento
+  'alto-rendimiento': { gym: 3 },
+  elite: { gym: 3 },
+  activo: { gym: 2 },
+  ligero: { gym: 1 },
+  principiante: { gym: 1 },
+  // Preocupaciones
+  peso: { gym: 2, vitaminas: 1 },
+  belleza: { 'skin-care': 2, vitaminas: 1 },
+  'energia-mental': { vitaminas: 3 },
+  inmune: { vitaminas: 2 },
+  // Piel
   'piel-grasa': { 'skin-care': 3 },
   'piel-seca': { 'skin-care': 3 },
-  'piel-mixta': { 'skin-care': 3 },
-  'piel-sensible': { 'skin-care': 3 },
-  belleza: { 'skin-care': 2, vitaminas: 1 },
-  organico: { organicos: 3 },
+  'piel-mixta': { 'skin-care': 2 },
+  'piel-sensible': { 'skin-care': 2 },
+  'piel-manchas': { 'skin-care': 3 },
+  'piel-hidratacion': { 'skin-care': 2 },
+  'piel-poros': { 'skin-care': 2 },
+  'piel-rojeces': { 'skin-care': 2 },
+  // Alimentación
   'muy-saludable': { organicos: 2 },
   'en-proceso': { organicos: 2 },
   'quiero-mejorar': { organicos: 2 },
   irregular: { organicos: 1 },
-  energia: { vitaminas: 3, organicos: 1 },
-  'energia-mental': { vitaminas: 3 },
-  inmune: { vitaminas: 2 },
-  'manana-lenta': { vitaminas: 2 },
-  'manana-cafe': { vitaminas: 1 },
-  'tiempo-minimo': {},
-  'tiempo-medio': {},
-  'tiempo-completo': {},
-  'sin-condicion': {},
-  embarazo: {},
+  // Preferencia natural/sintético
+  'natural-puro': { organicos: 3 },
+  efectivo: {},
+  'precio-valor': {},
+  resultados: {},
+  // Digestivo
   digestivo: { organicos: 2 },
-  alergias: { 'skin-care': 1 },
+  'digestivo-hinchazon': { organicos: 2 },
+  'digestivo-reflujo': { organicos: 2 },
+  'digestivo-estrenimiento': { organicos: 2 },
+  'reset-exceso': { organicos: 2, vitaminas: 1 },
+  // Restricciones (no suman categoría pero se pasan a la IA)
+  'sin-restriccion': {},
+  'alerg-lactosa': {},
+  'alerg-gluten': {},
+  'alerg-soya': {},
+  'alerg-piel': { 'skin-care': 1 },
+  // Edad (no suman categoría, la IA los interpreta)
+  'edad-25': {},
+  'edad-25-35': {},
+  'edad-35-45': {},
+  'edad-45': {},
+  // Presupuesto (la IA filtra por precio)
+  'presupuesto-bajo': {},
+  'presupuesto-medio': {},
+  'presupuesto-alto': {},
+  'presupuesto-premium': {},
+  // Energía timing
+  'energia-manana': { vitaminas: 2 },
+  'energia-entreno': { gym: 2 },
+  'energia-tarde': { vitaminas: 2 },
+  'energia-todo': { vitaminas: 2 },
+  // Solar / entreno tipo (señales menores)
+  'solar-no': { 'skin-care': 1 },
+  'solar-aveces': {},
+  'solar-si': {},
+  'entreno-fuerza': { gym: 3 },
+  'entreno-cardio': { gym: 2, vitaminas: 1 },
+  'entreno-mixto': { gym: 2 },
+  'entreno-hiit': { gym: 3 },
 }
 
 export interface KitItem {
@@ -152,6 +194,25 @@ export async function GET(request: NextRequest) {
         .map((c) => `ID:${c.variantId} | ${c.name} (${c.variantName}) | ${c.categoryName} | S/${(c.priceCents / 100).toFixed(0)}`)
         .join('\n')
 
+      // Extract context signals for prompt enrichment
+      const budgetSlug = allSlugs.find(s => s.startsWith('presupuesto-'))
+      const budgetLabel: Record<string, string> = {
+        'presupuesto-bajo': 'hasta S/80',
+        'presupuesto-medio': 'entre S/80 y S/150',
+        'presupuesto-alto': 'entre S/150 y S/250',
+        'presupuesto-premium': 'sin límite de presupuesto',
+      }
+      const allergySlugs = allSlugs.filter(s => s.startsWith('alerg-'))
+      const allergyLabels: Record<string, string> = {
+        'alerg-lactosa': 'lactosa',
+        'alerg-gluten': 'gluten',
+        'alerg-soya': 'soya',
+        'alerg-piel': 'irritantes cutáneos',
+      }
+      const restrictions = allergySlugs.map(s => allergyLabels[s]).filter(Boolean)
+      const prefersNatural = allSlugs.includes('natural-puro')
+      const ageSlug = allSlugs.find(s => s.startsWith('edad-'))
+
       const completion = await openai.chat.completions.create({
         model: 'gpt-4o-mini',
         temperature: 0.3,
@@ -170,13 +231,16 @@ Responde SOLO con JSON:
   "tags": ["string",...]
 }
 
-Reglas:
-- kit_variant_ids: 4-5 variantes en orden de prioridad (usa los IDs exactos del catálogo)
-- suggestion_variant_ids: 3-4 variantes adicionales no incluidas en el kit
-- diagnosis: 1-2 oraciones en español personalizadas
-- tags: 3-5 etiquetas cortas en español (ej: "Piel mixta", "Energía", "Post-entreno")
-- No repitas el mismo producto
-- Considera condiciones especiales
+Reglas estrictas:
+- kit_variant_ids: 4-5 variantes en orden de prioridad (IDs exactos del catálogo)
+- suggestion_variant_ids: 3-4 variantes adicionales NO incluidas en el kit
+- diagnosis: 1-2 oraciones personalizadas en español, menciona la etapa de vida si la conoces
+- tags: 3-5 etiquetas cortas en español
+- NO repitas el mismo producto
+- PRESUPUESTO: ${budgetSlug ? `La clienta quiere invertir ${budgetLabel[budgetSlug] ?? 'precio moderado'}. Prioriza productos dentro de ese rango; si el kit supera el presupuesto, elige productos más accesibles.` : 'Sin dato de presupuesto.'}
+- RESTRICCIONES: ${restrictions.length ? `EXCLUIR productos que contengan ${restrictions.join(', ')}. Esto es crítico para su seguridad.` : 'Sin restricciones alimentarias.'}
+- PREFERENCIA: ${prefersNatural ? 'Prefiere productos 100% naturales y orgánicos. Prioriza la categoría Orgánicos.' : 'Abierta a suplementos convencionales.'}
+- EDAD: ${ageSlug ? `Etapa: ${ageSlug}. Adapta las recomendaciones a sus necesidades según la edad.` : ''}
 - Responde completamente en español`,
           },
           {

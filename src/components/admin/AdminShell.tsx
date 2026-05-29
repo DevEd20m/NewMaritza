@@ -1,18 +1,19 @@
 'use client'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { SquaresFour, Receipt, Package, Sparkle, UsersThree, Bell } from '@phosphor-icons/react'
+import { SquaresFour, Receipt, Package, Sparkle, UsersThree, Bell, ClipboardText } from '@phosphor-icons/react'
 
 const NAV = [
-  { href: '/admin',           label: 'Dashboard', Icon: SquaresFour },
-  { href: '/admin/pedidos',   label: 'Pedidos',   Icon: Receipt },
-  { href: '/admin/productos', label: 'Productos', Icon: Package },
-  { href: '/admin/kits',      label: 'Kits',      Icon: Sparkle },
-  { href: '/admin/clientes',  label: 'Clientes',  Icon: UsersThree },
+  { href: '/admin',                label: 'Dashboard',    Icon: SquaresFour },
+  { href: '/admin/pedidos',        label: 'Pedidos',      Icon: Receipt },
+  { href: '/admin/productos',      label: 'Productos',    Icon: Package },
+  { href: '/admin/kits',           label: 'Kits',         Icon: Sparkle },
+  { href: '/admin/cuestionario',   label: 'Cuestionario', Icon: ClipboardText },
+  { href: '/admin/clientes',       label: 'Clientes',     Icon: UsersThree },
 ]
 
 function getPageTitle(pathname: string) {
-  const found = NAV.find(n => n.href === pathname)
+  const found = NAV.find(n => pathname === n.href || pathname.startsWith(n.href + '/'))
   return found?.label ?? 'Admin'
 }
 

@@ -15,7 +15,8 @@ interface QuizOption {
 }
 interface QuizQuestion {
   id: string; text: string; subtext: string | null; type: string
-  sort_order: number; is_required: boolean; conditions: unknown
+  sort_order: number; is_required: boolean
+  conditions: { if_any_slug?: string[] } | null
   quiz_question_options: QuizOption[]
 }
 interface QuizGroup {

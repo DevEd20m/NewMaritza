@@ -57,7 +57,7 @@ export default async function AccountPage() {
   // Default address
   const { data: addressRaw } = await supabase
     .from('addresses')
-    .select('id, first_name, last_name, address_line1, address_line2, city, state, postal_code, country, is_default')
+    .select('id, first_name, last_name, address_line1, address_line2, district, city, state, postal_code, country, is_default')
     .eq('user_id', user.id)
     .order('is_default', { ascending: false })
     .limit(1)
@@ -74,7 +74,7 @@ export default async function AccountPage() {
       .from('recommendations')
       .select('variant_id, score, rationale')
       .eq('quiz_profile_id', kitProfileId)
-      .eq('rationale', 'kit')
+      .eq('rationale', 'suggestion')
       .order('score', { ascending: false })
       .limit(6)
 

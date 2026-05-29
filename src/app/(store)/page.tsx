@@ -62,8 +62,8 @@ async function getHomeUserData() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { isLoggedIn: false }
 
-  const { data: profile } = await supabase.from('profiles').select('first_name').eq('id', user.id).single()
-  const profileData = profile as { first_name: string | null } | null
+  const { data: profile } = await supabase.from('profiles').select('first_name, quiz_profile_id').eq('id', user.id).single()
+  const profileData = profile as { first_name: string | null; quiz_profile_id: string | null } | null
 
   const { data: recentOrder } = await (supabase as any)
     .from('orders')
@@ -86,6 +86,7 @@ async function getHomeUserData() {
     userName: profileData?.first_name ?? undefined,
     orderNumber: (recentOrder as { order_number: string } | null)?.order_number ?? null,
     kitTitle: null as string | null,
+    kitProfileId: profileData?.quiz_profile_id ?? null,
   }
 }
 
@@ -99,6 +100,7 @@ export default async function HomePage() {
         userName={userData.isLoggedIn ? userData.userName : undefined}
         orderNumber={userData.isLoggedIn ? userData.orderNumber : null}
         kitTitle={userData.isLoggedIn ? userData.kitTitle : null}
+        kitProfileId={userData.isLoggedIn ? userData.kitProfileId : null}
       />
 
       {/* Hero */}

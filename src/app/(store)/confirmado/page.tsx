@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getPaymentProvider } from '@/lib/payment/provider'
 import { SuccessClient } from '@/components/checkout/SuccessClient'
 
 export const metadata: Metadata = { title: 'Pedido confirmado', robots: { index: false, follow: false } }
@@ -17,8 +18,43 @@ async function getOrder(orderNumber: string) {
   return data
 }
 
+async function confirmOrderFromSession(sessionId: string, orderNumber: string) {
+  try {
+    const admin = createAdminClient()
+    const { data: order } = await admin
+      .from('orders')
+      .select('id, status')
+      .eq('order_number', orderNumber)
+      .single()
+
+    if (!order || order.status !== 'pending_payment') return
+
+    const provider = getPaymentProvider('stripe')
+    const result = await provider.confirmPayment(sessionId)
+
+    if (result.status === 'succeeded') {
+      await admin.from('orders').update({ status: 'paid' }).eq('id', order.id)
+      await admin.from('payments').update({ status: 'succeeded', provider_reference: sessionId }).eq('order_id', order.id)
+      await (admin as any).from('order_status_history').insert({
+        order_id: order.id,
+        status: 'paid',
+        note: 'Confirmado vía success_url de Stripe',
+        created_by: 'stripe_redirect',
+      })
+    }
+  } catch {
+    // Silently fail — webhook will catch it as backup
+  }
+}
+
 export default async function SuccessPage({ searchParams }: Props) {
-  const { order: orderNumber } = await searchParams
+  const { order: orderNumber, session_id: sessionId } = await searchParams
+
+  // Confirm payment immediately from Stripe's API — don't wait for webhook
+  if (sessionId && orderNumber) {
+    await confirmOrderFromSession(sessionId, orderNumber)
+  }
+
   const order = orderNumber ? await getOrder(orderNumber) : null
 
   if (!order) {

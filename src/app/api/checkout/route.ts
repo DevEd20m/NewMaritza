@@ -60,11 +60,20 @@ export async function POST(request: NextRequest) {
     }).select('id').single()
     if (savedAddress) shippingAddressId = savedAddress.id
 
-    // Create order
+    // Resolve email for logged-in users
+    let orderEmail: string | null = null
+    if (user) {
+      orderEmail = user.email ?? null
+    } else {
+      orderEmail = (address as any).email ?? null
+    }
+
+    // Create order — always store name/email/phone for admin visibility
     const { data: order, error: orderError } = await admin.from('orders').insert({
       user_id: user?.id ?? null,
-      guest_email: user ? null : address.email,
-      guest_name: user ? null : `${address.firstName} ${address.lastName}`,
+      guest_email: orderEmail,
+      guest_name: `${address.firstName} ${address.lastName}`.trim(),
+      guest_phone: address.phone ?? null,
       shipping_address_id: shippingAddressId,
       subtotal_cents: subtotalCents,
       discount_cents: discountCents,
