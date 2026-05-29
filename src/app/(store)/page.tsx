@@ -7,6 +7,8 @@ import type { Category } from '@/types/database'
 import { ArrowRight, Star, Play, Heart } from '@phosphor-icons/react/dist/ssr'
 import { CategoryGrid } from '@/components/ui/CategoryGrid'
 import { HomeBanners } from '@/components/home/HomeBanners'
+import { PublicCouponsSection, type PublicCoupon } from '@/components/home/PublicCouponsSection'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export const metadata: Metadata = buildBaseMetadata()
 
@@ -57,6 +59,19 @@ const TIKTOK_CLIPS = [
   { tag: 'Mi quiz', handle: '@josss', views: '47K', bg: 'var(--cat-menta)', label: 'Resultados' },
 ]
 
+async function getPublicCoupons(): Promise<PublicCoupon[]> {
+  const admin = createAdminClient()
+  const { data } = await (admin as any)
+    .from('coupons')
+    .select('id, code, type, value, description, expires_at, color')
+    .eq('is_active', true)
+    .eq('is_public', true)
+    .or('expires_at.is.null,expires_at.gt.' + new Date().toISOString())
+    .order('created_at', { ascending: false })
+    .limit(6)
+  return (data ?? []) as PublicCoupon[]
+}
+
 async function getHomeUserData() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -91,7 +106,7 @@ async function getHomeUserData() {
 }
 
 export default async function HomePage() {
-  const [products, categories, userData] = await Promise.all([getFeaturedProducts(), getCategories(), getHomeUserData()])
+  const [products, categories, userData, publicCoupons] = await Promise.all([getFeaturedProducts(), getCategories(), getHomeUserData(), getPublicCoupons()])
 
   return (
     <div>
@@ -208,6 +223,8 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      <PublicCouponsSection coupons={publicCoupons} />
 
       {/* Personalize section */}
       <section style={{ background: 'var(--liora-uva)', padding: '96px 48px', borderRadius: '32px 32px 0 0' }}>

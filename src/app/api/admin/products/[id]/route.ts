@@ -3,17 +3,15 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 
-const emptyToNull = (v: unknown) => (v === '' ? null : v)
-
 const schema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
   brand: z.string().optional(),
-  category_id: z.preprocess(emptyToNull, z.string().uuid().nullable().optional()),
-  cover_image_url: z.preprocess(emptyToNull, z.string().url().nullable().optional()),
+  category_id: z.string().uuid().nullable().optional(),
+  cover_image_url: z.string().url().nullable().optional(),
   is_active: z.boolean(),
   stock_quantity: z.number().int().min(0).nullable(),
-  variant_id: z.preprocess(emptyToNull, z.string().uuid().nullable()),
+  variant_id: z.string().uuid().nullable(),
   variant_name: z.string().min(1),
   sku: z.string().optional(),
   price_cents: z.number().int().positive(),

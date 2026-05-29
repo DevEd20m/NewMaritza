@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
 
   // Process known event types
   if (webhookEvent.type === 'checkout.session.completed' && webhookEvent.orderId && webhookEvent.status) {
-    const { data: order } = await admin.from('orders').select('id, status').eq('id', webhookEvent.orderId).single()
+    const { data: order } = await admin.from('orders').select('id, status, coupon_id').eq('id', webhookEvent.orderId).single()
 
     if (order && order.status === 'pending_payment') {
       const newStatus = webhookEvent.status === 'succeeded' ? 'paid' : 'cancelled'
@@ -52,6 +52,11 @@ export async function POST(request: NextRequest) {
         note: `Webhook: ${webhookEvent.type}`,
         created_by: 'stripe_webhook',
       })
+
+      // Increment coupon used_count on successful payment
+      if (newStatus === 'paid' && (order as any).coupon_id) {
+        await (admin as any).rpc('increment_coupon_used_count', { p_coupon_id: (order as any).coupon_id })
+      }
 
       if (paymentRecord) {
         await admin.from('payment_events').update({ processed: true }).eq('payment_id', paymentRecord.id).eq('event_type', webhookEvent.type)

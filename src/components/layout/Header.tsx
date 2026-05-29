@@ -1,4 +1,5 @@
 'use client'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { ShoppingBag, MagnifyingGlass, UserCircle } from '@phosphor-icons/react'
 import { Logo } from './Logo'
@@ -17,7 +18,9 @@ const NAV_LINKS = [
 
 export function Header({ user }: HeaderProps) {
   const { itemCount, setIsOpen, isOpen } = useCartStore()
-  const count = itemCount()
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+  const count = mounted ? itemCount() : 0
 
   return (
     <header

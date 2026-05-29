@@ -44,11 +44,12 @@ export default async function AccountPage() {
     .limit(10)
   const ordersData = (ordersRaw ?? []) as Array<{ id: string; order_number: string; total_cents: number; status: string; created_at: string; order_items: { id: string }[] }>
 
-  // Active coupons (global, is_active = true)
-  const { data: couponsRaw } = await admin
+  // Active public coupons only
+  const { data: couponsRaw } = await (admin as any)
     .from('coupons')
     .select('id, code, type, value, expires_at')
     .eq('is_active', true)
+    .eq('is_public', true)
     .or('expires_at.is.null,expires_at.gt.' + new Date().toISOString())
     .order('created_at', { ascending: false })
     .limit(6)
