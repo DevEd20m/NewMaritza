@@ -20,6 +20,7 @@ export interface AccountKitItem {
   categoryName: string
   categoryColor: string
   imageUrl: string | null
+  priceCents: number
 }
 
 export interface AccountCoupon {
@@ -231,51 +232,87 @@ function PedidosTab({ orders }: { orders: AccountOrder[] }) {
 }
 
 function MiKitTab({ data, onReorder }: { data: AccountData; onReorder: () => void }) {
+  const totalCents = data.kitItems.reduce((s, i) => s + i.priceCents, 0)
+  const categories = [...new Set(data.kitItems.map(i => i.categoryName).filter(Boolean))]
+
   return (
     <div>
       <TabHeader eyebrow="Tu kit personalizado" title={data.kitTitle || 'Mi kit'} />
-      {data.kitItems.length === 0
-        ? (
-          <div style={{ background: 'var(--liora-blanco)', borderRadius: 24, border: '1.5px solid var(--liora-arena)', padding: 40, textAlign: 'center' as const }}>
-            <p style={{ fontFamily: 'var(--font-body)', fontSize: 15, color: 'var(--liora-uva)', opacity: 0.7, margin: 0 }}>
-              Aún no tienes un kit. <a href="/cuestionario" style={{ color: 'var(--liora-uva)', fontWeight: 700 }}>Hacer cuestionario →</a>
-            </p>
+
+      {data.kitItems.length === 0 ? (
+        <div style={{ background: 'var(--liora-blanco)', borderRadius: 24, border: '1.5px solid var(--liora-arena)', padding: 40, textAlign: 'center' as const }}>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 15, color: 'var(--liora-uva)', opacity: 0.7, margin: '0 0 16px' }}>
+            Aún no tienes un kit personalizado.
+          </p>
+          <a href="/cuestionario" style={{ background: 'var(--liora-uva)', color: 'var(--liora-crema)', borderRadius: 999, padding: '12px 24px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
+            Hacer cuestionario →
+          </a>
+        </div>
+      ) : (
+        <>
+          {/* Perfil de bienestar */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, flexWrap: 'wrap' as const }}>
+            <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)', opacity: 0.55, textTransform: 'uppercase' as const, letterSpacing: '0.1em' }}>Perfil:</span>
+            {categories.map(cat => (
+              <span key={cat} style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 999, padding: '4px 12px', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 12, color: 'var(--liora-uva)' }}>
+                {cat}
+              </span>
+            ))}
+            <a href="/cuestionario" style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 12, color: 'var(--liora-uva)', opacity: 0.5, marginLeft: 4, textDecoration: 'none' }}>
+              Rehacer cuestionario →
+            </a>
           </div>
-        )
-        : (
-          <>
-            <div style={{ background: 'var(--liora-uva)', color: 'var(--liora-crema)', borderRadius: 28, padding: 32, marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 24 }}>
-              <div>
-                <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, color: 'var(--liora-lima)', textTransform: 'uppercase' as const, letterSpacing: '0.12em', marginBottom: 8 }}>
-                  {data.kitItems.length} productos · Hecho para ti
+
+          {/* Kit card — single card */}
+          <div style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 28, overflow: 'hidden' }}>
+            {/* Product list */}
+            <div style={{ padding: '8px 0' }}>
+              {data.kitItems.map((item, idx) => (
+                <div
+                  key={item.variantId}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 16,
+                    padding: '16px 24px',
+                    borderBottom: idx < data.kitItems.length - 1 ? '1px solid var(--liora-arena)' : 'none',
+                  }}
+                >
+                  {/* Color swatch / image */}
+                  <div style={{ width: 52, height: 52, borderRadius: 14, background: item.categoryColor, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                    {item.imageUrl
+                      ? <img src={item.imageUrl} alt={item.name} style={{ width: '85%', height: '85%', objectFit: 'contain' }} />
+                      : <Package size={22} style={{ color: 'var(--liora-uva)', opacity: 0.5 }} />
+                    }
+                  </div>
+                  {/* Info */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: 'var(--liora-uva)', lineHeight: 1.2 }}>{item.name}</div>
+                    <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--liora-uva)', opacity: 0.6, marginTop: 2 }}>{item.variantName} · {item.categoryName}</div>
+                  </div>
+                  {/* Price */}
+                  <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: 'var(--liora-uva)', flexShrink: 0 }}>
+                    {item.priceCents > 0 ? fmt(item.priceCents) : '—'}
+                  </div>
                 </div>
-                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 40, lineHeight: 1, color: 'var(--liora-crema)' }}>
-                  {fmt(data.kitItems.reduce((s, i) => s + 0, 0) || 0)}
+              ))}
+            </div>
+
+            {/* Footer */}
+            <div style={{ background: 'var(--liora-uva)', padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
+              <div>
+                <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-crema)', opacity: 0.6, textTransform: 'uppercase' as const, letterSpacing: '0.1em', marginBottom: 4 }}>
+                  {data.kitItems.length} productos
+                </div>
+                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 32, color: 'var(--liora-crema)', lineHeight: 1 }}>
+                  {totalCents > 0 ? fmt(totalCents) : '—'}
                 </div>
               </div>
               <button onClick={onReorder} style={{ background: 'var(--liora-lima)', color: 'var(--liora-uva)', border: 'none', borderRadius: 999, padding: '14px 24px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 15, cursor: 'pointer', whiteSpace: 'nowrap' as const }}>
-                Repedir mi kit
+                Repedir mi kit →
               </button>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
-              {data.kitItems.map((item) => (
-                <article key={item.variantId} style={{ background: item.categoryColor, borderRadius: 20, padding: 20, display: 'flex', alignItems: 'center', gap: 16 }}>
-                  <div style={{ width: 56, height: 56, borderRadius: 14, background: 'rgba(255,255,255,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--liora-uva)', flexShrink: 0 }}>
-                    {item.imageUrl
-                      ? <img src={item.imageUrl} alt={item.name} style={{ width: '90%', height: '90%', objectFit: 'contain' }} />
-                      : <Package size={24} style={{ opacity: 0.6 }} />
-                    }
-                  </div>
-                  <div>
-                    <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 17, color: 'var(--liora-uva)' }}>{item.name}</div>
-                    <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--liora-uva)', opacity: 0.7, marginTop: 2 }}>{item.variantName} · {item.categoryName}</div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </>
-        )
-      }
+          </div>
+        </>
+      )}
     </div>
   )
 }

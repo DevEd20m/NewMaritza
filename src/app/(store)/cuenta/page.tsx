@@ -82,11 +82,11 @@ export default async function AccountPage() {
     const variantIds = (recsRaw ?? []).map((r) => (r as { variant_id: string }).variant_id)
 
     if (variantIds.length > 0) {
-      const { data: variantsRaw } = await admin
+      const { data: variantsRaw } = await (admin as any)
         .from('product_variants')
-        .select('id, name, product_id')
+        .select('id, name, product_id, product_prices(amount_cents, effective_to)')
         .in('id', variantIds)
-      const variants = (variantsRaw ?? []) as Array<{ id: string; name: string; product_id: string }>
+      const variants = (variantsRaw ?? []) as Array<{ id: string; name: string; product_id: string; product_prices: Array<{ amount_cents: number; effective_to: string | null }> }>
 
       const productIds = [...new Set(variants.map((v) => v.product_id))]
       const { data: productsRaw } = await admin
@@ -110,6 +110,7 @@ export default async function AccountPage() {
           const p = products.find((x) => x.id === v.product_id)
           if (!p) return null
           const cat = p.category_id ? catMap[p.category_id] : null
+          const activePrice = v.product_prices?.find(pp => !pp.effective_to)
           return {
             variantId: v.id,
             name: p.name,
@@ -117,6 +118,7 @@ export default async function AccountPage() {
             categoryName: cat?.name ?? '',
             categoryColor: cat ? (CAT_COLORS[cat.slug] ?? 'var(--cat-lavanda)') : 'var(--cat-lavanda)',
             imageUrl: p.cover_image_url,
+            priceCents: activePrice?.amount_cents ?? 0,
           }
         })
         .filter(Boolean) as AccountData['kitItems']
