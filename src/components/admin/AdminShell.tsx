@@ -1,16 +1,17 @@
 'use client'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { SquaresFour, Receipt, Package, Sparkle, UsersThree, Bell, ClipboardText, Ticket } from '@phosphor-icons/react'
+import { SquaresFour, Receipt, Package, Sparkle, UsersThree, Bell, ClipboardText, Ticket, GearSix } from '@phosphor-icons/react'
 
 const NAV = [
-  { href: '/admin',                label: 'Dashboard',    Icon: SquaresFour },
-  { href: '/admin/pedidos',        label: 'Pedidos',      Icon: Receipt },
-  { href: '/admin/productos',      label: 'Productos',    Icon: Package },
-  { href: '/admin/kits',           label: 'Kits',         Icon: Sparkle },
-  { href: '/admin/cupones',        label: 'Cupones',      Icon: Ticket },
-  { href: '/admin/cuestionario',   label: 'Cuestionario', Icon: ClipboardText },
-  { href: '/admin/clientes',       label: 'Clientes',     Icon: UsersThree },
+  { href: '/admin',                  label: 'Dashboard',    Icon: SquaresFour },
+  { href: '/admin/pedidos',          label: 'Pedidos',      Icon: Receipt },
+  { href: '/admin/productos',        label: 'Productos',    Icon: Package },
+  { href: '/admin/kits',             label: 'Kits',         Icon: Sparkle },
+  { href: '/admin/cupones',          label: 'Cupones',      Icon: Ticket },
+  { href: '/admin/cuestionario',     label: 'Cuestionario', Icon: ClipboardText },
+  { href: '/admin/clientes',         label: 'Clientes',     Icon: UsersThree },
+  { href: '/admin/configuracion',    label: 'Configuración', Icon: GearSix },
 ]
 
 function getPageTitle(pathname: string) {

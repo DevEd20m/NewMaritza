@@ -1,4 +1,10 @@
-export function AnnouncementBar() {
+interface AnnouncementBarProps {
+  thresholdCents: number
+  deliveryMessage: string
+}
+
+export function AnnouncementBar({ thresholdCents, deliveryMessage }: AnnouncementBarProps) {
+  const thresholdSoles = Math.round(thresholdCents / 100)
   return (
     <div
       style={{
@@ -11,7 +17,7 @@ export function AnnouncementBar() {
         fontWeight: 500,
       }}
     >
-      Envío gratis en pedidos +S/150 · Lima 36–48h ·{' '}
+      Envío gratis en pedidos +S/{thresholdSoles} · {deliveryMessage} ·{' '}
       <a
         href="/cuestionario"
         style={{ color: 'var(--liora-lima)', textDecoration: 'underline', textUnderlineOffset: 3 }}

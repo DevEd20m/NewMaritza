@@ -3,10 +3,14 @@ import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { CartDrawer } from '@/components/layout/CartDrawer'
 import { createClient } from '@/lib/supabase/server'
+import { getStoreSettings } from '@/lib/settings'
 
 export default async function StoreLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const [{ data: { user } }, settings] = await Promise.all([
+    supabase.auth.getUser(),
+    getStoreSettings(),
+  ])
 
   let profile = null
   if (user) {
@@ -19,11 +23,17 @@ export default async function StoreLayout({ children }: { children: React.ReactN
 
   return (
     <>
-      <AnnouncementBar />
+      <AnnouncementBar
+        thresholdCents={settings.free_shipping_threshold_cents}
+        deliveryMessage={settings.delivery_message}
+      />
       <Header user={profile} />
       <main style={{ flex: 1 }}>{children}</main>
       <Footer />
-      <CartDrawer />
+      <CartDrawer
+        shippingThresholdCents={settings.free_shipping_threshold_cents}
+        shippingCostCents={settings.shipping_cost_cents}
+      />
     </>
   )
 }

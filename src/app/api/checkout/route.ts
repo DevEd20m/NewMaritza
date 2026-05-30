@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { createOrderSchema } from '@/lib/validation/checkout'
+import { getStoreSettings } from '@/lib/settings'
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,7 +26,8 @@ export async function POST(request: NextRequest) {
     }
 
     const subtotalCents = cartItems.reduce((s: number, i) => s + i.priceCents * i.quantity, 0)
-    let shippingCents = subtotalCents >= 15000 ? 0 : 1500
+    const { free_shipping_threshold_cents, shipping_cost_cents } = await getStoreSettings()
+    let shippingCents = subtotalCents >= free_shipping_threshold_cents ? 0 : shipping_cost_cents
 
     // Resolve and re-validate coupon
     let couponId: string | null = null

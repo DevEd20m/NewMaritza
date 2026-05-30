@@ -4,7 +4,12 @@ import Link from 'next/link'
 import { X, Minus, Plus, ShoppingBag, Tag } from '@phosphor-icons/react'
 import { useCartStore } from '@/lib/store/cart'
 
-export function CartDrawer() {
+interface CartDrawerProps {
+  shippingThresholdCents: number
+  shippingCostCents: number
+}
+
+export function CartDrawer({ shippingThresholdCents, shippingCostCents }: CartDrawerProps) {
   const { isOpen, setIsOpen, items, removeItem, updateQuantity, subtotalCents, totalCents, discountCents, appliedCouponCode, setAppliedCoupon } = useCartStore()
   const [couponInput, setCouponInput] = useState('')
   const [couponError, setCouponError] = useState<string | null>(null)
@@ -12,7 +17,7 @@ export function CartDrawer() {
 
   const sub = subtotalCents()
   const total = totalCents()
-  const shipping = sub >= 15000 ? 0 : 1500
+  const shipping = sub >= shippingThresholdCents ? 0 : shippingCostCents
 
   const handleApplyCoupon = async () => {
     const code = couponInput.trim().toUpperCase()
