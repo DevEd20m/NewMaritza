@@ -3,6 +3,7 @@ import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, ArrowRight, Sparkle, ShieldCheck, EnvelopeSimple, XCircle, Check } from '@phosphor-icons/react'
 import { useQuizStore } from '@/lib/store/quiz'
+import { createClient as createBrowserClient } from '@/lib/supabase/client'
 
 interface QuizOption { id: string; text: string; slug: string; icon_url: string | null; sort_order: number }
 interface QuizQuestion {
@@ -136,6 +137,18 @@ export function QuizClient({ templateId, groups, isLoggedIn = false }: Props) {
       if (data.profileId) {
         setProfileId(data.profileId)
         complete()
+
+        // Send magic link so the lead can create / log into their account
+        // Non-blocking: user goes to kit immediately, email arrives in background
+        if (leadEmail) {
+          const supa = createBrowserClient()
+          const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(`/carrito?profileId=${data.profileId}`)}`
+          supa.auth.signInWithOtp({
+            email: leadEmail,
+            options: { shouldCreateUser: true, emailRedirectTo: redirectTo },
+          }).catch(() => {})
+        }
+
         router.push(`/carrito?profileId=${data.profileId}`)
       }
     } catch {

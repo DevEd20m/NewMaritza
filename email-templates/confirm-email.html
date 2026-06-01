@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Confirma tu cuenta — LIORA</title>
+</head>
+<body style="margin:0;padding:0;background:#F5EFE6;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#F5EFE6;padding:48px 20px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="max-width:520px;">
+
+          <!-- Logo -->
+          <tr>
+            <td align="center" style="padding-bottom:32px;">
+              <div style="display:inline-block;background:#3D1A3A;border-radius:16px;padding:12px 24px;">
+                <span style="font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:900;letter-spacing:0.14em;color:#FBF1E2;">LIORA</span>
+              </div>
+              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.22em;color:#3D1A3A;opacity:0.6;margin-top:8px;">Bienestar consciente</div>
+            </td>
+          </tr>
+
+          <!-- Card -->
+          <tr>
+            <td style="background:#FFFFFF;border-radius:24px;padding:48px 44px;border:1.5px solid #EAE0D6;box-shadow:0 4px 24px rgba(61,26,58,0.07);">
+
+              <!-- Icon accent -->
+              <div style="width:56px;height:56px;background:#FBF1E2;border-radius:999px;margin:0 auto 28px;display:flex;align-items:center;justify-content:center;text-align:center;line-height:56px;font-size:26px;">✉️</div>
+
+              <!-- Headline -->
+              <h1 style="margin:0 0 10px;font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:900;color:#3D1A3A;text-align:center;line-height:1.15;">Confirma tu email</h1>
+              <p style="margin:0 0 32px;font-size:15px;color:#6B5B68;text-align:center;line-height:1.6;">
+                Hola, estás a un clic de activar tu cuenta en LIORA.<br />
+                Confirma tu dirección para acceder a tu kit personalizado y tus pedidos.
+              </p>
+
+              <!-- CTA Button -->
+              <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                <tr>
+                  <td align="center" style="padding-bottom:32px;">
+                    <a href="{{ .ConfirmationURL }}"
+                      style="display:inline-block;background:#3D1A3A;color:#FBF1E2;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:16px;font-weight:700;letter-spacing:0.02em;text-decoration:none;padding:16px 40px;border-radius:999px;">
+                      Confirmar mi cuenta →
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Divider -->
+              <div style="height:1px;background:#EAE0D6;margin-bottom:28px;"></div>
+
+              <!-- Secondary text -->
+              <p style="margin:0;font-size:12px;color:#9B8B98;text-align:center;line-height:1.7;">
+                Este link expira en <strong>24 horas</strong>.<br />
+                Si no creaste esta cuenta, puedes ignorar este mensaje sin problema.
+              </p>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td align="center" style="padding-top:28px;">
+              <p style="margin:0;font-size:11px;color:#9B8B98;line-height:1.8;text-align:center;">
+                © LIORA · Lima, Perú<br />
+                Recibes este email porque alguien creó una cuenta con tu dirección.<br />
+                <a href="{{ .SiteURL }}" style="color:#3D1A3A;text-decoration:underline;">liora.pe</a>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
