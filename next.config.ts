@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+const isDev = process.env.NODE_ENV === 'development'
+
 const securityHeaders = [
   { key: 'X-Content-Type-Options',  value: 'nosniff' },
   { key: 'X-Frame-Options',         value: 'SAMEORIGIN' },
@@ -11,7 +13,8 @@ const securityHeaders = [
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://ssl.google-analytics.com https://js.stripe.com https://cdn.jsdelivr.net",
+      // unsafe-eval only in dev: React/Turbopack use eval() for HMR and source maps
+      `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} https://www.googletagmanager.com https://www.google-analytics.com https://ssl.google-analytics.com https://js.stripe.com https://cdn.jsdelivr.net`,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com data:",
       "img-src 'self' data: blob: https://*.supabase.co https://organaperu.vtexassets.com https://lh3.googleusercontent.com",
