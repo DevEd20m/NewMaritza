@@ -10,6 +10,13 @@ const KIT_COLORS: Record<string, string> = {
   gym: 'var(--cat-durazno)',
   reset: 'var(--cat-menta)',
   detox: 'var(--cat-menta)',
+  colageno: 'var(--cat-coral)',
+  capilar: 'var(--cat-coral)',
+  articulaciones: 'var(--cat-mostaza)',
+  vitaminas: 'var(--cat-lavanda)',
+  sueno: 'var(--cat-lavanda)',
+  andino: 'var(--cat-menta)',
+  bienestar: 'var(--cat-menta)',
   default: 'var(--cat-lavanda)',
 }
 

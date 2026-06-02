@@ -3,6 +3,9 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { Package } from '@phosphor-icons/react/dist/ssr'
 import { MiniQuizInline } from '@/components/products/MiniQuizInline'
+import { buildKitMetadata, buildKitJsonLd } from '@/lib/seo/metadata'
+import { ViewerBadge } from '@/components/urgency/ViewerBadge'
+import { StockUrgency } from '@/components/urgency/StockUrgency'
 
 interface Props { params: Promise<{ slug: string }> }
 
@@ -44,8 +47,17 @@ async function getMiniQuizTemplate(kitId: string) {
 }
 
 const KIT_COLORS: Record<string, string> = {
-  energia: 'var(--cat-mostaza)', piel: 'var(--cat-coral)',
-  'post-entreno': 'var(--cat-durazno)', reset: 'var(--cat-menta)', detox: 'var(--cat-menta)',
+  energia: 'var(--cat-mostaza)',
+  piel: 'var(--cat-coral)',
+  colageno: 'var(--cat-coral)',
+  capilar: 'var(--cat-coral)',
+  'post-entreno': 'var(--cat-durazno)',
+  gym: 'var(--cat-durazno)',
+  reset: 'var(--cat-menta)',
+  detox: 'var(--cat-menta)',
+  andino: 'var(--cat-menta)',
+  bienestar: 'var(--cat-menta)',
+  articulaciones: 'var(--cat-mostaza)',
 }
 function kitColor(slug: string) {
   for (const [k, v] of Object.entries(KIT_COLORS)) if (slug.includes(k)) return v
@@ -56,7 +68,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const kit = await getKit(slug)
   if (!kit) return { title: 'Kit no encontrado' }
-  return { title: `${kit.name} — LIORA`, description: kit.description ?? undefined }
+  return buildKitMetadata(kit as any)
 }
 
 export default async function KitPage({ params }: Props) {
@@ -77,8 +89,22 @@ export default async function KitPage({ params }: Props) {
     return s + (price?.amount_cents ?? 0) * (kp.quantity ?? 1)
   }, 0)
 
+  const jsonLdProducts = items
+    .map((kp: any) => {
+      const v = kp.product_variants
+      const p = v?.products
+      const price = v?.product_prices?.find((pp: any) => !pp.effective_to) ?? v?.product_prices?.[0]
+      if (!p) return null
+      return { name: p.name, slug: p.slug, cover_image_url: p.cover_image_url, priceCents: price?.amount_cents }
+    })
+    .filter(Boolean) as Array<{ name: string; slug: string; cover_image_url?: string | null; priceCents?: number }>
+
   return (
     <div style={{ background: 'var(--liora-crema)', minHeight: '100vh' }}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(buildKitJsonLd(kit as any, jsonLdProducts)) }}
+      />
       {/* Hero */}
       <div style={{ background: bg, padding: '64px 48px 56px' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
@@ -96,6 +122,7 @@ export default async function KitPage({ params }: Props) {
           <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 40, color: 'var(--liora-uva)' }}>
             S/{(totalCents / 100).toFixed(0)}
           </div>
+          <ViewerBadge baseCount={8 + (kit.slug.charCodeAt(4) % 8)} />
         </div>
       </div>
 
@@ -158,10 +185,11 @@ export default async function KitPage({ params }: Props) {
             ) : (
               <div style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 24, padding: '28px 28px', textAlign: 'center' }}>
                 <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 36, color: 'var(--liora-uva)', marginBottom: 4 }}>S/{(totalCents / 100).toFixed(0)}</div>
-                <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--liora-uva)', opacity: 0.65, marginBottom: 24 }}>
+                <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--liora-uva)', opacity: 0.65, marginBottom: 16 }}>
                   Bundle de {items.length} productos
                 </p>
-                <a href="/cuestionario" style={{ display: 'block', background: 'var(--liora-uva)', color: 'var(--liora-crema)', borderRadius: 999, padding: '16px 24px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 16, textDecoration: 'none', textAlign: 'center' }}>
+                <StockUrgency productId={kit.id} threshold={8} />
+                <a href="/cuestionario" style={{ display: 'block', marginTop: 20, background: 'var(--liora-uva)', color: 'var(--liora-crema)', borderRadius: 999, padding: '16px 24px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 16, textDecoration: 'none', textAlign: 'center' }}>
                   Hacer cuestionario completo
                 </a>
               </div>

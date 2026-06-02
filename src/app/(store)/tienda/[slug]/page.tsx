@@ -3,6 +3,8 @@ import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { buildProductMetadata, buildProductJsonLd } from '@/lib/seo/metadata'
 import { AddToCartButton } from '@/components/products/AddToCartButton'
+import { ViewerBadge } from '@/components/urgency/ViewerBadge'
+import { StockUrgency } from '@/components/urgency/StockUrgency'
 
 interface Props { params: Promise<{ slug: string }> }
 
@@ -129,6 +131,10 @@ export default async function ProductDetailPage({ params }: Props) {
                 </span>
               )}
             </div>
+
+            {/* Urgency signals */}
+            <ViewerBadge baseCount={5 + (product.id.charCodeAt(0) % 10)} />
+            <StockUrgency productId={product.id} />
 
             {product.description && (
               <p style={{ fontFamily: 'var(--font-body)', fontSize: 16, lineHeight: 1.6, color: 'var(--liora-uva)', marginTop: 24, opacity: 0.9 }}>

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
+import { requireAdmin } from '@/lib/auth/guards'
 
 const kitSchema = z.object({
   name: z.string().min(1),
@@ -22,9 +22,8 @@ function toSlug(name: string) {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+    const guard = await requireAdmin()
+    if (!guard.ok) return guard.response
 
     const body = await request.json()
     const parsed = kitSchema.safeParse(body)
@@ -62,9 +61,8 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+    const guard = await requireAdmin()
+    if (!guard.ok) return guard.response
 
     const body = await request.json()
     const parsed = kitSchema.extend({ id: z.string() }).safeParse(body)
@@ -101,9 +99,8 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+    const guard = await requireAdmin()
+    if (!guard.ok) return guard.response
 
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')

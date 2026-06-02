@@ -17,16 +17,27 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    interface OrderForPayment { id: string; order_number: string; total_cents: number; currency: string; status: string; guest_email: string | null; guest_name: string | null }
+    interface OrderForPayment {
+      id: string; order_number: string; total_cents: number; currency: string
+      status: string; guest_email: string | null; guest_name: string | null
+      user_id: string | null; session_token: string | null
+    }
     const { data: orderRaw } = await admin
       .from('orders')
-      .select('id, order_number, total_cents, currency, status, guest_email, guest_name')
+      .select('id, order_number, total_cents, currency, status, guest_email, guest_name, user_id, session_token')
       .eq('id', orderId)
       .single()
     const order = orderRaw as OrderForPayment | null
 
     if (!order) return NextResponse.json({ error: 'Pedido no encontrado' }, { status: 404 })
     if (order.status !== 'pending_payment') return NextResponse.json({ error: 'Pedido ya procesado' }, { status: 400 })
+
+    // Ownership: authenticated user must own the order, or it's a guest order with no user_id
+    if (order.user_id) {
+      if (!user || user.id !== order.user_id) {
+        return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+      }
+    }
 
     const customerEmail = user?.email ?? order.guest_email ?? 'guest@liora.pe'
     const customerName = order.guest_name ?? user?.email ?? 'Cliente LIORA'

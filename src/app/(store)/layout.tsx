@@ -2,6 +2,8 @@ import { AnnouncementBar } from '@/components/layout/AnnouncementBar'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { CartDrawer } from '@/components/layout/CartDrawer'
+import { LiveActivityToast } from '@/components/urgency/LiveActivityToast'
+import { ExitIntentModal } from '@/components/urgency/ExitIntentModal'
 import { createClient } from '@/lib/supabase/server'
 import { getStoreSettings } from '@/lib/settings'
 
@@ -34,6 +36,8 @@ export default async function StoreLayout({ children }: { children: React.ReactN
         shippingThresholdCents={settings.free_shipping_threshold_cents}
         shippingCostCents={settings.shipping_cost_cents}
       />
+      <LiveActivityToast />
+      <ExitIntentModal />
     </>
   )
 }

@@ -98,15 +98,32 @@ export async function GET(request: NextRequest) {
   const profileId = request.nextUrl.searchParams.get('profileId')
   if (!profileId) return NextResponse.json({ error: 'Missing profileId' }, { status: 400 })
 
+  // Validate UUID format before hitting the DB
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  if (!uuidRegex.test(profileId)) return NextResponse.json({ error: 'Invalid profileId' }, { status: 400 })
+
   const admin = createAdminClient()
+
+  // Ownership check: profile must belong to the current session or session_token cookie
+  const { createClient } = await import('@/lib/supabase/server')
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const sessionToken = request.cookies.get('liora_session')?.value
 
   const { data: profile } = await admin
     .from('quiz_profiles')
-    .select('id, answers, template_id')
+    .select('id, answers, template_id, user_id, session_token')
     .eq('id', profileId)
     .single()
 
   if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+
+  // Allow access if: authenticated user owns the profile, OR session_token matches
+  const ownsProfile =
+    (user && profile.user_id === user.id) ||
+    (sessionToken && profile.session_token === sessionToken)
+
+  if (!ownsProfile) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
 
   const answers = profile.answers as Record<string, string[]>
   const questionIds = Object.keys(answers)

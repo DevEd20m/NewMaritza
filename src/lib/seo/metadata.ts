@@ -47,14 +47,6 @@ export function buildCategoryMetadata(category: Category): Metadata {
   })
 }
 
-export function buildKitMetadata(kit: Kit): Metadata {
-  return buildBaseMetadata({
-    title: kit.name,
-    description: kit.description ?? DEFAULT_DESCRIPTION,
-    alternates: { canonical: `/tienda/kit/${kit.slug}` },
-  })
-}
-
 export function buildProductJsonLd(product: Product, priceCents?: number) {
   return {
     '@context': 'https://schema.org',
@@ -63,6 +55,7 @@ export function buildProductJsonLd(product: Product, priceCents?: number) {
     description: product.description,
     image: product.cover_image_url,
     url: `${SITE_URL}/tienda/${product.slug}`,
+    ...(product.brand ? { brand: { '@type': 'Brand', name: product.brand } } : {}),
     ...(priceCents ? {
       offers: {
         '@type': 'Offer',
@@ -70,7 +63,54 @@ export function buildProductJsonLd(product: Product, priceCents?: number) {
         priceCurrency: 'PEN',
         availability: 'https://schema.org/InStock',
         url: `${SITE_URL}/tienda/${product.slug}`,
+        seller: { '@type': 'Organization', name: SITE_NAME },
       },
     } : {}),
+  }
+}
+
+export function buildKitMetadata(kit: Kit): Metadata {
+  return buildBaseMetadata({
+    title: kit.name,
+    description: kit.description ?? DEFAULT_DESCRIPTION,
+    openGraph: {
+      title: kit.name,
+      description: kit.description ?? DEFAULT_DESCRIPTION,
+      images: kit.cover_image_url ? [{ url: kit.cover_image_url, alt: kit.name }] : [],
+      type: 'website',
+    },
+    alternates: { canonical: `/tienda/kit/${kit.slug}` },
+  })
+}
+
+export function buildKitJsonLd(
+  kit: Kit,
+  products: Array<{ name: string; slug: string; cover_image_url?: string | null; priceCents?: number }>,
+) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: kit.name,
+    description: kit.description,
+    url: `${SITE_URL}/tienda/kit/${kit.slug}`,
+    numberOfItems: products.length,
+    itemListElement: products.map((p, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      item: {
+        '@type': 'Product',
+        name: p.name,
+        url: `${SITE_URL}/tienda/${p.slug}`,
+        image: p.cover_image_url,
+        ...(p.priceCents ? {
+          offers: {
+            '@type': 'Offer',
+            price: String(p.priceCents / 100),
+            priceCurrency: 'PEN',
+            availability: 'https://schema.org/InStock',
+          },
+        } : {}),
+      },
+    })),
   }
 }
