@@ -20,11 +20,11 @@ export async function POST(request: NextRequest) {
     interface OrderForPayment {
       id: string; order_number: string; total_cents: number; currency: string
       status: string; guest_email: string | null; guest_name: string | null
-      user_id: string | null; session_token: string | null
+      user_id: string | null
     }
     const { data: orderRaw } = await admin
       .from('orders')
-      .select('id, order_number, total_cents, currency, status, guest_email, guest_name, user_id, session_token')
+      .select('id, order_number, total_cents, currency, status, guest_email, guest_name, user_id')
       .eq('id', orderId)
       .single()
     const order = orderRaw as OrderForPayment | null

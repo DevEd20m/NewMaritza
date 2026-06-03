@@ -170,12 +170,12 @@ export function QuizClient({ templateId, groups, isLoggedIn = false }: Props) {
       { icon: <XCircle size={18} weight="bold" />, label: 'Te desuscribes con un click' },
     ]
     return (
-      <section style={{ background: 'var(--liora-crema)', minHeight: '78vh', padding: '32px 48px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <section className="liora-cart-outer" style={{ background: 'var(--liora-crema)', minHeight: '78vh', padding: '32px 48px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ maxWidth: 1080, width: '100%' }}>
           <button onClick={() => setLeadStep(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--liora-uva)', fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, marginBottom: 32, opacity: 0.7, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
             <ArrowLeft size={16} weight="bold" /> Volver al cuestionario
           </button>
-          <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: 0, background: 'var(--liora-blanco)', borderRadius: 32, border: '1.5px solid var(--liora-arena)', overflow: 'hidden', boxShadow: 'var(--shadow-2)' }}>
+          <div className="liora-quiz-lead-grid" style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: 0, background: 'var(--liora-blanco)', borderRadius: 32, border: '1.5px solid var(--liora-arena)', overflow: 'hidden', boxShadow: 'var(--shadow-2)' }}>
             <div style={{ background: 'var(--cat-mostaza)', padding: 48, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 32, minHeight: 540 }}>
               <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, color: 'var(--liora-uva)', textTransform: 'uppercase', letterSpacing: '0.12em', display: 'inline-flex', alignItems: 'center', gap: 10 }}>
                 <span style={{ width: 28, height: 28, borderRadius: 999, background: 'var(--liora-uva)', color: 'var(--liora-lima)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -238,7 +238,7 @@ export function QuizClient({ templateId, groups, isLoggedIn = false }: Props) {
   if (!step) return null
 
   return (
-    <section style={{ background: 'var(--liora-crema)', minHeight: '80vh', padding: '32px 48px 120px' }}>
+    <section className="liora-cart-outer" style={{ background: 'var(--liora-crema)', minHeight: '80vh', padding: '32px 48px 120px' }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: 900, margin: '0 auto 32px' }}>
         <button onClick={() => stepIdx > 0 ? setStepIdx(stepIdx - 1) : router.back()} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--liora-uva)', fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 8 }}>

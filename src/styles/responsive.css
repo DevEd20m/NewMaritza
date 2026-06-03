@@ -197,3 +197,64 @@
 @media (max-width: 768px) {
   .liora-px { padding-left: 20px !important; padding-right: 20px !important; }
 }
+
+/* ── Shared: outer page padding ──────────────────────── */
+@media (max-width: 768px) {
+  .liora-cart-outer {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+    padding-top: 28px !important;
+  }
+}
+
+/* ── Shared: page title large ────────────────────────── */
+@media (max-width: 768px) {
+  .liora-page-title { font-size: 36px !important; margin-bottom: 24px !important; }
+}
+
+/* ── Checkout ────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .liora-checkout-outer {
+    padding: 24px 20px 64px !important;
+  }
+  .liora-checkout-title { font-size: 36px !important; margin-bottom: 6px !important; }
+  .liora-checkout-grid {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+  }
+  .liora-checkout-3col {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+}
+
+/* ── Cart grid (sidebar → below on mobile) ───────────── */
+@media (max-width: 900px) {
+  .liora-cart-grid {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+  }
+}
+
+/* ── Product / Kit detail grid ───────────────────────── */
+@media (max-width: 900px) {
+  .liora-product-grid {
+    grid-template-columns: 1fr !important;
+    gap: 32px !important;
+  }
+}
+
+/* ── Quiz lead step (2-col card → stacked) ───────────── */
+@media (max-width: 768px) {
+  .liora-quiz-lead-grid {
+    grid-template-columns: 1fr !important;
+    border-radius: 24px !important;
+  }
+  .liora-quiz-lead-grid > div:first-child {
+    min-height: auto !important;
+    padding: 28px 24px !important;
+  }
+  .liora-quiz-lead-grid > div:last-child {
+    padding: 24px !important;
+  }
+}

@@ -223,7 +223,7 @@ export function CartPageClient() {
   // ── KIT MODE (from quiz) ─────────────────────────────────────────────────
   if (profileId) {
     return (
-      <section style={{ background: 'var(--liora-crema)', padding: '32px 48px 96px' }}>
+      <section className="liora-cart-outer" style={{ background: 'var(--liora-crema)', padding: '32px 48px 96px' }}>
         <button
           onClick={() => router.push('/cuestionario')}
           style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--liora-uva)', fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 600, padding: '8px 0', display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 24 }}
@@ -260,7 +260,7 @@ export function CartPageClient() {
           </div>
         )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 32, alignItems: 'flex-start' }}>
+        <div className="liora-cart-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 32, alignItems: 'flex-start' }}>
 
           {/* Left column ─── items + suggestions + bot */}
           <div>
@@ -443,8 +443,8 @@ export function CartPageClient() {
 
   // ── REGULAR CART (no profileId, has items) ───────────────────────────────
   return (
-    <div style={{ background: 'var(--liora-crema)', padding: '40px 48px 96px', maxWidth: 1200, margin: '0 auto' }}>
-      <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 56, lineHeight: 1, color: 'var(--liora-uva)', margin: '0 0 40px', fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>
+    <div className="liora-cart-outer" style={{ background: 'var(--liora-crema)', padding: '40px 48px 96px', maxWidth: 1200, margin: '0 auto' }}>
+      <h1 className="liora-page-title" style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 56, lineHeight: 1, color: 'var(--liora-uva)', margin: '0 0 40px', fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>
         Tu carrito · <span style={{ fontFamily: 'var(--font-script)' }}>{items.reduce((s, i) => s + i.quantity, 0)} productos</span>
       </h1>
 

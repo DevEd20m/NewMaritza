@@ -53,7 +53,7 @@ export function SuccessClient({ order }: { order: Order }) {
   const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(waText)}`
 
   return (
-    <div style={{ background: 'var(--liora-crema)', padding: '64px 48px 96px', maxWidth: 760, margin: '0 auto' }}>
+    <div className="liora-cart-outer" style={{ background: 'var(--liora-crema)', padding: '64px 48px 96px', maxWidth: 760, margin: '0 auto' }}>
 
       {/* ── Confirmación ──────────────────────────────────────────────── */}
       <div style={{ textAlign: 'center', marginBottom: 48 }}>

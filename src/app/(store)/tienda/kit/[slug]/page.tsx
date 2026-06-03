@@ -110,7 +110,7 @@ export default async function KitPage({ params }: Props) {
       />
 
       {/* ── Hero ──────────────────────────────────────────────────────── */}
-      <div style={{ background: bg, padding: '56px 48px 52px' }}>
+      <div className="liora-cart-outer" style={{ background: bg, padding: '56px 48px 52px' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
           {/* Breadcrumb */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
@@ -149,8 +149,8 @@ export default async function KitPage({ params }: Props) {
       </div>
 
       {/* ── Contenido ─────────────────────────────────────────────────── */}
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 48px 96px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 420px', gap: 40, alignItems: 'start' }}>
+      <div className="liora-cart-outer" style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 48px 96px' }}>
+        <div className="liora-product-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 420px', gap: 40, alignItems: 'start' }}>
 
           {/* Productos del kit */}
           <div>

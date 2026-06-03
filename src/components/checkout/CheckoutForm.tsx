@@ -20,11 +20,6 @@ export interface PrefillData {
   postalCode: string
 }
 
-const METHODS = [
-  { id: 'card' as const, label: 'Tarjeta', icon: '💳' },
-  { id: 'yape' as const, label: 'Yape', icon: '📱' },
-  { id: 'pse' as const, label: 'PagoEfectivo', icon: '🏦' },
-]
 
 export function CheckoutForm({ prefill }: { prefill: PrefillData | null }) {
   const router = useRouter()
@@ -70,8 +65,6 @@ export function CheckoutForm({ prefill }: { prefill: PrefillData | null }) {
       })
     }
   }, [forSelf]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const method = watch('paymentMethod')
 
   const onSubmit = async (data: CheckoutFormData) => {
     if (!items.length) {
@@ -142,8 +135,8 @@ export function CheckoutForm({ prefill }: { prefill: PrefillData | null }) {
   const errorStyle = { color: 'var(--color-error)', fontSize: 12, marginTop: 4, fontFamily: 'var(--font-body)' }
 
   return (
-    <div style={{ background: 'var(--liora-crema)', padding: '40px 48px 96px', maxWidth: 1200, margin: '0 auto' }}>
-      <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 56, lineHeight: 1, color: 'var(--liora-uva)', margin: '0 0 8px', fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>
+    <div className="liora-checkout-outer" style={{ background: 'var(--liora-crema)', padding: '40px 48px 96px', maxWidth: 1200, margin: '0 auto' }}>
+      <h1 className="liora-checkout-title" style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 56, lineHeight: 1, color: 'var(--liora-uva)', margin: '0 0 8px', fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>
         Pago seguro
       </h1>
       <p style={{ fontFamily: 'var(--font-body)', fontSize: 15, color: 'var(--liora-uva)', opacity: 0.65, marginBottom: 40 }}>
@@ -151,7 +144,7 @@ export function CheckoutForm({ prefill }: { prefill: PrefillData | null }) {
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 32, alignItems: 'flex-start' }}>
+        <div className="liora-checkout-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 32, alignItems: 'flex-start' }}>
 
           {/* Form panel */}
           <div style={{ background: 'var(--liora-blanco)', borderRadius: 28, border: '1.5px solid var(--liora-arena)', padding: 32, display: 'flex', flexDirection: 'column', gap: 28 }}>
@@ -209,7 +202,7 @@ export function CheckoutForm({ prefill }: { prefill: PrefillData | null }) {
                   <input {...register('address.addressLine1')} placeholder="Av. Larco 1234, dpto 502" style={inputStyle} />
                   {errors.address?.addressLine1 && <span style={errorStyle}>{errors.address.addressLine1.message}</span>}
                 </label>
-                <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr', gap: 12 }}>
+                <div className="liora-checkout-3col" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr', gap: 12 }}>
                   <label style={labelStyle}>
                     Ciudad
                     <input {...register('address.city')} placeholder="Lima" style={inputStyle} />
@@ -253,27 +246,14 @@ export function CheckoutForm({ prefill }: { prefill: PrefillData | null }) {
             {/* Payment method */}
             <section>
               <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 22, color: 'var(--liora-uva)', marginBottom: 16 }}>Método de pago</h2>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 20 }}>
-                {METHODS.map((m) => (
-                  <label key={m.id} style={{ cursor: 'pointer' }}>
-                    <input {...register('paymentMethod')} type="radio" value={m.id} style={{ display: 'none' }} />
-                    <div style={{ background: method === m.id ? 'var(--liora-uva)' : 'var(--liora-crema)', color: method === m.id ? 'var(--liora-crema)' : 'var(--liora-uva)', border: method === m.id ? '2px solid var(--liora-uva)' : '1.5px solid var(--liora-arena)', borderRadius: 14, padding: '14px 12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 14 }}>
-                      <span style={{ fontSize: 22 }}>{m.icon}</span>
-                      {m.label}
-                    </div>
-                  </label>
-                ))}
+              <div style={{ background: 'var(--liora-crema)', border: '2px solid var(--liora-uva)', borderRadius: 14, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 14 }}>
+                <span style={{ fontSize: 24 }}>💳</span>
+                <div>
+                  <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 15, color: 'var(--liora-uva)' }}>Tarjeta de crédito / débito</div>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-uva)', opacity: 0.6, marginTop: 2 }}>Visa · Mastercard · American Express</div>
+                </div>
               </div>
-              {method === 'yape' && (
-                <div style={{ background: 'var(--liora-crema)', borderRadius: 16, padding: 20, fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--liora-uva)', textAlign: 'center' }}>
-                  Al continuar, te redireccionamos a Yape para confirmar el pago.
-                </div>
-              )}
-              {method === 'pse' && (
-                <div style={{ background: 'var(--liora-crema)', borderRadius: 16, padding: 20, fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--liora-uva)', textAlign: 'center' }}>
-                  Te generamos un código de pago. Tienes 24h para pagarlo en cualquier agente.
-                </div>
-              )}
+              <input {...register('paymentMethod')} type="hidden" value="card" />
             </section>
 
             {error && <p style={{ color: 'var(--color-error)', fontSize: 14, fontFamily: 'var(--font-body)' }}>{error}</p>}
@@ -318,7 +298,7 @@ export function CheckoutForm({ prefill }: { prefill: PrefillData | null }) {
             </button>
 
             <p style={{ fontFamily: 'var(--font-body)', fontSize: 11, opacity: 0.6, textAlign: 'center', marginTop: 16 }}>
-              Aceptamos Visa · Mastercard · Yape · PagoEfectivo
+              Pago seguro con cifrado SSL · Visa · Mastercard
             </p>
           </aside>
         </div>

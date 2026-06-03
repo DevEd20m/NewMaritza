@@ -79,8 +79,8 @@ export default async function ProductDetailPage({ params }: Props) {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      <div style={{ background: 'var(--liora-crema)', padding: '48px 48px 96px', maxWidth: 1280, margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'flex-start' }}>
+      <div className="liora-cart-outer" style={{ background: 'var(--liora-crema)', padding: '48px 48px 96px', maxWidth: 1280, margin: '0 auto' }}>
+        <div className="liora-product-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'flex-start' }}>
           {/* Image */}
           <div style={{ position: 'sticky', top: 120 }}>
             <div style={{ background: catColor, borderRadius: 32, aspectRatio: '1/1', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
