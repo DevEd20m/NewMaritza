@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/send-followup-emails?secret=liora-cron-2026",
+      "schedule": "0 10 * * *"
+    }
+  ]
+}
