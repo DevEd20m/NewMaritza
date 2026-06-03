@@ -33,13 +33,14 @@ export async function Footer() {
   const kits = await getActiveKits()
   return (
     <footer
+      className="liora-footer-root"
       style={{
         background: 'var(--liora-uva-deep)',
         color: 'var(--liora-crema)',
         padding: '80px 48px 40px',
       }}
     >
-      <div style={{ display: 'grid', gridTemplateColumns: `1.4fr repeat(${kits.length > 0 ? 4 : 3}, 1fr)`, gap: 48, marginBottom: 64 }}>
+      <div className="liora-footer-grid" style={{ display: 'grid', gridTemplateColumns: `1.4fr repeat(${kits.length > 0 ? 4 : 3}, 1fr)`, gap: 48, marginBottom: 64 }}>
         {/* Brand */}
         <div>
           <Logo size={40} inverted />

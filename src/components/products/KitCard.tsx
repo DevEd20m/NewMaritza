@@ -55,16 +55,12 @@ export function KitCard({ kit }: KitCardProps) {
   return (
     <Link href={`/tienda/kit/${kit.slug}`} style={{ textDecoration: 'none' }}>
       <article
+        className="liora-kit-card"
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
           background: bg,
           borderRadius: 32,
-          padding: '32px 32px 32px 36px',
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 24,
           cursor: 'pointer',
           position: 'relative',
           overflow: 'hidden',
@@ -73,6 +69,7 @@ export function KitCard({ kit }: KitCardProps) {
           transition: 'transform 220ms cubic-bezier(0.22,1,0.36,1)',
         }}
       >
+        <div className="liora-kit-card-inner" style={{ padding: '32px 32px 32px 36px', display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 24 }}>
         {/* ── Left: texto ── */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 14, minWidth: 0 }}>
           <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)', textTransform: 'uppercase', letterSpacing: '0.12em', opacity: 0.7 }}>
@@ -80,7 +77,7 @@ export function KitCard({ kit }: KitCardProps) {
           </div>
 
           <div>
-            <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 30, color: 'var(--liora-uva)', margin: 0, lineHeight: 1.05, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>
+            <h3 className="liora-kit-card-title" style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 30, color: 'var(--liora-uva)', margin: 0, lineHeight: 1.05, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>
               {kit.name}
             </h3>
             {kit.description && (
@@ -91,7 +88,7 @@ export function KitCard({ kit }: KitCardProps) {
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 14, borderTop: '1.5px solid rgba(61,26,58,0.13)', marginTop: 'auto' }}>
-            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 28, color: 'var(--liora-uva)' }}>
+            <div className="liora-kit-card-price" style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 28, color: 'var(--liora-uva)' }}>
               S/{(totalCents / 100).toFixed(0)}
             </div>
             <span style={{
@@ -108,7 +105,7 @@ export function KitCard({ kit }: KitCardProps) {
         </div>
 
         {/* ── Right: abanico de imágenes ── */}
-        <div style={{ position: 'relative', width: 210, height: 160, flexShrink: 0 }}>
+        <div className="liora-kit-card-images" style={{ position: 'relative', width: 210, height: 160, flexShrink: 0 }}>
           {images.map((url, i) => {
             const slot = FAN[i]
             return (
@@ -164,6 +161,7 @@ export function KitCard({ kit }: KitCardProps) {
             )
           })}
         </div>
+        </div>{/* end liora-kit-card-inner */}
       </article>
     </Link>
   )

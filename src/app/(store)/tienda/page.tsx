@@ -63,8 +63,9 @@ export default async function ShopPage({ searchParams }: Props) {
     <div style={{ background: 'var(--liora-crema)' }}>
 
       {/* ── HERO: Quiz CTA ─────────────────────────────────────────────── */}
-      <section style={{ background: 'var(--liora-uva)', padding: '72px 48px 80px' }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 320px', gap: 56, alignItems: 'center' }}>
+      <section className="liora-shop-hero-section" style={{ background: 'var(--liora-uva)', padding: '72px 48px 80px' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+        <div className="liora-shop-hero-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 56, alignItems: 'center' }}>
 
           {/* Texto */}
           <div>
@@ -79,7 +80,7 @@ export default async function ShopPage({ searchParams }: Props) {
               </span>
             </div>
 
-            <h1 style={{
+            <h1 className="liora-shop-hero-title" style={{
               fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 62,
               lineHeight: 1.0, letterSpacing: '-0.025em', color: 'var(--liora-crema)',
               margin: '0 0 20px',
@@ -118,7 +119,7 @@ export default async function ShopPage({ searchParams }: Props) {
           </div>
 
           {/* Pasos */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div className="liora-shop-hero-steps" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {STEPS.map((s) => (
               <div key={s.n} style={{
                 background: 'rgba(255,255,255,0.07)', borderRadius: 20,
@@ -144,9 +145,10 @@ export default async function ShopPage({ searchParams }: Props) {
           </div>
 
         </div>
+        </div>
       </section>
 
-      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '64px 48px 96px' }}>
+      <div className="liora-px" style={{ maxWidth: 1280, margin: '0 auto', padding: '64px 48px 96px' }}>
 
         {/* ── KITS BASE ──────────────────────────────────────────────────── */}
         <section id="kits-base" style={{ marginBottom: 80 }}>
@@ -179,7 +181,7 @@ export default async function ShopPage({ searchParams }: Props) {
             </Link>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 20 }}>
+          <div className="liora-kits-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 20 }}>
             {kits.map((kit) => <KitCard key={kit.id} kit={kit} />)}
           </div>
         </section>

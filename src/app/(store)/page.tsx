@@ -136,22 +136,22 @@ export default async function HomePage() {
       />
 
       {/* Hero */}
-      <section style={{ background: 'var(--liora-crema)', padding: '64px 48px 96px', position: 'relative' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: 48, alignItems: 'center', maxWidth: 1280, margin: '0 auto' }}>
+      <section className="liora-hero-section" style={{ background: 'var(--liora-crema)', padding: '64px 48px 96px', position: 'relative' }}>
+        <div className="liora-hero-grid" style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: 48, alignItems: 'center', maxWidth: 1280, margin: '0 auto' }}>
           <div>
             <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 13, color: 'var(--liora-uva)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 20, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
               <span style={{ width: 24, height: 1.5, background: 'var(--liora-uva)', display: 'block' }} />
               Bienestar personalizado · 8 preguntas
             </div>
-            <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 88, lineHeight: 0.98, letterSpacing: '-0.025em', color: 'var(--liora-uva)', margin: 0, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>
+            <h1 className="liora-hero-title" style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 88, lineHeight: 0.98, letterSpacing: '-0.025em', color: 'var(--liora-uva)', margin: 0, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>
               Hecho<br />
-              <span style={{ fontFamily: 'var(--font-script)', fontWeight: 600, fontSize: 92, color: 'var(--liora-uva)' }}>para </span>
+              <span className="liora-hero-script" style={{ fontFamily: 'var(--font-script)', fontWeight: 600, fontSize: 92, color: 'var(--liora-uva)' }}>para </span>
               ti.
             </h1>
-            <p style={{ fontFamily: 'var(--font-body)', fontSize: 18, lineHeight: 1.5, color: 'var(--liora-uva)', marginTop: 24, maxWidth: 460 }}>
+            <p className="liora-hero-body" style={{ fontFamily: 'var(--font-body)', fontSize: 18, lineHeight: 1.5, color: 'var(--liora-uva)', marginTop: 24, maxWidth: 460 }}>
               Tu cuerpo no es como el de nadie. Tu kit, tampoco. Responde 8 preguntas y armamos tu rutina de bienestar — orgánicos, vitaminas, skin care y gym.
             </p>
-            <div style={{ display: 'flex', gap: 14, marginTop: 36 }}>
+            <div className="liora-hero-ctas" style={{ display: 'flex', gap: 14, marginTop: 36 }}>
               <Link href="/cuestionario" style={{ background: 'var(--liora-uva)', color: 'var(--liora-crema)', border: 'none', borderRadius: 999, padding: '16px 32px', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 16, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
                 Empezar mi cuestionario <ArrowRight size={18} weight="bold" />
               </Link>
@@ -162,7 +162,7 @@ export default async function HomePage() {
           </div>
 
           {/* Hero product stack */}
-          <div style={{ position: 'relative', height: 520 }}>
+          <div className="liora-hero-cards" style={{ position: 'relative', height: 520 }}>
             <div style={{ position: 'absolute', top: 20, left: 0, width: 260, height: 320, background: 'var(--cat-durazno)', borderRadius: 28, transform: 'rotate(-6deg)', boxShadow: 'var(--shadow-2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <div style={{ background: 'var(--liora-crema)', padding: '16px 20px', borderRadius: 12, fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--liora-uva)', textAlign: 'center' }}>
                 <div style={{ fontSize: 22, lineHeight: 1 }}>Whey</div>
@@ -189,12 +189,12 @@ export default async function HomePage() {
       </section>
 
       {/* Category grid */}
-      <section style={{ background: 'var(--liora-crema)', padding: '32px 48px 64px' }}>
+      <section className="liora-section-pad" style={{ background: 'var(--liora-crema)', padding: '32px 48px 64px' }}>
         <div style={{ maxWidth: 1280, margin: '0 auto' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 32 }}>
+          <div className="liora-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 32 }}>
             <div>
               <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12 }}>Nuestras categorías</div>
-              <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 56, color: 'var(--liora-uva)', margin: 0, lineHeight: 1, fontVariationSettings: "'opsz' 144,'SOFT' 60,'WONK' 0" }}>¿Por dónde empezamos?</h2>
+              <h2 className="liora-section-title" style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 56, color: 'var(--liora-uva)', margin: 0, lineHeight: 1, fontVariationSettings: "'opsz' 144,'SOFT' 60,'WONK' 0" }}>¿Por dónde empezamos?</h2>
             </div>
             <Link href="/tienda" style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 15, color: 'var(--liora-uva)', display: 'inline-flex', alignItems: 'center', gap: 6, borderBottom: '1.5px solid var(--liora-uva)', paddingBottom: 2 }}>
               Ver todas <ArrowRight size={14} weight="bold" />
@@ -205,9 +205,9 @@ export default async function HomePage() {
       </section>
 
       {/* Featured products */}
-      <section style={{ background: 'var(--liora-crema)', padding: '64px 48px' }}>
+      <section className="liora-section-pad" style={{ background: 'var(--liora-crema)', padding: '64px 48px' }}>
         <div style={{ maxWidth: 1280, margin: '0 auto' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 32 }}>
+          <div className="liora-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 32 }}>
             <div>
               <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12 }}>Más pedidos esta semana</div>
               <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 56, color: 'var(--liora-uva)', margin: 0, lineHeight: 1, fontVariationSettings: "'opsz' 144,'SOFT' 60,'WONK' 0" }}>Lo que el público ama</h2>
@@ -216,7 +216,7 @@ export default async function HomePage() {
               Ver todo <ArrowRight size={14} weight="bold" />
             </Link>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
+          <div className="liora-grid-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
             {products.map((p) => {
               const variant = p.product_variants?.[0]
               const price = variant?.product_prices?.find((pp) => !pp.effective_to)
@@ -244,8 +244,9 @@ export default async function HomePage() {
       <PublicCouponsSection coupons={publicCoupons} />
 
       {/* Personalize section */}
-      <section style={{ background: 'var(--liora-uva)', padding: '96px 48px', borderRadius: '32px 32px 0 0' }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: 64, alignItems: 'center' }}>
+      <section className="liora-personalize-section" style={{ background: 'var(--liora-uva)', padding: '96px 48px', borderRadius: '32px 32px 0 0' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+        <div className="liora-personalize-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: 64, alignItems: 'center' }}>
           <div>
             <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, color: 'var(--liora-lima)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 16 }}>
               Cómo funciona
@@ -275,12 +276,13 @@ export default async function HomePage() {
             ))}
           </div>
         </div>
+        </div>
       </section>
 
       {/* Reviews + TikTok */}
-      <section style={{ background: 'var(--liora-crema)', padding: '64px 48px' }}>
+      <section className="liora-section-pad" style={{ background: 'var(--liora-crema)', padding: '64px 48px' }}>
         <div style={{ maxWidth: 1280, margin: '0 auto' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 32 }}>
+          <div className="liora-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 32 }}>
             <div>
               <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12 }}>Comunidad LIORA</div>
               <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 56, color: 'var(--liora-uva)', margin: 0, lineHeight: 1, fontVariationSettings: "'opsz' 144,'SOFT' 60,'WONK' 0" }}>Lo que dice el público</h2>
@@ -289,7 +291,7 @@ export default async function HomePage() {
               Ver todas <ArrowRight size={14} weight="bold" />
             </a>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20, marginBottom: 48 }}>
+          <div className="liora-grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20, marginBottom: 48 }}>
             {REVIEWS.map((r) => (
               <article key={r.name} style={{ background: r.bg, borderRadius: 28, padding: 28, display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <div style={{ display: 'flex', gap: 2, color: 'var(--liora-uva)', fontSize: 16 }}>
@@ -314,7 +316,7 @@ export default async function HomePage() {
               Síguenos <ArrowRight size={14} weight="bold" />
             </a>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+          <div className="liora-tiktok-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
             {TIKTOK_CLIPS.map((c, i) => (
               <article key={i} style={{ position: 'relative', aspectRatio: '9/16', background: c.bg, borderRadius: 24, overflow: 'hidden', cursor: 'pointer' }}>
                 <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 12 }}>
@@ -338,12 +340,12 @@ export default async function HomePage() {
       </section>
 
       {/* Testimonial band */}
-      <section style={{ background: 'var(--liora-lima)', padding: '96px 48px', textAlign: 'center' }}>
+      <section className="liora-testimonial-section" style={{ background: 'var(--liora-lima)', padding: '96px 48px', textAlign: 'center' }}>
         <div style={{ maxWidth: 880, margin: '0 auto' }}>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 4, marginBottom: 20, color: 'var(--liora-uva)', fontSize: 22 }}>
             {[1, 2, 3, 4, 5].map((i) => <Star key={i} size={22} weight="fill" />)}
           </div>
-          <blockquote style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 48, lineHeight: 1.12, letterSpacing: '-0.015em', color: 'var(--liora-uva)', margin: 0, fontVariationSettings: "'opsz' 144,'SOFT' 60,'WONK' 0" }}>
+          <blockquote className="liora-testimonial-quote" style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 48, lineHeight: 1.12, letterSpacing: '-0.015em', color: 'var(--liora-uva)', margin: 0, fontVariationSettings: "'opsz' 144,'SOFT' 60,'WONK' 0" }}>
             "Pedí mi kit personalizado después del quiz. Llegó en 2 días, todo hecho para mi rutina. Lloré de emoción."
           </blockquote>
           <div style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 15, color: 'var(--liora-uva)', marginTop: 28 }}>

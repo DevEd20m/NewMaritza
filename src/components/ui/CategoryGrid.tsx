@@ -19,6 +19,7 @@ function CategoryCard({ slug, label, bg, accent, Icon, count }: CardProps) {
   return (
     <Link href={`/tienda?categoria=${slug}`} style={{ textDecoration: 'none', display: 'block' }}>
       <div
+        className="liora-category-card"
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
@@ -33,7 +34,7 @@ function CategoryCard({ slug, label, bg, accent, Icon, count }: CardProps) {
         <div style={{ position: 'absolute', top: 60, right: 60, width: 56, height: 56, background: 'var(--liora-crema)', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--liora-uva)' }}>
           <Icon size={28} weight="bold" />
         </div>
-        <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 32, lineHeight: 0.98, letterSpacing: '-0.02em', color: 'var(--liora-crema)', margin: 0, whiteSpace: 'pre-line', fontVariationSettings: "'opsz' 144,'SOFT' 60,'WONK' 0" }}>
+        <h3 className="liora-category-title" style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 32, lineHeight: 0.98, letterSpacing: '-0.02em', color: 'var(--liora-crema)', margin: 0, whiteSpace: 'pre-line', fontVariationSettings: "'opsz' 144,'SOFT' 60,'WONK' 0" }}>
           {label}
         </h3>
         {sub && (
@@ -50,7 +51,7 @@ interface Props { counts?: Record<string, number> }
 
 export function CategoryGrid({ counts = {} }: Props) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
+    <div className="liora-category-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
       {CARDS.map((card) => (
         <CategoryCard key={card.slug} {...card} count={counts[card.slug]} />
       ))}

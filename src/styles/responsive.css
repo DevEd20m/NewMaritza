@@ -1,0 +1,199 @@
+/* =====================================================
+   LIORA — Responsive Styles
+   Breakpoints: 900px (tablet), 768px (mobile-md), 480px (mobile-sm)
+   Uses !important to override inline styles in components.
+   ===================================================== */
+
+/* ── Header ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .liora-header {
+    padding: 14px 20px !important;
+    grid-template-columns: auto 1fr auto !important;
+    gap: 8px !important;
+  }
+  .liora-header-nav { display: none !important; }
+  .liora-header-menu-btn { display: flex !important; }
+  .liora-header-user-name { display: none !important; }
+}
+.liora-header-menu-btn { display: none; }
+
+/* Mobile nav overlay */
+.liora-mobile-nav {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--liora-uva);
+  z-index: 200;
+  flex-direction: column;
+  padding: 24px 28px;
+  gap: 0;
+}
+.liora-mobile-nav.open { display: flex; }
+.liora-mobile-nav-link {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 36px;
+  color: var(--liora-crema);
+  text-decoration: none;
+  padding: 16px 0;
+  border-bottom: 1.5px solid rgba(251,241,226,0.12);
+  letter-spacing: -0.02em;
+}
+.liora-mobile-nav-link:last-of-type { border-bottom: none; }
+
+/* ── Hero — homepage ─────────────────────────────────── */
+@media (max-width: 768px) {
+  .liora-hero-section {
+    padding: 48px 20px 64px !important;
+  }
+  .liora-hero-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
+  }
+  .liora-hero-cards { display: none !important; }
+  .liora-hero-title { font-size: 52px !important; }
+  .liora-hero-script { font-size: 56px !important; }
+  .liora-hero-body { font-size: 15px !important; margin-top: 16px !important; }
+  .liora-hero-ctas { flex-wrap: wrap !important; gap: 10px !important; }
+  .liora-hero-ctas a { font-size: 14px !important; padding: 13px 22px !important; }
+}
+
+/* ── Section padding ─────────────────────────────────── */
+@media (max-width: 768px) {
+  .liora-section-pad {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+  .liora-section-title {
+    font-size: 34px !important;
+    line-height: 1.05 !important;
+  }
+  .liora-section-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+    margin-bottom: 24px !important;
+  }
+}
+
+/* ── Category Grid ───────────────────────────────────── */
+@media (max-width: 900px) {
+  .liora-category-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 14px !important;
+  }
+}
+@media (max-width: 480px) {
+  .liora-category-grid { gap: 10px !important; }
+  .liora-category-card {
+    height: 180px !important;
+    padding: 18px !important;
+    border-radius: 20px !important;
+  }
+  .liora-category-title { font-size: 22px !important; }
+}
+
+/* ── Products grid (4-col) ───────────────────────────── */
+@media (max-width: 900px) {
+  .liora-grid-4 { grid-template-columns: repeat(2, 1fr) !important; }
+}
+@media (max-width: 480px) {
+  .liora-grid-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+}
+
+/* ── Reviews (3-col) ─────────────────────────────────── */
+@media (max-width: 900px) {
+  .liora-grid-3 { grid-template-columns: repeat(2, 1fr) !important; }
+}
+@media (max-width: 600px) {
+  .liora-grid-3 { grid-template-columns: 1fr !important; }
+}
+
+/* ── TikTok clips (4-col → horizontal scroll) ────────── */
+@media (max-width: 900px) {
+  .liora-tiktok-grid {
+    display: flex !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory;
+    gap: 12px !important;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 12px;
+    scrollbar-width: none;
+  }
+  .liora-tiktok-grid::-webkit-scrollbar { display: none; }
+  .liora-tiktok-grid > * {
+    flex: 0 0 180px !important;
+    scroll-snap-align: start;
+  }
+}
+
+/* ── Personalize section ─────────────────────────────── */
+@media (max-width: 900px) {
+  .liora-personalize-grid {
+    grid-template-columns: 1fr !important;
+    gap: 40px !important;
+  }
+  .liora-personalize-section {
+    padding: 64px 20px !important;
+    border-radius: 24px 24px 0 0 !important;
+  }
+  .liora-personalize-title { font-size: 44px !important; }
+  .liora-personalize-body { font-size: 16px !important; max-width: 100% !important; }
+}
+
+/* ── Testimonial band ────────────────────────────────── */
+@media (max-width: 768px) {
+  .liora-testimonial-section { padding: 64px 20px !important; }
+  .liora-testimonial-quote { font-size: 28px !important; }
+}
+
+/* ── KitCard ─────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .liora-kit-card { min-height: auto !important; }
+  .liora-kit-card-inner {
+    flex-direction: column !important;
+    gap: 16px !important;
+    padding: 24px !important;
+  }
+  .liora-kit-card-images { display: none !important; }
+  .liora-kit-card-title { font-size: 24px !important; }
+  .liora-kit-card-price { font-size: 22px !important; }
+}
+
+/* ── Footer ──────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .liora-footer-root { padding: 56px 24px 36px !important; }
+  .liora-footer-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 36px !important;
+  }
+}
+@media (max-width: 480px) {
+  .liora-footer-root { padding: 48px 20px 32px !important; }
+  .liora-footer-grid { grid-template-columns: 1fr !important; }
+}
+
+/* ── Shop page hero ──────────────────────────────────── */
+@media (max-width: 900px) {
+  .liora-shop-hero-section { padding: 56px 20px 64px !important; }
+  .liora-shop-hero-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
+  }
+  .liora-shop-hero-steps { display: none !important; }
+  .liora-shop-hero-title { font-size: 42px !important; }
+  .liora-shop-hero-body { font-size: 15px !important; }
+}
+
+/* ── Kits grid (2-col → 1-col) ───────────────────────── */
+@media (max-width: 640px) {
+  .liora-kits-grid { grid-template-columns: 1fr !important; }
+}
+
+/* ── Global section padding util ─────────────────────── */
+@media (max-width: 768px) {
+  .liora-px { padding-left: 20px !important; padding-right: 20px !important; }
+}
