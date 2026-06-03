@@ -14,6 +14,7 @@ export function buildBaseMetadata(overrides?: Partial<Metadata>): Metadata {
       siteName: SITE_NAME,
       locale: 'es_PE',
       type: 'website',
+      images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'LIORA — Bienestar personalizado' }],
     },
     twitter: { card: 'summary_large_image' },
     robots: { index: true, follow: true },

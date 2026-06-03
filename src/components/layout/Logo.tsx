@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 
 interface LogoProps {
   size?: number
@@ -6,37 +7,22 @@ interface LogoProps {
 }
 
 export function Logo({ size = 36, inverted = false }: LogoProps) {
-  const color = inverted ? '#FBF1E2' : '#3D1A3A'
+  const imgWidth = Math.round(size * 3.2)
   return (
     <Link href="/" className="relative inline-block" aria-label="LIORA — inicio">
-      <span
+      <Image
+        src="/logo.png"
+        alt="LIORA"
+        width={imgWidth}
+        height={size}
         style={{
-          fontFamily: 'var(--font-display)',
-          fontWeight: 900,
-          fontSize: size,
-          color,
-          letterSpacing: '-0.03em',
-          fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1",
-          lineHeight: 1,
+          height: size,
+          width: 'auto',
+          filter: inverted ? 'brightness(0) invert(1)' : 'none',
+          display: 'block',
         }}
-      >
-        LIORA
-      </span>
-      <span
-        aria-hidden
-        style={{
-          position: 'absolute',
-          top: -size * 0.18,
-          right: -size * 0.42,
-          color: '#C9F048',
-          fontFamily: 'var(--font-display)',
-          fontWeight: 900,
-          fontSize: size * 0.6,
-          lineHeight: 1,
-        }}
-      >
-        *
-      </span>
+        priority
+      />
     </Link>
   )
 }
