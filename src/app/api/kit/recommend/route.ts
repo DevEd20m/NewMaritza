@@ -118,6 +118,12 @@ export async function GET(request: NextRequest) {
 
   if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
 
+  // Auto-claim: if user is logged in and profile has no owner, link it now
+  if (user && !profile.user_id) {
+    await (admin as any).from('quiz_profiles').update({ user_id: user.id }).eq('id', profileId)
+    ;(profile as any).user_id = user.id
+  }
+
   // Allow access if: authenticated user owns the profile, OR session_token matches
   const ownsProfile =
     (user && profile.user_id === user.id) ||
