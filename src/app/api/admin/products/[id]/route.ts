@@ -16,6 +16,7 @@ const schema = z.object({
   sku: z.string().optional(),
   price_cents: z.number().int().positive(),
   compare_at_cents: z.number().int().positive().nullable().optional(),
+  tag_ids: z.array(z.string().uuid()).optional(),
 })
 
 export async function PUT(
@@ -35,7 +36,7 @@ export async function PUT(
       return NextResponse.json({ error: msg || 'Datos inválidos' }, { status: 400 })
     }
 
-    const { name, description, brand, category_id, cover_image_url, is_active, stock_quantity, variant_id, variant_name, sku, price_cents, compare_at_cents } = parsed.data
+    const { name, description, brand, category_id, cover_image_url, is_active, stock_quantity, variant_id, variant_name, sku, price_cents, compare_at_cents, tag_ids } = parsed.data
     const admin = createAdminClient()
 
     await (admin as any).from('products').update({
@@ -72,6 +73,16 @@ export async function PUT(
           compare_at_cents: compare_at_cents ?? null,
           effective_from: new Date().toISOString(),
         })
+      }
+    }
+
+    // Sync product tags
+    if (tag_ids !== undefined) {
+      await (admin as any).from('product_tags').delete().eq('product_id', id)
+      if (tag_ids.length > 0) {
+        await (admin as any).from('product_tags').insert(
+          tag_ids.map(tag_id => ({ product_id: id, tag_id }))
+        )
       }
     }
 

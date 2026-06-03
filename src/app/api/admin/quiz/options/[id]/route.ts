@@ -6,6 +6,7 @@ import { requireAdmin } from '@/lib/auth/guards'
 const schema = z.object({
   text: z.string().min(1).optional(),
   slug: z.string().min(1).optional(),
+  tag_ids: z.array(z.string().uuid()).optional(),
 })
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {

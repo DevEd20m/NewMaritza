@@ -2,7 +2,8 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Plus, X, FloppyDisk, Trash, Package, UploadSimple, ArrowSquareOut } from '@phosphor-icons/react'
+import { Plus, X, FloppyDisk, Trash, Package, UploadSimple, ArrowSquareOut, Tag } from '@phosphor-icons/react'
+import type { AdminTag } from './TagsClient'
 
 const CAT_COLORS: Record<string, string> = {
   gym:         'var(--cat-durazno)',
@@ -33,6 +34,7 @@ export interface AdminProductData {
   sku: string | null
   price_cents: number | null
   compare_at_cents: number | null
+  tag_ids: string[]
 }
 
 interface ProductForm {
@@ -47,12 +49,13 @@ interface ProductForm {
   sku: string
   price: string
   compare_at: string
+  tag_ids: string[]
 }
 
 const EMPTY_FORM: ProductForm = {
   name: '', description: '', brand: '', category_id: '',
   cover_image_url: '', is_active: true, stock_quantity: null,
-  variant_name: '', sku: '', price: '', compare_at: '',
+  variant_name: '', sku: '', price: '', compare_at: '', tag_ids: [],
 }
 
 function Field({ label, hint, required, children }: { label: string; hint?: string; required?: boolean; children: React.ReactNode }) {
@@ -87,11 +90,13 @@ function ProductDrawer({
   editing,
   onClose,
   categories,
+  tags,
   onSaved,
 }: {
   editing: 'new' | AdminProductData | null
   onClose: () => void
   categories: AdminCategory[]
+  tags: AdminTag[]
   onSaved: () => void
 }) {
   const isNew = editing === 'new'
@@ -118,6 +123,7 @@ function ProductDrawer({
         sku: p.sku ?? '',
         price: p.price_cents ? String(Math.round(p.price_cents / 100)) : '',
         compare_at: p.compare_at_cents ? String(Math.round(p.compare_at_cents / 100)) : '',
+        tag_ids: p.tag_ids ?? [],
       })
     }
     setError(null)
@@ -174,6 +180,7 @@ function ProductDrawer({
             sku: form.sku || undefined,
             price_cents: priceCents,
             compare_at_cents: compareAtCents,
+            tag_ids: form.tag_ids,
           }),
         })
         if (!res.ok) { const d = await res.json(); setError(d.error ?? 'Error al guardar'); return }
@@ -286,6 +293,54 @@ function ProductDrawer({
             </Field>
           </Section>
 
+          {/* Tags */}
+          {tags.length > 0 && (
+            <Section title="Tags de recomendación">
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--liora-uva)', opacity: 0.6, marginBottom: 4 }}>
+                Conecta este producto con las respuestas del cuestionario. Selecciona todos los que apliquen.
+              </div>
+              {(['objetivo', 'actividad', 'piel'] as const).map(group => {
+                const groupTags = tags.filter(t => t.group === group)
+                if (!groupTags.length) return null
+                const groupLabel: Record<string, string> = { objetivo: 'Objetivo', actividad: 'Actividad', piel: 'Tipo de piel' }
+                return (
+                  <div key={group}>
+                    <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 10, color: 'var(--liora-uva)', opacity: 0.5, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8 }}>{groupLabel[group]}</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                      {groupTags.map(tag => {
+                        const selected = form.tag_ids.includes(tag.id)
+                        return (
+                          <button
+                            key={tag.id}
+                            type="button"
+                            onClick={() => set('tag_ids', selected ? form.tag_ids.filter(id => id !== tag.id) : [...form.tag_ids, tag.id])}
+                            style={{
+                              background: selected ? 'var(--liora-uva)' : 'var(--liora-blanco)',
+                              color: selected ? 'var(--liora-crema)' : 'var(--liora-uva)',
+                              border: `1.5px solid ${selected ? 'var(--liora-uva)' : 'var(--liora-arena)'}`,
+                              borderRadius: 999, padding: '5px 12px',
+                              fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 11,
+                              cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5,
+                              transition: 'all 120ms',
+                            }}
+                          >
+                            {selected && <Tag size={10} weight="bold" />}
+                            {tag.name}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )
+              })}
+              {form.tag_ids.length > 0 && (
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--liora-uva)', opacity: 0.55 }}>
+                  {form.tag_ids.length} tag{form.tag_ids.length !== 1 ? 's' : ''} seleccionado{form.tag_ids.length !== 1 ? 's' : ''}
+                </div>
+              )}
+            </Section>
+          )}
+
           {/* Variant + pricing */}
           <Section title="Presentación y precio">
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
@@ -371,9 +426,11 @@ function ProductDrawer({
 export function ProductsClient({
   products: initialProducts,
   categories,
+  tags,
 }: {
   products: AdminProductData[]
   categories: AdminCategory[]
+  tags: AdminTag[]
 }) {
   const router = useRouter()
   const [editing, setEditing] = useState<'new' | AdminProductData | null>(null)
@@ -495,6 +552,7 @@ export function ProductsClient({
         editing={editing}
         onClose={() => setEditing(null)}
         categories={categories}
+        tags={tags}
         onSaved={() => router.refresh()}
       />
     </div>

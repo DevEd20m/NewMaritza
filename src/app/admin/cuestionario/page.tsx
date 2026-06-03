@@ -1,17 +1,18 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { Metadata } from 'next'
 import { CuestionarioClient, type AdminQuizGroup, type AdminLead, type AdminMiniKit } from '@/components/admin/CuestionarioClient'
+import type { AdminTag } from '@/components/admin/TagsClient'
 
 export const metadata: Metadata = { title: 'Cuestionario — Admin LIORA' }
 
 export default async function AdminCuestionarioPage() {
   const admin = createAdminClient()
 
-  const [{ data: groupsRaw }, { data: leadsRaw }, { count: totalProfiles }, { data: miniTemplatesRaw }] = await Promise.all([
+  const [{ data: groupsRaw }, { data: leadsRaw }, { count: totalProfiles }, { data: miniTemplatesRaw }, { data: tagsRaw }] = await Promise.all([
     // Main quiz groups + questions + options
     (admin as any)
       .from('quiz_question_groups')
-      .select('id, title, sort_order, interstitial_text, quiz_questions(id, text, subtext, type, sort_order, conditions, quiz_question_options!question_id(id, text, slug, sort_order))')
+      .select('id, title, sort_order, interstitial_text, quiz_questions(id, text, subtext, type, sort_order, conditions, quiz_question_options!question_id(id, text, slug, sort_order, tag_ids))')
       .eq('template_id', '55550001-0000-0000-0000-000000000001')
       .order('sort_order'),
 
@@ -32,10 +33,14 @@ export default async function AdminCuestionarioPage() {
           )
         )`)
       .not('kit_id', 'is', null),
+
+    // Tags for option tag_ids assignment
+    (admin as any).from('tags').select('id, name, slug, group').order('group').order('name'),
   ])
 
   const groups: AdminQuizGroup[] = (groupsRaw ?? []) as AdminQuizGroup[]
   const leads: AdminLead[] = (leadsRaw ?? []) as AdminLead[]
+  const tags: AdminTag[] = ((tagsRaw ?? []) as AdminTag[]).map(t => ({ ...t, product_count: 0 }))
 
   // Shape mini-kit data for the client
   const miniKits: AdminMiniKit[] = ((miniTemplatesRaw ?? []) as any[]).map(t => ({
@@ -79,6 +84,7 @@ export default async function AdminCuestionarioPage() {
       leads={leads}
       totalProfiles={totalProfiles ?? 0}
       topOptions={topOptions}
+      tags={tags}
     />
   )
 }

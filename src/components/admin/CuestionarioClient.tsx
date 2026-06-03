@@ -1,9 +1,10 @@
 'use client'
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { PencilSimple, Check, X, ChatCircle, Funnel, Export, Warning, ArrowSquareOut, Users, ChartBar } from '@phosphor-icons/react'
+import { PencilSimple, Check, X, ChatCircle, Funnel, Export, Warning, ArrowSquareOut, Users, ChartBar, Tag } from '@phosphor-icons/react'
+import type { AdminTag } from './TagsClient'
 
-export interface AdminQuizOption { id: string; text: string; slug: string; sort_order: number }
+export interface AdminQuizOption { id: string; text: string; slug: string; sort_order: number; tag_ids: string[] }
 
 export interface AdminQuizQuestion {
   id: string; text: string; subtext: string | null; type: 'single' | 'multi'
@@ -31,6 +32,7 @@ interface Props {
   leads: AdminLead[]
   totalProfiles: number
   topOptions: { question_text: string; option_text: string; count: number }[]
+  tags: AdminTag[]
 }
 
 const KIT_COLORS: Record<string, string> = {
@@ -87,8 +89,64 @@ function InlineEdit({ value, onSave, multiline = false, placeholder, style }: {
   )
 }
 
+// ─── Tag picker for quiz options ───────────────────────────────────────────
+function TagPicker({ optionId, selectedIds, tags, onSave }: {
+  optionId: string; selectedIds: string[]; tags: AdminTag[]
+  onSave: (ids: string[]) => Promise<void>
+}) {
+  const [open, setOpen] = useState(false)
+  const [ids, setIds] = useState(selectedIds)
+  const [saving, setSaving] = useState(false)
+
+  const toggle = (id: string) => setIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
+  const save = async () => { setSaving(true); await onSave(ids); setSaving(false); setOpen(false) }
+
+  if (!open) return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, alignItems: 'center' }}>
+      {ids.length === 0 ? (
+        <button onClick={() => setOpen(true)} style={{ background: 'transparent', border: '1px dashed var(--liora-arena)', borderRadius: 6, padding: '2px 8px', fontFamily: 'var(--font-body)', fontSize: 9, color: 'var(--liora-uva)', opacity: 0.5, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+          <Tag size={8} /> asignar tags
+        </button>
+      ) : (
+        <>
+          {ids.map(id => {
+            const tag = tags.find(t => t.id === id)
+            return tag ? (
+              <span key={id} style={{ background: 'var(--liora-uva)', color: 'var(--liora-crema)', borderRadius: 999, padding: '2px 7px', fontFamily: 'var(--font-body)', fontSize: 9, fontWeight: 600 }}>{tag.name}</span>
+            ) : null
+          })}
+          <button onClick={() => setOpen(true)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--liora-uva)', opacity: 0.4, padding: 0 }}>
+            <PencilSimple size={9} />
+          </button>
+        </>
+      )}
+    </div>
+  )
+
+  return (
+    <div style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-uva)', borderRadius: 8, padding: 8 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8 }}>
+        {tags.map(tag => {
+          const sel = ids.includes(tag.id)
+          return (
+            <button key={tag.id} onClick={() => toggle(tag.id)} style={{ background: sel ? 'var(--liora-uva)' : 'transparent', color: sel ? 'var(--liora-crema)' : 'var(--liora-uva)', border: `1px solid ${sel ? 'var(--liora-uva)' : 'var(--liora-arena)'}`, borderRadius: 999, padding: '2px 8px', fontFamily: 'var(--font-body)', fontSize: 9, fontWeight: 600, cursor: 'pointer' }}>
+              {tag.name}
+            </button>
+          )
+        })}
+      </div>
+      <div style={{ display: 'flex', gap: 4 }}>
+        <button onClick={save} disabled={saving} style={{ background: 'var(--liora-uva)', color: 'var(--liora-crema)', border: 'none', borderRadius: 6, padding: '3px 10px', fontFamily: 'var(--font-body)', fontSize: 9, fontWeight: 700, cursor: 'pointer' }}>
+          {saving ? '…' : 'Guardar'}
+        </button>
+        <button onClick={() => { setIds(selectedIds); setOpen(false) }} style={{ background: 'transparent', border: '1px solid var(--liora-arena)', borderRadius: 6, padding: '3px 8px', fontFamily: 'var(--font-body)', fontSize: 9, cursor: 'pointer', color: 'var(--liora-uva)' }}>✕</button>
+      </div>
+    </div>
+  )
+}
+
 // ─── Question tree (reused for main quiz and mini-quizzes) ─────────────────
-function QuestionTree({ groups, onPatch }: { groups: AdminQuizGroup[]; onPatch: (url: string, body: Record<string, unknown>) => Promise<void> }) {
+function QuestionTree({ groups, onPatch, tags = [] }: { groups: AdminQuizGroup[]; onPatch: (url: string, body: Record<string, unknown>) => Promise<void>; tags?: AdminTag[] }) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set(groups.map(g => g.id)))
 
   return (
@@ -155,18 +213,27 @@ function QuestionTree({ groups, onPatch }: { groups: AdminQuizGroup[]; onPatch: 
                       <InlineEdit value={q.subtext ?? ''} placeholder="Sin descripción — click para agregar" onSave={v => onPatch(`/api/admin/quiz/questions/${q.id}`, { subtext: v || null })} style={{ fontFamily: 'var(--font-body)', fontSize: 13 }} />
                     </div>
                     {/* Options grid */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 6, marginTop: 10 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 6, marginTop: 10 }}>
                       {q.quiz_question_options.sort((a, b) => a.sort_order - b.sort_order).map(opt => (
                         <div key={opt.id} style={{ background: 'var(--liora-crema)', border: '1.5px solid var(--liora-arena)', borderRadius: 10, padding: '8px 12px' }}>
                           <div style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13, color: 'var(--liora-uva)', marginBottom: 3 }}>
                             <InlineEdit value={opt.text} onSave={v => onPatch(`/api/admin/quiz/options/${opt.id}`, { text: v })} style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13 }} />
                           </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 6 }}>
                             <span style={{ fontFamily: 'var(--font-body)', fontSize: 9, opacity: 0.4 }}>slug:</span>
                             <code style={{ fontFamily: 'monospace', fontSize: 9, background: 'var(--liora-arena)', borderRadius: 4, padding: '1px 5px', color: 'var(--liora-uva)' }}>
                               <InlineEdit value={opt.slug} onSave={v => onPatch(`/api/admin/quiz/options/${opt.id}`, { slug: v })} style={{ fontFamily: 'monospace', fontSize: 9 }} />
                             </code>
                           </div>
+                          {/* Tag picker */}
+                          {tags.length > 0 && (
+                            <TagPicker
+                              optionId={opt.id}
+                              selectedIds={opt.tag_ids ?? []}
+                              tags={tags}
+                              onSave={ids => onPatch(`/api/admin/quiz/options/${opt.id}`, { tag_ids: ids })}
+                            />
+                          )}
                         </div>
                       ))}
                     </div>
@@ -182,7 +249,7 @@ function QuestionTree({ groups, onPatch }: { groups: AdminQuizGroup[]; onPatch: 
 }
 
 // ─── Main component ────────────────────────────────────────────────────────
-export function CuestionarioClient({ groups, miniKits, leads, totalProfiles, topOptions }: Props) {
+export function CuestionarioClient({ groups, miniKits, leads, totalProfiles, topOptions, tags }: Props) {
   const router = useRouter()
   const [view, setView] = useState<'main' | 'mini' | 'leads' | 'analytics'>('main')
   const [selectedMiniKit, setSelectedMiniKit] = useState<string | null>(null)
@@ -271,7 +338,7 @@ export function CuestionarioClient({ groups, miniKits, leads, totalProfiles, top
               <ArrowSquareOut size={12} weight="bold" /> Ver en vivo
             </a>
           </div>
-          <QuestionTree groups={groups} onPatch={patch} />
+          <QuestionTree groups={groups} onPatch={patch} tags={tags} />
         </div>
       )}
 
@@ -319,7 +386,7 @@ export function CuestionarioClient({ groups, miniKits, leads, totalProfiles, top
                   <ArrowSquareOut size={12} weight="bold" /> Ver página del kit
                 </a>
               </div>
-              <QuestionTree groups={activeMiniKit.groups} onPatch={patch} />
+              <QuestionTree groups={activeMiniKit.groups} onPatch={patch} tags={tags} />
             </div>
           )}
         </div>

@@ -105,7 +105,7 @@ function OrderDrawer({
 }: {
   order: AdminOrderData | null
   onClose: () => void
-  onStatusChange: (orderId: string, status: string) => Promise<void>
+  onStatusChange: (orderId: string, status: string, trackingNumber?: string) => Promise<void>
   loading: boolean
 }) {
   const [trackingNumber, setTrackingNumber] = useState('')
@@ -120,7 +120,7 @@ function OrderDrawer({
   const isCancelled = order.status === 'cancelled' || order.status === 'refunded'
 
   const handleStatus = async (status: string) => {
-    await onStatusChange(order.id, status)
+    await onStatusChange(order.id, status, status === 'shipped' ? trackingNumber : undefined)
   }
 
   return (
@@ -342,13 +342,13 @@ export function PedidosClient({
 
   const openOrder = openOrderId ? orders.find(o => o.id === openOrderId) ?? null : null
 
-  const handleStatusChange = async (orderId: string, status: string) => {
+  const handleStatusChange = async (orderId: string, status: string, trackingNumber?: string) => {
     setLoading(true)
     try {
       await fetch(`/api/admin/orders/${orderId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ status, ...(trackingNumber ? { trackingNumber } : {}) }),
       })
       setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o))
       router.refresh()
