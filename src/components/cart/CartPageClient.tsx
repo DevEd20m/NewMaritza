@@ -58,8 +58,12 @@ export function CartPageClient() {
     hasFetched.current = true
     setKitLoading(true)
     fetch(`/api/kit/recommend?profileId=${encodeURIComponent(profileId)}`)
-      .then((r) => r.json())
-      .then((data: KitData) => {
+      .then(async (r) => {
+        const data = await r.json()
+        if (!r.ok) throw new Error(data.error ?? `Error ${r.status}`)
+        return data as KitData
+      })
+      .then((data) => {
         setKitData(data)
         setSuggestions(data.suggestions ?? [])
         // Save to localStorage so home page can offer "resume" banner

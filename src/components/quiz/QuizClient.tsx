@@ -138,6 +138,11 @@ export function QuizClient({ templateId, groups, isLoggedIn = false }: Props) {
         setProfileId(data.profileId)
         complete()
 
+        // Save session token to cookie so the recommend route can verify ownership
+        if (data.sessionToken) {
+          document.cookie = `liora_session=${data.sessionToken}; path=/; max-age=2592000; SameSite=Lax`
+        }
+
         // Send magic link so the lead can create / log into their account
         // Non-blocking: user goes to kit immediately, email arrives in background
         if (leadEmail) {
