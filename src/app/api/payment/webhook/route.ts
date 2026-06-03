@@ -53,6 +53,24 @@ export async function POST(request: NextRequest) {
         created_by: 'stripe_webhook',
       })
 
+      // Decrement stock for tracked variants
+      if (newStatus === 'paid') {
+        const { data: items } = await admin
+          .from('order_items')
+          .select('variant_id, quantity')
+          .eq('order_id', webhookEvent.orderId)
+
+        if (items) {
+          for (const item of items) {
+            if (!item.variant_id) continue
+            await (admin as any).rpc('decrement_variant_stock', {
+              p_variant_id: item.variant_id,
+              p_qty: item.quantity,
+            })
+          }
+        }
+      }
+
       // Increment coupon used_count on successful payment
       if (newStatus === 'paid' && (order as any).coupon_id) {
         await (admin as any).rpc('increment_coupon_used_count', { p_coupon_id: (order as any).coupon_id })

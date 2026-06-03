@@ -25,7 +25,8 @@ export function buildBaseMetadata(overrides?: Partial<Metadata>): Metadata {
 export function buildProductMetadata(product: Product, priceCents?: number): Metadata {
   const title = product.name
   const description = product.description ?? DEFAULT_DESCRIPTION
-  const imageUrl = product.cover_image_url ?? undefined
+  const priceParam = priceCents ? `&price=${Math.round(priceCents / 100)}` : ''
+  const ogImage = `${SITE_URL}/api/og?type=product&slug=${encodeURIComponent(product.slug)}${priceParam}`
 
   return buildBaseMetadata({
     title,
@@ -33,7 +34,7 @@ export function buildProductMetadata(product: Product, priceCents?: number): Met
     openGraph: {
       title,
       description,
-      images: imageUrl ? [{ url: imageUrl, alt: product.name }] : [],
+      images: [{ url: ogImage, width: 1200, height: 630, alt: product.name }],
       type: 'website',
     },
     alternates: { canonical: `/tienda/${product.slug}` },
@@ -70,14 +71,17 @@ export function buildProductJsonLd(product: Product, priceCents?: number) {
   }
 }
 
-export function buildKitMetadata(kit: Kit): Metadata {
+export function buildKitMetadata(kit: Kit, priceCents?: number): Metadata {
+  const priceParam = priceCents ? `&price=${Math.round(priceCents / 100)}` : ''
+  const ogImage = `${SITE_URL}/api/og?type=kit&slug=${encodeURIComponent(kit.slug)}${priceParam}`
+
   return buildBaseMetadata({
     title: kit.name,
     description: kit.description ?? DEFAULT_DESCRIPTION,
     openGraph: {
       title: kit.name,
       description: kit.description ?? DEFAULT_DESCRIPTION,
-      images: kit.cover_image_url ? [{ url: kit.cover_image_url, alt: kit.name }] : [],
+      images: [{ url: ogImage, width: 1200, height: 630, alt: kit.name }],
       type: 'website',
     },
     alternates: { canonical: `/tienda/kit/${kit.slug}` },

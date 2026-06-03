@@ -25,7 +25,7 @@ const RATE_LIMITED_PATHS: Record<string, { limit: number; windowMs: number }> = 
 }
 
 // ─── Rutas que requieren sesión activa (redirect a /login si no) ──────────────
-const AUTH_REQUIRED_PREFIXES = ['/cuenta', '/pagar', '/confirmado']
+const AUTH_REQUIRED_PREFIXES = ['/cuenta']
 
 // ─── Rutas admin (redirect a / si no es admin → la API retorna 403 igualmente) ─
 const ADMIN_PREFIXES = ['/admin']
