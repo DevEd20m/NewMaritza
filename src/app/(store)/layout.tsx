@@ -4,15 +4,17 @@ import { Footer } from '@/components/layout/Footer'
 import { CartDrawer } from '@/components/layout/CartDrawer'
 import { LiveActivityToast } from '@/components/urgency/LiveActivityToast'
 import { ExitIntentModal } from '@/components/urgency/ExitIntentModal'
+import { WhatsAppButton } from '@/components/layout/WhatsAppButton'
 import { createClient } from '@/lib/supabase/server'
 import { getStoreSettings } from '@/lib/settings'
 
 export default async function StoreLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
-  const [{ data: { user } }, settings] = await Promise.all([
-    supabase.auth.getUser(),
+  const [authResult, settings] = await Promise.all([
+    supabase.auth.getUser().catch(() => ({ data: { user: null } })),
     getStoreSettings(),
   ])
+  const user = authResult.data.user
 
   let profile = null
   if (user) {
@@ -38,6 +40,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
       />
       <LiveActivityToast />
       <ExitIntentModal />
+      <WhatsAppButton />
     </>
   )
 }

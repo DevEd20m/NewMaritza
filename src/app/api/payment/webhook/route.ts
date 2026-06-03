@@ -58,6 +58,24 @@ export async function POST(request: NextRequest) {
         await (admin as any).rpc('increment_coupon_used_count', { p_coupon_id: (order as any).coupon_id })
       }
 
+      // Enviar email de guía de uso (Day 0) — fire and forget
+      if (newStatus === 'paid') {
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://liora.pe'
+        fetch(`${siteUrl}/api/email/send-guide`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId: webhookEvent.orderId, type: 'day0' }),
+        }).catch(() => {}) // silent — no bloquea el webhook
+
+        // Guardar en cola para Day 7
+        await (admin as any).from('email_queue').insert({
+          order_id: webhookEvent.orderId,
+          type: 'day7',
+          scheduled_for: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          sent: false,
+        }).catch(() => {}) // silent si la tabla no existe aún
+      }
+
       if (paymentRecord) {
         await admin.from('payment_events').update({ processed: true }).eq('payment_id', paymentRecord.id).eq('event_type', webhookEvent.type)
       }

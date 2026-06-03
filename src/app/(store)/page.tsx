@@ -33,6 +33,21 @@ async function getCategories() {
   return (data as Category[]) ?? []
 }
 
+async function getCategoryCounts(): Promise<Record<string, number>> {
+  const supabase = await createClient()
+  const { data } = await (supabase as any)
+    .from('products')
+    .select('categories(slug)')
+    .eq('is_active', true)
+  if (!data) return {}
+  const counts: Record<string, number> = {}
+  for (const row of (data as Array<{ categories: { slug: string } | null }>) ) {
+    const slug = row.categories?.slug
+    if (slug) counts[slug] = (counts[slug] ?? 0) + 1
+  }
+  return counts
+}
+
 const CATEGORY_COLORS: Record<string, string> = {
   gym: 'var(--cat-durazno)',
   'skin-care': 'var(--cat-coral)',
@@ -106,7 +121,9 @@ async function getHomeUserData() {
 }
 
 export default async function HomePage() {
-  const [products, categories, userData, publicCoupons] = await Promise.all([getFeaturedProducts(), getCategories(), getHomeUserData(), getPublicCoupons()])
+  const [products, categories, userData, publicCoupons, categoryCounts] = await Promise.all([
+    getFeaturedProducts(), getCategories(), getHomeUserData(), getPublicCoupons(), getCategoryCounts(),
+  ])
 
   return (
     <div>
@@ -183,7 +200,7 @@ export default async function HomePage() {
               Ver todas <ArrowRight size={14} weight="bold" />
             </Link>
           </div>
-          <CategoryGrid />
+          <CategoryGrid counts={categoryCounts} />
         </div>
       </section>
 
