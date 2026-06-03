@@ -40,7 +40,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
       />
       <LiveActivityToast />
       <ExitIntentModal />
-      <WhatsAppButton />
+      <WhatsAppButton number={settings.whatsapp_number} />
     </>
   )
 }

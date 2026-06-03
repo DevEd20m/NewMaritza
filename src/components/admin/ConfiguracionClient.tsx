@@ -7,6 +7,7 @@ export function ConfiguracionClient({ initial }: { initial: StoreSettings }) {
   const [threshold, setThreshold] = useState(String(initial.free_shipping_threshold_cents / 100))
   const [shippingCost, setShippingCost] = useState(String(initial.shipping_cost_cents / 100))
   const [deliveryMessage, setDeliveryMessage] = useState(initial.delivery_message)
+  const [whatsappNumber, setWhatsappNumber] = useState(initial.whatsapp_number)
 
   const [saving, setSaving] = useState(false)
   const [status, setStatus] = useState<'idle' | 'ok' | 'error'>('idle')
@@ -22,6 +23,7 @@ export function ConfiguracionClient({ initial }: { initial: StoreSettings }) {
           free_shipping_threshold_cents: Math.round(Number(threshold) * 100),
           shipping_cost_cents: Math.round(Number(shippingCost) * 100),
           delivery_message: deliveryMessage.trim(),
+          whatsapp_number: whatsappNumber.trim().replace(/\D/g, ''),
         }),
       })
       const data = await res.json()
@@ -53,6 +55,21 @@ export function ConfiguracionClient({ initial }: { initial: StoreSettings }) {
           <Field label="Costo de envío (S/)" hint="Aplicado cuando el pedido no alcanza el mínimo">
             <NumericInput value={shippingCost} onChange={setShippingCost} prefix="S/" />
           </Field>
+        </Section>
+
+        <div style={{ height: 1, background: 'var(--liora-arena)' }} />
+
+        <Section title="WhatsApp">
+          <Field label="Número de WhatsApp" hint="Con código de país, sin +. Ej: 51987654321">
+            <TextInput
+              value={whatsappNumber}
+              onChange={setWhatsappNumber}
+              placeholder="51987654321"
+            />
+          </Field>
+          {whatsappNumber && (
+            <Preview text={`wa.me/${whatsappNumber.replace(/\D/g, '')}`} />
+          )}
         </Section>
 
         <div style={{ height: 1, background: 'var(--liora-arena)' }} />

@@ -2,10 +2,10 @@
 import { useState, useEffect } from 'react'
 import { WhatsappLogo, X } from '@phosphor-icons/react'
 
-const WA_NUMBER  = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '51999999999'
 const WA_MESSAGE = '¡Hola! Tengo una pregunta sobre los productos LIORA 🌿'
 
-export function WhatsAppButton() {
+export function WhatsAppButton({ number }: { number?: string }) {
+  const waNumber = number ?? process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '51999999999'
   const [visible, setVisible] = useState(false)
   const [tooltip, setTooltip] = useState(true)
 
@@ -24,7 +24,7 @@ export function WhatsAppButton() {
 
   if (!visible) return null
 
-  const waUrl = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(WA_MESSAGE)}`
+  const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(WA_MESSAGE)}`
 
   return (
     <>

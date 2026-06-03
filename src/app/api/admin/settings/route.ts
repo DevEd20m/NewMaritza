@@ -7,6 +7,7 @@ const schema = z.object({
   free_shipping_threshold_cents: z.number().int().min(0),
   shipping_cost_cents: z.number().int().min(0),
   delivery_message: z.string().min(1).max(120),
+  whatsapp_number: z.string().regex(/^\d{7,15}$/, 'Número inválido (solo dígitos, con código de país)'),
 })
 
 async function requireAdmin() {
