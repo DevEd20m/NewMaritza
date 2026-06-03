@@ -1,59 +1,52 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { Metadata } from 'next'
+import { PedidosClient, type AdminOrderData } from '@/components/admin/PedidosClient'
 
-export const metadata: Metadata = { title: 'Admin — Pedidos' }
-
-const STATUS_LABELS: Record<string, string> = {
-  pending_payment: 'Pend. pago', paid: 'Pagado', processing: 'Procesando',
-  shipped: 'Enviado', delivered: 'Entregado', cancelled: 'Cancelado', refunded: 'Reembolsado',
-}
-const STATUS_COLORS: Record<string, string> = {
-  pending_payment: 'var(--color-warning-bg)', paid: 'var(--color-info-bg)',
-  processing: 'var(--cat-cielo)', shipped: 'var(--cat-menta)',
-  delivered: 'var(--color-success-bg)', cancelled: 'var(--color-error-bg)', refunded: 'var(--cat-lavanda)',
-}
-
-interface AdminOrder { id: string; order_number: string; guest_email: string | null; guest_name: string | null; status: string; total_cents: number; created_at: string; order_items: Array<{ product_name_snapshot: string; quantity: number }> }
+export const metadata: Metadata = { title: 'Pedidos — Admin LIORA' }
 
 export default async function AdminOrdersPage() {
   const admin = createAdminClient()
-  const { data: ordersRaw } = await admin
-    .from('orders')
-    .select('*, order_items(product_name_snapshot, quantity)')
-    .order('created_at', { ascending: false })
-    .limit(50)
-  const orders = ordersRaw as AdminOrder[] | null
 
-  return (
-    <div>
-      <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 40, color: 'var(--liora-uva)', margin: '0 0 32px' }}>Pedidos</h1>
-      <div style={{ background: 'var(--liora-blanco)', borderRadius: 20, border: '1.5px solid var(--liora-arena)', overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-body)', fontSize: 14 }}>
-          <thead style={{ background: 'var(--liora-crema)' }}>
-            <tr>
-              {['Número', 'Cliente', 'Productos', 'Estado', 'Total', 'Fecha'].map((h) => (
-                <th key={h} style={{ padding: '12px 20px', textAlign: 'left', fontWeight: 700, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', opacity: 0.7 }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {(orders ?? []).map((order, i) => (
-              <tr key={order.id} style={{ borderTop: '1.5px solid var(--liora-arena)', background: i % 2 === 0 ? 'transparent' : 'rgba(251,241,226,0.3)' }}>
-                <td style={{ padding: '14px 20px', fontWeight: 700 }}>{order.order_number}</td>
-                <td style={{ padding: '14px 20px', opacity: 0.8 }}>{order.guest_email ?? order.guest_name ?? '—'}</td>
-                <td style={{ padding: '14px 20px', opacity: 0.7 }}>{order.order_items?.length} items</td>
-                <td style={{ padding: '14px 20px' }}>
-                  <span style={{ background: STATUS_COLORS[order.status] ?? 'var(--cat-uva-clara)', padding: '4px 10px', borderRadius: 999, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                    {STATUS_LABELS[order.status] ?? order.status}
-                  </span>
-                </td>
-                <td style={{ padding: '14px 20px', fontWeight: 700 }}>S/{(order.total_cents / 100).toFixed(0)}</td>
-                <td style={{ padding: '14px 20px', opacity: 0.65 }}>{new Date(order.created_at).toLocaleDateString('es-PE')}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  )
+  const { data: ordersRaw } = await (admin as any)
+    .from('orders')
+    .select(`
+      id, order_number, guest_email, guest_name, guest_phone, user_id,
+      status, total_cents, subtotal_cents, discount_cents, created_at,
+      order_items(id, product_name_snapshot, variant_name_snapshot, quantity, unit_price_cents),
+      addresses!shipping_address_id(first_name, last_name, phone, address_line1, address_line2, district, city)
+    `)
+    .order('created_at', { ascending: false })
+    .limit(200)
+
+  const ordersRaw2 = (ordersRaw ?? []) as Array<{
+    id: string; order_number: string; guest_email: string | null; guest_name: string | null
+    guest_phone: string | null; user_id: string | null; status: string
+    total_cents: number; subtotal_cents: number; discount_cents: number; created_at: string
+    order_items: Array<{ id: string; product_name_snapshot: string; variant_name_snapshot: string; quantity: number; unit_price_cents: number }>
+    addresses: { first_name: string; last_name: string; phone: string | null; address_line1: string; address_line2: string | null; district: string | null; city: string } | null
+  }>
+
+  const orders: AdminOrderData[] = ordersRaw2.map(o => ({
+    id: o.id,
+    order_number: o.order_number,
+    guest_name: o.guest_name,
+    guest_email: o.guest_email,
+    guest_phone: o.guest_phone,
+    user_id: o.user_id,
+    profile_first_name: null,
+    profile_last_name: null,
+    status: o.status,
+    total_cents: o.total_cents,
+    subtotal_cents: o.subtotal_cents,
+    discount_cents: o.discount_cents,
+    created_at: o.created_at,
+    items: o.order_items ?? [],
+    address: o.addresses ?? null,
+  }))
+
+  const totalRevenue = orders
+    .filter(o => o.status !== 'cancelled' && o.status !== 'refunded')
+    .reduce((s, o) => s + o.total_cents, 0)
+
+  return <PedidosClient orders={orders} totalRevenue={totalRevenue} />
 }

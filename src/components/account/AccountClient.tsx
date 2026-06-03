@@ -20,6 +20,7 @@ export interface AccountKitItem {
   categoryName: string
   categoryColor: string
   imageUrl: string | null
+  priceCents: number
 }
 
 export interface AccountCoupon {
@@ -36,6 +37,7 @@ export interface AccountAddress {
   last_name: string
   address_line1: string
   address_line2: string | null
+  district: string | null
   city: string
   state: string | null
   postal_code: string | null
@@ -97,7 +99,7 @@ function TabHeader({ eyebrow, title }: { eyebrow: string; title: string }) {
   )
 }
 
-function OrderRow({ order, onDetail }: { order: AccountOrder; onDetail?: () => void }) {
+function OrderRow({ order }: { order: AccountOrder }) {
   const s = STATUS_MAP[order.status] ?? { label: order.status, color: 'var(--cat-lavanda)' }
   return (
     <article style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 20, padding: '18px 24px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr auto', gap: 16, alignItems: 'center' }}>
@@ -118,9 +120,9 @@ function OrderRow({ order, onDetail }: { order: AccountOrder; onDetail?: () => v
           {s.label}
         </span>
       </div>
-      <button onClick={onDetail} style={{ background: 'transparent', border: '1.5px solid var(--liora-uva)', color: 'var(--liora-uva)', borderRadius: 999, padding: '8px 16px', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' as const }}>
+      <a href={`/tracking?order=${order.order_number}`} style={{ background: 'transparent', border: '1.5px solid var(--liora-uva)', color: 'var(--liora-uva)', borderRadius: 999, padding: '8px 16px', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' as const, textDecoration: 'none' }}>
         Ver detalle
-      </button>
+      </a>
     </article>
   )
 }
@@ -230,51 +232,87 @@ function PedidosTab({ orders }: { orders: AccountOrder[] }) {
 }
 
 function MiKitTab({ data, onReorder }: { data: AccountData; onReorder: () => void }) {
+  const totalCents = data.kitItems.reduce((s, i) => s + i.priceCents, 0)
+  const categories = [...new Set(data.kitItems.map(i => i.categoryName).filter(Boolean))]
+
   return (
     <div>
       <TabHeader eyebrow="Tu kit personalizado" title={data.kitTitle || 'Mi kit'} />
-      {data.kitItems.length === 0
-        ? (
-          <div style={{ background: 'var(--liora-blanco)', borderRadius: 24, border: '1.5px solid var(--liora-arena)', padding: 40, textAlign: 'center' as const }}>
-            <p style={{ fontFamily: 'var(--font-body)', fontSize: 15, color: 'var(--liora-uva)', opacity: 0.7, margin: 0 }}>
-              Aún no tienes un kit. <a href="/cuestionario" style={{ color: 'var(--liora-uva)', fontWeight: 700 }}>Hacer cuestionario →</a>
-            </p>
+
+      {data.kitItems.length === 0 ? (
+        <div style={{ background: 'var(--liora-blanco)', borderRadius: 24, border: '1.5px solid var(--liora-arena)', padding: 40, textAlign: 'center' as const }}>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 15, color: 'var(--liora-uva)', opacity: 0.7, margin: '0 0 16px' }}>
+            Aún no tienes un kit personalizado.
+          </p>
+          <a href="/cuestionario" style={{ background: 'var(--liora-uva)', color: 'var(--liora-crema)', borderRadius: 999, padding: '12px 24px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
+            Hacer cuestionario →
+          </a>
+        </div>
+      ) : (
+        <>
+          {/* Perfil de bienestar */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, flexWrap: 'wrap' as const }}>
+            <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)', opacity: 0.55, textTransform: 'uppercase' as const, letterSpacing: '0.1em' }}>Perfil:</span>
+            {categories.map(cat => (
+              <span key={cat} style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 999, padding: '4px 12px', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 12, color: 'var(--liora-uva)' }}>
+                {cat}
+              </span>
+            ))}
+            <a href="/cuestionario" style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 12, color: 'var(--liora-uva)', opacity: 0.5, marginLeft: 4, textDecoration: 'none' }}>
+              Rehacer cuestionario →
+            </a>
           </div>
-        )
-        : (
-          <>
-            <div style={{ background: 'var(--liora-uva)', color: 'var(--liora-crema)', borderRadius: 28, padding: 32, marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 24 }}>
-              <div>
-                <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, color: 'var(--liora-lima)', textTransform: 'uppercase' as const, letterSpacing: '0.12em', marginBottom: 8 }}>
-                  {data.kitItems.length} productos · Hecho para ti
+
+          {/* Kit card — single card */}
+          <div style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 28, overflow: 'hidden' }}>
+            {/* Product list */}
+            <div style={{ padding: '8px 0' }}>
+              {data.kitItems.map((item, idx) => (
+                <div
+                  key={item.variantId}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 16,
+                    padding: '16px 24px',
+                    borderBottom: idx < data.kitItems.length - 1 ? '1px solid var(--liora-arena)' : 'none',
+                  }}
+                >
+                  {/* Color swatch / image */}
+                  <div style={{ width: 52, height: 52, borderRadius: 14, background: item.categoryColor, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                    {item.imageUrl
+                      ? <img src={item.imageUrl} alt={item.name} style={{ width: '85%', height: '85%', objectFit: 'contain' }} />
+                      : <Package size={22} style={{ color: 'var(--liora-uva)', opacity: 0.5 }} />
+                    }
+                  </div>
+                  {/* Info */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: 'var(--liora-uva)', lineHeight: 1.2 }}>{item.name}</div>
+                    <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--liora-uva)', opacity: 0.6, marginTop: 2 }}>{item.variantName} · {item.categoryName}</div>
+                  </div>
+                  {/* Price */}
+                  <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: 'var(--liora-uva)', flexShrink: 0 }}>
+                    {item.priceCents > 0 ? fmt(item.priceCents) : '—'}
+                  </div>
                 </div>
-                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 40, lineHeight: 1, color: 'var(--liora-crema)' }}>
-                  {fmt(data.kitItems.reduce((s, i) => s + 0, 0) || 0)}
+              ))}
+            </div>
+
+            {/* Footer */}
+            <div style={{ background: 'var(--liora-uva)', padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
+              <div>
+                <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-crema)', opacity: 0.6, textTransform: 'uppercase' as const, letterSpacing: '0.1em', marginBottom: 4 }}>
+                  {data.kitItems.length} productos
+                </div>
+                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 32, color: 'var(--liora-crema)', lineHeight: 1 }}>
+                  {totalCents > 0 ? fmt(totalCents) : '—'}
                 </div>
               </div>
               <button onClick={onReorder} style={{ background: 'var(--liora-lima)', color: 'var(--liora-uva)', border: 'none', borderRadius: 999, padding: '14px 24px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 15, cursor: 'pointer', whiteSpace: 'nowrap' as const }}>
-                Repedir mi kit
+                Repedir mi kit →
               </button>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
-              {data.kitItems.map((item) => (
-                <article key={item.variantId} style={{ background: item.categoryColor, borderRadius: 20, padding: 20, display: 'flex', alignItems: 'center', gap: 16 }}>
-                  <div style={{ width: 56, height: 56, borderRadius: 14, background: 'rgba(255,255,255,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--liora-uva)', flexShrink: 0 }}>
-                    {item.imageUrl
-                      ? <img src={item.imageUrl} alt={item.name} style={{ width: '90%', height: '90%', objectFit: 'contain' }} />
-                      : <Package size={24} style={{ opacity: 0.6 }} />
-                    }
-                  </div>
-                  <div>
-                    <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 17, color: 'var(--liora-uva)' }}>{item.name}</div>
-                    <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--liora-uva)', opacity: 0.7, marginTop: 2 }}>{item.variantName} · {item.categoryName}</div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </>
-        )
-      }
+          </div>
+        </>
+      )}
     </div>
   )
 }
@@ -311,30 +349,128 @@ function CuponesTab({ coupons }: { coupons: AccountCoupon[] }) {
   )
 }
 
-function DatosTab({ data }: { data: AccountData }) {
-  const fields: [string, string][] = [
-    ['Nombre', `${data.firstName}${data.lastName ? ' ' + data.lastName : ''}`],
-    ['Teléfono', data.phone ?? '—'],
-    ...(data.address ? [
-      ['Dirección', `${data.address.address_line1}${data.address.address_line2 ? ', ' + data.address.address_line2 : ''}`] as [string, string],
-      ['Ciudad', `${data.address.city}${data.address.state ? ', ' + data.address.state : ''}`] as [string, string],
-    ] : []),
-  ]
+function DatosTab({ data, onSaved }: { data: AccountData; onSaved: () => void }) {
+  const [editing, setEditing] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
+  const [form, setForm] = useState({
+    firstName: data.firstName,
+    lastName: data.lastName ?? '',
+    phone: data.phone ?? '',
+    addressLine1: data.address?.address_line1 ?? '',
+    addressLine2: data.address?.address_line2 ?? '',
+    district: data.address?.district ?? '',
+    city: data.address?.city ?? '',
+    postalCode: data.address?.postal_code ?? '',
+  })
+
+  const inputStyle = {
+    width: '100%', background: 'var(--liora-crema)', border: '1.5px solid var(--liora-arena)',
+    borderRadius: 12, padding: '12px 14px', fontFamily: 'var(--font-body)', fontSize: 14,
+    color: 'var(--liora-uva)', outline: 'none', boxSizing: 'border-box' as const,
+  }
+  const labelStyle = {
+    display: 'flex', flexDirection: 'column' as const, gap: 5,
+    fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11,
+    color: 'var(--liora-uva)', textTransform: 'uppercase' as const, letterSpacing: '0.1em', opacity: 0.7,
+  }
+
+  const handleSave = async () => {
+    setSaving(true)
+    setSaveError('')
+    try {
+      const res = await fetch('/api/account/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
+      if (!res.ok) throw new Error('Error al guardar')
+      setEditing(false)
+      onSaved()
+    } catch {
+      setSaveError('No se pudo guardar. Intenta de nuevo.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const Field = ({ label, value }: { label: string; value: string }) => (
+    <div>
+      <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)', textTransform: 'uppercase' as const, letterSpacing: '0.1em', marginBottom: 4, opacity: 0.7 }}>{label}</div>
+      <div style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 15, color: 'var(--liora-uva)' }}>{value || '—'}</div>
+    </div>
+  )
+
   return (
     <div>
       <TabHeader eyebrow="Tu cuenta" title="Datos personales" />
       <div style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 28, padding: 32 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-          {fields.map(([k, v]) => (
-            <div key={k}>
-              <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)', textTransform: 'uppercase' as const, letterSpacing: '0.1em', marginBottom: 4, opacity: 0.7 }}>{k}</div>
-              <div style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 15, color: 'var(--liora-uva)' }}>{v}</div>
+
+        {!editing ? (
+          <>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 28 }}>
+              <Field label="Nombre" value={`${data.firstName}${data.lastName ? ' ' + data.lastName : ''}`} />
+              <Field label="Email" value={data.email} />
+              <Field label="Teléfono" value={data.phone ?? ''} />
+              {data.address && <>
+                <Field label="Dirección" value={data.address.address_line1} />
+                <Field label="Distrito" value={data.address.district ?? ''} />
+                <Field label="Ciudad" value={data.address.city} />
+                {data.address.postal_code && <Field label="Código postal" value={data.address.postal_code} />}
+              </>}
             </div>
-          ))}
-        </div>
-        <button style={{ marginTop: 28, background: 'transparent', color: 'var(--liora-uva)', border: '1.5px solid var(--liora-uva)', borderRadius: 999, padding: '12px 22px', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>
-          Editar datos
-        </button>
+            <button
+              onClick={() => setEditing(true)}
+              style={{ background: 'var(--liora-uva)', color: 'var(--liora-crema)', border: 'none', borderRadius: 999, padding: '12px 22px', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}
+            >
+              Editar datos
+            </button>
+          </>
+        ) : (
+          <>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
+              <label style={labelStyle}>Nombre
+                <input style={inputStyle} value={form.firstName} onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))} />
+              </label>
+              <label style={labelStyle}>Apellido
+                <input style={inputStyle} value={form.lastName} onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))} />
+              </label>
+              <label style={{ ...labelStyle, gridColumn: '1 / -1' }}>Teléfono
+                <input style={inputStyle} value={form.phone} placeholder="+51 999 000 000" onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
+              </label>
+              <label style={{ ...labelStyle, gridColumn: '1 / -1' }}>Dirección
+                <input style={inputStyle} value={form.addressLine1} placeholder="Av. Larco 1234" onChange={e => setForm(f => ({ ...f, addressLine1: e.target.value }))} />
+              </label>
+              <label style={labelStyle}>Distrito
+                <input style={inputStyle} value={form.district} placeholder="Miraflores" onChange={e => setForm(f => ({ ...f, district: e.target.value }))} />
+              </label>
+              <label style={labelStyle}>Ciudad
+                <input style={inputStyle} value={form.city} placeholder="Lima" onChange={e => setForm(f => ({ ...f, city: e.target.value }))} />
+              </label>
+              <label style={labelStyle}>Código postal
+                <input style={inputStyle} value={form.postalCode} placeholder="15074" onChange={e => setForm(f => ({ ...f, postalCode: e.target.value }))} />
+              </label>
+            </div>
+
+            {saveError && <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: '#C2433A', marginBottom: 16 }}>{saveError}</p>}
+
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                style={{ background: 'var(--liora-uva)', color: 'var(--liora-crema)', border: 'none', borderRadius: 999, padding: '12px 22px', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 14, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1 }}
+              >
+                {saving ? 'Guardando…' : 'Guardar cambios'}
+              </button>
+              <button
+                onClick={() => { setEditing(false); setSaveError('') }}
+                style={{ background: 'transparent', color: 'var(--liora-uva)', border: '1.5px solid var(--liora-arena)', borderRadius: 999, padding: '12px 22px', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}
+              >
+                Cancelar
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   )
@@ -345,9 +481,11 @@ export function AccountClient({ data }: { data: AccountData }) {
   const router = useRouter()
   const [tab, setTab] = useState<Tab>('Resumen')
 
+  const handleSaved = () => router.refresh()
+
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' })
-    router.push('/login')
+    window.location.href = '/login'
   }
 
   const handleReorder = () => {
@@ -397,7 +535,7 @@ export function AccountClient({ data }: { data: AccountData }) {
           {tab === 'Pedidos'  && <PedidosTab  orders={data.orders} />}
           {tab === 'Mi kit'   && <MiKitTab    data={data} onReorder={handleReorder} />}
           {tab === 'Cupones'  && <CuponesTab  coupons={data.coupons} />}
-          {tab === 'Datos'    && <DatosTab    data={data} />}
+          {tab === 'Datos'    && <DatosTab    data={data} onSaved={handleSaved} />}
         </div>
       </div>
     </section>

@@ -42,6 +42,11 @@ export async function POST(request: NextRequest) {
 
     if (!profile) return NextResponse.json({ error: 'Error al guardar el perfil' }, { status: 500 })
 
+    // Link quiz profile to user's profile
+    if (user?.id) {
+      await (admin as any).from('profiles').update({ quiz_profile_id: profile.id }).eq('id', user.id)
+    }
+
     // Save lead if email provided
     if (email) {
       await admin.from('leads').upsert({

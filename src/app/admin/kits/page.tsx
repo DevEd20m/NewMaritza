@@ -1,37 +1,107 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { Metadata } from 'next'
+import { KitsClient, type AdminKitData, type AdminVariantOption } from '@/components/admin/KitsClient'
 
-export const metadata: Metadata = { title: 'Admin — Kits' }
-
-interface AdminKit { id: string; name: string; type: string; description: string | null; is_active: boolean; kit_products: Array<{ kit_id: string }> }
+export const metadata: Metadata = { title: 'Kits — Admin LIORA' }
 
 export default async function AdminKitsPage() {
   const admin = createAdminClient()
-  const { data: kitsRaw } = await admin
-    .from('kits')
-    .select(`*, kit_products(kit_id)`)
-    .order('created_at', { ascending: false })
-  const kits = kitsRaw as AdminKit[] | null
 
-  return (
-    <div>
-      <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 40, color: 'var(--liora-uva)', margin: '0 0 32px' }}>Kits</h1>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
-        {(kits ?? []).map((kit) => (
-          <div key={kit.id} style={{ background: 'var(--liora-blanco)', borderRadius: 20, border: '1.5px solid var(--liora-arena)', padding: '24px 28px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-              <div>
-                <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 22, color: 'var(--liora-uva)', margin: 0 }}>{kit.name}</h3>
-                <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, opacity: 0.65, marginTop: 4 }}>{kit.type} · {kit.kit_products?.length ?? 0} productos</div>
-              </div>
-              <span style={{ background: kit.is_active ? 'var(--color-success-bg)' : 'var(--color-error-bg)', color: kit.is_active ? 'var(--color-success)' : 'var(--color-error)', padding: '4px 10px', borderRadius: 999, fontSize: 11, fontWeight: 700 }}>
-                {kit.is_active ? 'Activo' : 'Inactivo'}
-              </span>
-            </div>
-            {kit.description && <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, opacity: 0.75, margin: 0 }}>{kit.description}</p>}
-          </div>
-        ))}
-      </div>
-    </div>
-  )
+  const [kitsResult, variantsResult] = await Promise.all([
+    (admin as any)
+      .from('kits')
+      .select(`
+        id, name, slug, description, is_active, type,
+        kit_products(
+          variant_id, quantity, sort_order,
+          product_variants(id, name, product_prices(amount_cents, effective_to))
+        )
+      `)
+      .order('created_at', { ascending: false }),
+
+    (admin as any)
+      .from('product_variants')
+      .select('id, name, product_id, is_active, products(id, name), product_prices(amount_cents, effective_to)')
+      .eq('is_active', true)
+      .order('created_at', { ascending: false }),
+  ])
+
+  type RawKit = {
+    id: string; name: string; slug: string; description: string | null; is_active: boolean; type: string
+    kit_products: Array<{
+      variant_id: string; quantity: number; sort_order: number
+      product_variants: { id: string; name: string; product_prices: Array<{ amount_cents: number; effective_to: string | null }> } | null
+    }>
+  }
+
+  type RawVariant = {
+    id: string; name: string; product_id: string; is_active: boolean
+    products: { id: string; name: string } | null
+    product_prices: Array<{ amount_cents: number; effective_to: string | null }>
+  }
+
+  const rawKits = (kitsResult.data ?? []) as RawKit[]
+  const rawVariants = (variantsResult.data ?? []) as RawVariant[]
+
+  const kits: AdminKitData[] = rawKits.map(k => {
+    const kitProducts = (k.kit_products ?? [])
+      .sort((a, b) => a.sort_order - b.sort_order)
+      .map(kp => {
+        const variant = kp.product_variants
+        const price = variant?.product_prices?.find(p => !p.effective_to)
+        return {
+          variantId: kp.variant_id,
+          variantName: variant?.name ?? '',
+          productName: '', // We need to look up the product from allVariants
+          priceCents: price?.amount_cents ?? 0,
+        }
+      })
+
+    const totalCents = kitProducts.reduce((s, kp) => s + kp.priceCents, 0)
+
+    return {
+      id: k.id,
+      name: k.name,
+      slug: k.slug,
+      description: k.description,
+      is_active: k.is_active,
+      type: k.type,
+      kitProducts,
+      totalCents,
+    }
+  })
+
+  const variantMap = new Map<string, RawVariant>()
+  rawVariants.forEach(v => variantMap.set(v.id, v))
+
+  // Fill in product names from variantMap
+  kits.forEach(k => {
+    k.kitProducts.forEach(kp => {
+      const v = variantMap.get(kp.variantId)
+      if (v) {
+        kp.productName = v.products?.name ?? kp.variantName
+        if (!kp.priceCents) {
+          const price = v.product_prices?.find(p => !p.effective_to)
+          kp.priceCents = price?.amount_cents ?? 0
+        }
+      } else {
+        kp.productName = kp.variantName
+      }
+    })
+    k.totalCents = k.kitProducts.reduce((s, kp) => s + kp.priceCents, 0)
+  })
+
+  const allVariants: AdminVariantOption[] = rawVariants.map(v => {
+    const price = v.product_prices?.find(p => !p.effective_to)
+    return {
+      variantId: v.id,
+      variantName: v.name,
+      productId: v.product_id,
+      productName: v.products?.name ?? v.name,
+      priceCents: price?.amount_cents ?? 0,
+      categoryName: null,
+    }
+  })
+
+  return <KitsClient kits={kits} allVariants={allVariants} />
 }

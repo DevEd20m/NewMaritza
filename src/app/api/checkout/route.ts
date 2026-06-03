@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { createOrderSchema } from '@/lib/validation/checkout'
+import { getStoreSettings } from '@/lib/settings'
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,40 +10,88 @@ export async function POST(request: NextRequest) {
     const parsed = createOrderSchema.safeParse(body)
     if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
 
-    const { cartSessionToken, address, couponCode, notes } = parsed.data
+    const { address, couponCode, notes } = parsed.data
     const saveToProfile = body.saveToProfile === true
     const supabase = await createClient()
     const admin = createAdminClient()
 
     const { data: { user } } = await supabase.auth.getUser()
 
-    // Resolve coupon
-    let couponId: string | null = null
-    let discountCents = 0
-    if (couponCode) {
-      const { data: coupon } = await admin
-        .from('coupons')
-        .select('*')
-        .eq('code', couponCode.toUpperCase())
-        .eq('is_active', true)
-        .single()
-      if (coupon) {
-        couponId = coupon.id
-      }
-    }
-
-    // Snapshot cart items from the store (sent from frontend via cart session)
+    // Validate and snapshot cart items
     const cartItems = body.items as Array<{
       variantId: string; name: string; variantName: string; priceCents: number; currency: string; quantity: number
     }>
-
     if (!cartItems?.length) {
       return NextResponse.json({ error: 'Carrito vacío' }, { status: 400 })
     }
 
     const subtotalCents = cartItems.reduce((s: number, i) => s + i.priceCents * i.quantity, 0)
-    const shippingCents = subtotalCents >= 15000 ? 0 : 1500
-    const totalCents = Math.max(0, subtotalCents - discountCents) + shippingCents
+    const { free_shipping_threshold_cents, shipping_cost_cents } = await getStoreSettings()
+    let shippingCents = subtotalCents >= free_shipping_threshold_cents ? 0 : shipping_cost_cents
+
+    // Resolve and re-validate coupon
+    let couponId: string | null = null
+    let discountCents = 0
+    let couponFreeShipping = false
+
+    if (couponCode) {
+      const { data: coupon } = await (admin as any)
+        .from('coupons')
+        .select('*')
+        .eq('code', couponCode.toUpperCase())
+        .eq('is_active', true)
+        .single()
+
+      if (coupon) {
+        const now = new Date()
+        const basicValid =
+          (!coupon.starts_at || new Date(coupon.starts_at) <= now) &&
+          (!coupon.expires_at || new Date(coupon.expires_at) > now) &&
+          (coupon.max_uses === null || (coupon.used_count ?? 0) < coupon.max_uses) &&
+          (!coupon.min_purchase_cents || subtotalCents >= coupon.min_purchase_cents)
+
+        if (basicValid) {
+          couponId = coupon.id
+
+          // Solo primera compra
+          if (coupon.new_customers_only && user) {
+            const { count } = await admin
+              .from('orders')
+              .select('*', { count: 'exact', head: true })
+              .eq('user_id', user.id)
+              .in('status', ['paid', 'processing', 'shipped', 'delivered'])
+            if ((count ?? 0) > 0) couponId = null
+          }
+
+          // Límite por cliente
+          if (couponId && user) {
+            const limit = coupon.max_uses_per_user ?? 1
+            const { count } = await (admin as any)
+              .from('orders')
+              .select('*', { count: 'exact', head: true })
+              .eq('user_id', user.id)
+              .eq('coupon_id', coupon.id)
+              .not('status', 'eq', 'cancelled')
+            if ((count ?? 0) >= limit) couponId = null
+          }
+
+          // Calcular descuento
+          if (couponId) {
+            if (coupon.type === 'percentage') {
+              discountCents = Math.round(subtotalCents * (Number(coupon.value) / 100))
+            } else if (coupon.type === 'fixed_amount') {
+              discountCents = Math.min(Math.round(Number(coupon.value) * 100), subtotalCents)
+            } else if (coupon.type === 'free_shipping') {
+              couponFreeShipping = true
+              discountCents = shippingCents
+              shippingCents = 0
+            }
+          }
+        }
+      }
+    }
+
+    const totalCents = Math.max(0, subtotalCents - (couponFreeShipping ? 0 : discountCents)) + shippingCents
 
     // Save address
     let shippingAddressId: string | null = null
@@ -60,11 +109,18 @@ export async function POST(request: NextRequest) {
     }).select('id').single()
     if (savedAddress) shippingAddressId = savedAddress.id
 
-    // Create order
+    let orderEmail: string | null = null
+    if (user) {
+      orderEmail = user.email ?? null
+    } else {
+      orderEmail = (address as any).email ?? null
+    }
+
     const { data: order, error: orderError } = await admin.from('orders').insert({
       user_id: user?.id ?? null,
-      guest_email: user ? null : address.email,
-      guest_name: user ? null : `${address.firstName} ${address.lastName}`,
+      guest_email: orderEmail,
+      guest_name: `${address.firstName} ${address.lastName}`.trim(),
+      guest_phone: address.phone ?? null,
       shipping_address_id: shippingAddressId,
       subtotal_cents: subtotalCents,
       discount_cents: discountCents,
@@ -80,7 +136,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Error al crear el pedido' }, { status: 500 })
     }
 
-    // Insert order items
     await admin.from('order_items').insert(
       cartItems.map((item) => ({
         order_id: order.id,
@@ -93,7 +148,6 @@ export async function POST(request: NextRequest) {
       }))
     )
 
-    // Save data to user profile if requested
     if (saveToProfile && user) {
       await Promise.all([
         admin.from('profiles').update({
@@ -101,7 +155,6 @@ export async function POST(request: NextRequest) {
           last_name: address.lastName,
           phone: address.phone ?? null,
         }).eq('id', user.id),
-        // Unset previous defaults then upsert this address as default
         admin.from('addresses').update({ is_default: false }).eq('user_id', user.id),
         shippingAddressId
           ? admin.from('addresses').update({ is_default: true, user_id: user.id }).eq('id', shippingAddressId)
@@ -109,7 +162,6 @@ export async function POST(request: NextRequest) {
       ])
     }
 
-    // Create pending payment record
     const idempotencyKey = `order_${order.id}_${Date.now()}`
     await admin.from('payments').insert({
       order_id: order.id,

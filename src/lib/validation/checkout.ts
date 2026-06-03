@@ -34,4 +34,5 @@ export const createOrderSchema = z.object({
 export const couponValidateSchema = z.object({
   code: z.string().min(1),
   cartTotalCents: z.number().int().positive(),
+  cartVariantIds: z.array(z.string().uuid()).optional(),
 })

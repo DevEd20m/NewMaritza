@@ -2,11 +2,19 @@ import { AnnouncementBar } from '@/components/layout/AnnouncementBar'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { CartDrawer } from '@/components/layout/CartDrawer'
+import { LiveActivityToast } from '@/components/urgency/LiveActivityToast'
+import { ExitIntentModal } from '@/components/urgency/ExitIntentModal'
+import { WhatsAppButton } from '@/components/layout/WhatsAppButton'
 import { createClient } from '@/lib/supabase/server'
+import { getStoreSettings } from '@/lib/settings'
 
 export default async function StoreLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const [authResult, settings] = await Promise.all([
+    supabase.auth.getUser().catch(() => ({ data: { user: null } })),
+    getStoreSettings(),
+  ])
+  const user = authResult.data.user
 
   let profile = null
   if (user) {
@@ -19,11 +27,20 @@ export default async function StoreLayout({ children }: { children: React.ReactN
 
   return (
     <>
-      <AnnouncementBar />
+      <AnnouncementBar
+        thresholdCents={settings.free_shipping_threshold_cents}
+        deliveryMessage={settings.delivery_message}
+      />
       <Header user={profile} />
       <main style={{ flex: 1 }}>{children}</main>
       <Footer />
-      <CartDrawer />
+      <CartDrawer
+        shippingThresholdCents={settings.free_shipping_threshold_cents}
+        shippingCostCents={settings.shipping_cost_cents}
+      />
+      <LiveActivityToast />
+      <ExitIntentModal />
+      <WhatsAppButton />
     </>
   )
 }

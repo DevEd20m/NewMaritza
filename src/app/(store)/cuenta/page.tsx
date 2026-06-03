@@ -44,11 +44,12 @@ export default async function AccountPage() {
     .limit(10)
   const ordersData = (ordersRaw ?? []) as Array<{ id: string; order_number: string; total_cents: number; status: string; created_at: string; order_items: { id: string }[] }>
 
-  // Active coupons (global, is_active = true)
-  const { data: couponsRaw } = await admin
+  // Active public coupons only
+  const { data: couponsRaw } = await (admin as any)
     .from('coupons')
     .select('id, code, type, value, expires_at')
     .eq('is_active', true)
+    .eq('is_public', true)
     .or('expires_at.is.null,expires_at.gt.' + new Date().toISOString())
     .order('created_at', { ascending: false })
     .limit(6)
@@ -57,7 +58,7 @@ export default async function AccountPage() {
   // Default address
   const { data: addressRaw } = await supabase
     .from('addresses')
-    .select('id, first_name, last_name, address_line1, address_line2, city, state, postal_code, country, is_default')
+    .select('id, first_name, last_name, address_line1, address_line2, district, city, state, postal_code, country, is_default')
     .eq('user_id', user.id)
     .order('is_default', { ascending: false })
     .limit(1)
@@ -74,18 +75,18 @@ export default async function AccountPage() {
       .from('recommendations')
       .select('variant_id, score, rationale')
       .eq('quiz_profile_id', kitProfileId)
-      .eq('rationale', 'kit')
+      .eq('rationale', 'suggestion')
       .order('score', { ascending: false })
       .limit(6)
 
     const variantIds = (recsRaw ?? []).map((r) => (r as { variant_id: string }).variant_id)
 
     if (variantIds.length > 0) {
-      const { data: variantsRaw } = await admin
+      const { data: variantsRaw } = await (admin as any)
         .from('product_variants')
-        .select('id, name, product_id')
+        .select('id, name, product_id, product_prices(amount_cents, effective_to)')
         .in('id', variantIds)
-      const variants = (variantsRaw ?? []) as Array<{ id: string; name: string; product_id: string }>
+      const variants = (variantsRaw ?? []) as Array<{ id: string; name: string; product_id: string; product_prices: Array<{ amount_cents: number; effective_to: string | null }> }>
 
       const productIds = [...new Set(variants.map((v) => v.product_id))]
       const { data: productsRaw } = await admin
@@ -109,6 +110,7 @@ export default async function AccountPage() {
           const p = products.find((x) => x.id === v.product_id)
           if (!p) return null
           const cat = p.category_id ? catMap[p.category_id] : null
+          const activePrice = v.product_prices?.find(pp => !pp.effective_to)
           return {
             variantId: v.id,
             name: p.name,
@@ -116,6 +118,7 @@ export default async function AccountPage() {
             categoryName: cat?.name ?? '',
             categoryColor: cat ? (CAT_COLORS[cat.slug] ?? 'var(--cat-lavanda)') : 'var(--cat-lavanda)',
             imageUrl: p.cover_image_url,
+            priceCents: activePrice?.amount_cents ?? 0,
           }
         })
         .filter(Boolean) as AccountData['kitItems']

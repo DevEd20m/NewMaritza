@@ -4,14 +4,18 @@ import { useState } from 'react'
 import { Barbell, Leaf, Drop, Pill } from '@phosphor-icons/react'
 
 const CARDS = [
-  { slug: 'organicos',  label: 'Orgánicos',        sub: '48 productos', bg: '#2F8C5A', accent: 'var(--cat-menta)',   Icon: Leaf },
-  { slug: 'gym',        label: 'Gym &\nproteínas',  sub: '36 productos', bg: '#C25240', accent: 'var(--cat-coral)',   Icon: Barbell },
-  { slug: 'skin-care',  label: 'Skin care',         sub: '52 productos', bg: '#6A4DA3', accent: 'var(--cat-lavanda)', Icon: Drop },
-  { slug: 'vitaminas',  label: 'Vitaminas',         sub: '41 productos', bg: '#B8870A', accent: 'var(--cat-mostaza)', Icon: Pill },
+  { slug: 'organicos',  label: 'Orgánicos',       bg: '#2F8C5A', accent: 'var(--cat-menta)',   Icon: Leaf },
+  { slug: 'gym',        label: 'Gym &\nproteínas', bg: '#C25240', accent: 'var(--cat-coral)',   Icon: Barbell },
+  { slug: 'skin-care',  label: 'Skin care',        bg: '#6A4DA3', accent: 'var(--cat-lavanda)', Icon: Drop },
+  { slug: 'vitaminas',  label: 'Vitaminas',        bg: '#B8870A', accent: 'var(--cat-mostaza)', Icon: Pill },
 ]
 
-function CategoryCard({ slug, label, sub, bg, accent, Icon }: typeof CARDS[0]) {
+interface CardProps { slug: string; label: string; bg: string; accent: string; Icon: typeof Leaf; count?: number }
+
+function CategoryCard({ slug, label, bg, accent, Icon, count }: CardProps) {
   const [hovered, setHovered] = useState(false)
+  const sub = count !== undefined ? `${count} producto${count !== 1 ? 's' : ''}` : ''
+
   return (
     <Link href={`/tienda?categoria=${slug}`} style={{ textDecoration: 'none', display: 'block' }}>
       <div
@@ -32,18 +36,24 @@ function CategoryCard({ slug, label, sub, bg, accent, Icon }: typeof CARDS[0]) {
         <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 32, lineHeight: 0.98, letterSpacing: '-0.02em', color: 'var(--liora-crema)', margin: 0, whiteSpace: 'pre-line', fontVariationSettings: "'opsz' 144,'SOFT' 60,'WONK' 0" }}>
           {label}
         </h3>
-        <div style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 12, color: 'var(--liora-crema)', opacity: 0.8, marginTop: 8, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-          {sub}
-        </div>
+        {sub && (
+          <div style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 12, color: 'var(--liora-crema)', opacity: 0.8, marginTop: 8, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+            {sub}
+          </div>
+        )}
       </div>
     </Link>
   )
 }
 
-export function CategoryGrid() {
+interface Props { counts?: Record<string, number> }
+
+export function CategoryGrid({ counts = {} }: Props) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
-      {CARDS.map((card) => <CategoryCard key={card.slug} {...card} />)}
+      {CARDS.map((card) => (
+        <CategoryCard key={card.slug} {...card} count={counts[card.slug]} />
+      ))}
     </div>
   )
 }
