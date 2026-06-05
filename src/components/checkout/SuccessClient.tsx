@@ -12,15 +12,22 @@ interface Order {
   total_cents: number
   currency: string
   status: string
+  user_id: string | null
+  guest_email: string | null
+  guest_name: string | null
   order_items: { product_name_snapshot: string; variant_name_snapshot: string; quantity: number; unit_price_cents: number }[]
 }
 
-const WHATSAPP_NUMBER = '51999999999'
-
-export function SuccessClient({ order }: { order: Order }) {
+export function SuccessClient({ order, whatsappNumber }: { order: Order; whatsappNumber?: string }) {
+  const WHATSAPP_NUMBER = whatsappNumber ?? '51999999999'
   const { clearCart } = useCartStore()
   const [copied, setCopied] = useState(false)
   const [guide, setGuide] = useState<KitGuide | null>(null)
+  const [activating, setActivating] = useState(false)
+  const [activated, setActivated] = useState(false)
+
+  const isGuest = !order.user_id && !!order.guest_email
+  const firstName = order.guest_name?.split(' ')[0]
 
   useEffect(() => {
     clearCart()
@@ -38,6 +45,21 @@ export function SuccessClient({ order }: { order: Order }) {
     const detectedGuide = detectKitFromItems(order.order_items.map(i => i.product_name_snapshot))
     if (detectedGuide) setGuide(detectedGuide)
   }, []) // eslint-disable-line
+
+  const handleActivate = async () => {
+    if (!order.guest_email) return
+    setActivating(true)
+    try {
+      await fetch('/api/auth/activate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: order.guest_email, firstName }),
+      })
+      setActivated(true)
+    } finally {
+      setActivating(false)
+    }
+  }
 
   const copyCode = async () => {
     await navigator.clipboard.writeText(order.order_number)
@@ -102,6 +124,47 @@ export function SuccessClient({ order }: { order: Order }) {
           <span>{fmt(order.total_cents)}</span>
         </div>
       </div>
+
+      {/* ── Activar cuenta (solo invitados) ──────────────────────────── */}
+      {isGuest && (
+        <div style={{
+          background: 'var(--liora-uva)', borderRadius: 20, padding: '24px 28px',
+          marginBottom: 20, position: 'relative', overflow: 'hidden',
+        }}>
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--liora-lima)', marginBottom: 6 }}>
+              ✨ Para ti — sin contraseña
+            </div>
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 22, color: 'var(--liora-crema)', lineHeight: 1.1, marginBottom: 8 }}>
+              Guarda tu pedido en tu cuenta
+            </div>
+            <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'rgba(253,246,238,0.75)', margin: '0 0 18px', lineHeight: 1.5 }}>
+              Rastrea tu envío, repite pedido en segundos y accede a tus guías personalizadas. Un click, sin contraseña.
+            </p>
+
+            {activated ? (
+              <div style={{ background: 'var(--liora-lima)', color: 'var(--liora-uva)', borderRadius: 999, padding: '12px 20px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 14, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                ✓ ¡Revisa tu email para activar tu cuenta!
+              </div>
+            ) : (
+              <button
+                onClick={handleActivate}
+                disabled={activating}
+                style={{
+                  background: 'var(--liora-lima)', color: 'var(--liora-uva)',
+                  border: 'none', borderRadius: 999, padding: '12px 24px',
+                  fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 14,
+                  cursor: activating ? 'default' : 'pointer',
+                  opacity: activating ? 0.7 : 1,
+                  display: 'inline-flex', alignItems: 'center', gap: 8,
+                }}
+              >
+                {activating ? '…' : `Activar mi cuenta — ${order.guest_email}`}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ── Guía de uso (si se detectó el kit) ────────────────────────── */}
       {guide && (

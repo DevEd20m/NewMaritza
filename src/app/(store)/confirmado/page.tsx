@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getPaymentProvider } from '@/lib/payment/provider'
+import { getStoreSettings } from '@/lib/settings'
 import { SuccessClient } from '@/components/checkout/SuccessClient'
 
 export const metadata: Metadata = { title: 'Pedido confirmado', robots: { index: false, follow: false } }
@@ -55,7 +56,10 @@ export default async function SuccessPage({ searchParams }: Props) {
     await confirmOrderFromSession(sessionId, orderNumber)
   }
 
-  const order = orderNumber ? await getOrder(orderNumber) : null
+  const [order, settings] = await Promise.all([
+    orderNumber ? getOrder(orderNumber) : Promise.resolve(null),
+    getStoreSettings(),
+  ])
 
   if (!order) {
     return (
@@ -66,5 +70,5 @@ export default async function SuccessPage({ searchParams }: Props) {
     )
   }
 
-  return <SuccessClient order={order} />
+  return <SuccessClient order={order} whatsappNumber={settings.whatsapp_number} />
 }
