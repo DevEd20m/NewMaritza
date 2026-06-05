@@ -1,11 +1,12 @@
 import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
+import { getStoreSettings } from '@/lib/settings'
 import { CheckoutForm, type PrefillData } from '@/components/checkout/CheckoutForm'
 
 export const metadata: Metadata = { title: 'Pago seguro', robots: { index: false, follow: false } }
 
 export default async function CheckoutPage() {
-  const supabase = await createClient()
+  const [supabase, settings] = await Promise.all([createClient(), getStoreSettings()])
   const { data: { user } } = await supabase.auth.getUser()
 
   let prefill: PrefillData | null = null
@@ -32,5 +33,11 @@ export default async function CheckoutPage() {
     }
   }
 
-  return <CheckoutForm prefill={prefill} />
+  return (
+    <CheckoutForm
+      prefill={prefill}
+      shippingCostCents={settings.shipping_cost_cents}
+      freeShippingThresholdCents={settings.free_shipping_threshold_cents}
+    />
+  )
 }

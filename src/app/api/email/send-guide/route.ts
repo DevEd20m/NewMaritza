@@ -3,7 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getResend, FROM_EMAIL } from '@/lib/email/client'
 import { orderConfirmationEmail } from '@/lib/email/templates/order-confirmation'
 import { weekCheckinEmail } from '@/lib/email/templates/week-checkin'
-import { detectKitFromItems, getGuideBySlug } from '@/lib/guides'
+import { detectKitFromItemsDB } from '@/lib/guides/db'
 
 const SITE_URL  = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://liora.pe'
 const WA_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '51999999999'
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
   if (!toEmail) return NextResponse.json({ error: 'No email address for order' }, { status: 422 })
 
   const productNames = ((order as any).order_items ?? []).map((i: any) => i.product_name_snapshot as string)
-  const guide = detectKitFromItems(productNames)
+  const guide = await detectKitFromItemsDB(productNames)
 
   const waMessage = guide
     ? `Hola, compré el ${guide.kitName} (pedido #${(order as any).order_number}) y tengo una pregunta`
@@ -75,8 +75,18 @@ export async function POST(req: NextRequest) {
   }
 
   // Day 0 — always send order confirmation (include guide section if detected)
-  const guideUrl = guide ? `${SITE_URL}/guia/${guide.slug}` : undefined
   const o = order as any
+
+  // Get quiz_profile_id to personalize the guide URL
+  let quizProfileId: string | null = null
+  if (o.user_id) {
+    const { data: profile } = await admin.from('profiles').select('quiz_profile_id').eq('id', o.user_id).single()
+    quizProfileId = (profile as any)?.quiz_profile_id ?? null
+  }
+
+  const guideUrl = guide
+    ? `${SITE_URL}/guia/${guide.slug}${quizProfileId ? `?profileId=${quizProfileId}` : ''}`
+    : undefined
 
   // Generate magic link for guest orders so they can activate their account
   let activationUrl: string | undefined

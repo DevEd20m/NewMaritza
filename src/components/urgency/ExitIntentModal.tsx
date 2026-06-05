@@ -2,7 +2,8 @@
 import { useEffect, useState, useCallback } from 'react'
 
 const STORAGE_KEY = 'liora_exit_shown'
-const COUPON_CODE = 'BIENVENIDA10'
+
+interface FeaturedCoupon { code: string; discountText: string; description: string | null }
 
 export function ExitIntentModal() {
   const [visible, setVisible]   = useState(false)
@@ -10,6 +11,14 @@ export function ExitIntentModal() {
   const [copied, setCopied]     = useState(false)
   const [email, setEmail]       = useState('')
   const [submitted, setSubmitted] = useState(false)
+  const [coupon, setCoupon]     = useState<FeaturedCoupon | null>(null)
+
+  useEffect(() => {
+    fetch('/api/coupons/featured')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setCoupon(data) })
+      .catch(() => {})
+  }, [])
 
   const openModal = useCallback(() => {
     if (sessionStorage.getItem(STORAGE_KEY)) return
@@ -59,14 +68,12 @@ export function ExitIntentModal() {
   }, [visible, closeModal])
 
   const handleCopy = async () => {
+    if (!coupon) return
     try {
-      await navigator.clipboard.writeText(COUPON_CODE)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2500)
-    } catch {
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2500)
-    }
+      await navigator.clipboard.writeText(coupon.code)
+    } catch {}
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2500)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -85,7 +92,7 @@ export function ExitIntentModal() {
     setSubmitted(true)
   }
 
-  if (!visible) return null
+  if (!visible || !coupon) return null
 
   return (
     <>
@@ -145,7 +152,7 @@ export function ExitIntentModal() {
               fontSize: 15, color: 'var(--liora-uva)',
               opacity: 0.8, marginTop: 10, marginBottom: 0, lineHeight: 1.45,
             }}>
-              Usa este código en tu primer pedido y obtén <strong>10% de descuento</strong>
+              Crea tu cuenta gratis y obtén <strong>{coupon.discountText}</strong> en tu primera compra
             </p>
           </div>
 
@@ -153,50 +160,60 @@ export function ExitIntentModal() {
           <div style={{ padding: '28px 32px 32px' }}>
             {!submitted ? (
               <>
-                {/* Coupon code */}
+                {/* CTA principal — crear cuenta */}
+                <a
+                  href={`/login?next=${encodeURIComponent('/carrito')}`}
+                  onClick={closeModal}
+                  style={{
+                    display: 'block', width: '100%', textAlign: 'center',
+                    background: 'var(--liora-uva)', color: 'var(--liora-crema)',
+                    border: 'none', borderRadius: 16,
+                    padding: '15px 24px', marginBottom: 10,
+                    fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 16,
+                    textDecoration: 'none',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Crear cuenta y obtener {coupon.discountText} →
+                </a>
+
+                {/* Código copiable (secundario) */}
                 <button
                   onClick={handleCopy}
                   style={{
                     width: '100%',
-                    background: copied ? 'var(--cat-menta)' : 'var(--liora-uva)',
-                    color: 'var(--liora-crema)',
-                    border: 'none', borderRadius: 16,
-                    padding: '14px 24px',
+                    background: copied ? 'var(--cat-menta)' : 'transparent',
+                    color: 'var(--liora-uva)',
+                    border: '1.5px dashed var(--liora-arena)',
+                    borderRadius: 12,
+                    padding: '10px 20px',
                     fontFamily: 'var(--font-display)',
-                    fontWeight: 800, fontSize: 24,
-                    letterSpacing: '0.08em',
+                    fontWeight: 700, fontSize: 18,
+                    letterSpacing: '0.06em',
                     cursor: 'pointer',
-                    transition: 'background 0.25s, transform 0.15s',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                   }}
                 >
-                  {copied ? '✓ ¡Copiado!' : COUPON_CODE}
+                  {copied ? '✓ ¡Copiado!' : coupon.code}
                   {!copied && (
-                    <span style={{ fontSize: 14, opacity: 0.6, fontFamily: 'var(--font-body)', fontWeight: 400 }}>
-                      (toca para copiar)
+                    <span style={{ fontSize: 12, opacity: 0.5, fontFamily: 'var(--font-body)', fontWeight: 400 }}>
+                      copiar código
                     </span>
                   )}
                 </button>
 
                 <div style={{
-                  fontFamily: 'var(--font-body)', fontSize: 12,
-                  color: 'var(--liora-uva)', opacity: 0.55,
-                  textAlign: 'center', marginTop: 10, marginBottom: 24,
+                  fontFamily: 'var(--font-body)', fontSize: 11,
+                  color: 'var(--liora-uva)', opacity: 0.5,
+                  textAlign: 'center', marginTop: 8, marginBottom: 20,
                 }}>
-                  Válido por tiempo limitado · Una vez por cuenta
+                  Solo válido para cuentas nuevas · Una vez por cuenta
                 </div>
 
-                {/* Email para más descuentos */}
-                <div style={{
-                  borderTop: '1.5px solid var(--liora-arena)',
-                  paddingTop: 20,
-                }}>
-                  <p style={{
-                    fontFamily: 'var(--font-body)', fontSize: 13,
-                    color: 'var(--liora-uva)', opacity: 0.7,
-                    margin: '0 0 12px', textAlign: 'center',
-                  }}>
-                    Déjanos tu email y recibe ofertas exclusivas de LIORA
+                {/* Email para ofertas */}
+                <div style={{ borderTop: '1.5px solid var(--liora-arena)', paddingTop: 18 }}>
+                  <p style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--liora-uva)', opacity: 0.65, margin: '0 0 10px', textAlign: 'center' }}>
+                    O déjanos tu email para recibir ofertas exclusivas
                   </p>
                   <form onSubmit={handleSubmit} style={{ display: 'flex', gap: 8 }}>
                     <input
@@ -206,27 +223,13 @@ export function ExitIntentModal() {
                       onChange={e => setEmail(e.target.value)}
                       placeholder="tu@email.com"
                       required
-                      style={{
-                        flex: 1, padding: '11px 14px',
-                        border: '1.5px solid var(--liora-arena)',
-                        borderRadius: 12,
-                        fontFamily: 'var(--font-body)', fontSize: 14,
-                        color: 'var(--liora-uva)',
-                        background: 'var(--liora-blanco)',
-                      }}
+                      style={{ flex: 1, padding: '10px 14px', border: '1.5px solid var(--liora-arena)', borderRadius: 10, fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-uva)', background: 'var(--liora-blanco)' }}
                     />
                     <button
                       type="submit"
-                      style={{
-                        background: 'var(--liora-uva)', color: 'var(--liora-crema)',
-                        border: 'none', borderRadius: 12,
-                        padding: '11px 18px',
-                        fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 14,
-                        cursor: 'pointer',
-                        whiteSpace: 'nowrap',
-                      }}
+                      style={{ background: 'var(--liora-uva)', color: 'var(--liora-crema)', border: 'none', borderRadius: 10, padding: '10px 16px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}
                     >
-                      Suscribirme
+                      Enviar
                     </button>
                   </form>
                 </div>
@@ -244,7 +247,7 @@ export function ExitIntentModal() {
                   fontFamily: 'var(--font-body)', fontSize: 14,
                   color: 'var(--liora-uva)', opacity: 0.7, margin: 0,
                 }}>
-                  Usa <strong>{COUPON_CODE}</strong> al finalizar tu compra.<br />
+                  Usa <strong>{coupon.code}</strong> al finalizar tu compra.<br />
                   Te enviamos más beneficios a tu email.
                 </p>
               </div>

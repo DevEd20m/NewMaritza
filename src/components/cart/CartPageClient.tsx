@@ -9,6 +9,7 @@ import {
 } from '@phosphor-icons/react'
 import { useCartStore } from '@/lib/store/cart'
 import { trackBeginCheckout } from '@/lib/analytics/events'
+import { createClient } from '@/lib/supabase/client'
 
 interface KitItem {
   variantId: string
@@ -31,7 +32,12 @@ interface KitData {
 
 type BotMsg = { who: 'bot' | 'user'; text: string }
 
-export function CartPageClient() {
+interface CartPageClientProps {
+  shippingCostCents?: number
+  freeShippingThresholdCents?: number
+}
+
+export function CartPageClient({ shippingCostCents = 1500, freeShippingThresholdCents = 15000 }: CartPageClientProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const profileId = searchParams.get('profileId')
@@ -50,8 +56,21 @@ export function CartPageClient() {
   const [botThread, setBotThread] = useState<BotMsg[]>([])
   const [botInput, setBotInput] = useState('')
   const [botLoading, setBotLoading] = useState(false)
+  const [isGuest, setIsGuest] = useState(false)
+  const [featuredCoupon, setFeaturedCoupon] = useState<{ code: string; discountText: string } | null>(null)
   const hasFetched = useRef(false)
   const chatEndRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getSession().then(({ data }) => {
+      setIsGuest(!data.session)
+    })
+    fetch('/api/coupons/featured')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setFeaturedCoupon(data) })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (!profileId || hasFetched.current) return
@@ -106,7 +125,7 @@ export function CartPageClient() {
 
   const sub = subtotalCents()
   const discount = discountCents
-  const shipping = sub >= 15000 ? 0 : 1500
+  const shipping = sub >= freeShippingThresholdCents ? 0 : shippingCostCents
   const total = totalCents() + shipping
   const fmt = (cents: number) => `S/${(cents / 100).toFixed(0)}`
 
@@ -418,7 +437,7 @@ export function CartPageClient() {
               {couponError && <p style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: '#FFB5A8', marginTop: 8, margin: '8px 0 0' }}>{couponError}</p>}
               {appliedCouponCode && !couponError
                 ? <p style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--liora-lima)', marginTop: 8, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, margin: '8px 0 0' }}><Check size={12} weight="bold" /> {appliedCouponCode} — −{fmt(discount)}</p>
-                : <p style={{ fontFamily: 'var(--font-body)', fontSize: 11, opacity: 0.65, marginTop: 8, margin: '8px 0 0' }}>Prueba <strong>BIENVENIDA15</strong></p>
+                : <p style={{ fontFamily: 'var(--font-body)', fontSize: 11, opacity: 0.65, marginTop: 8, margin: '8px 0 0' }}>Prueba <strong>{featuredCoupon?.code ?? 'BIENVENIDA10'}</strong></p>
               }
             </div>
 
@@ -428,7 +447,25 @@ export function CartPageClient() {
               <SumRow label="Envío" value={shipping === 0 ? 'Gratis' : fmt(shipping)} />
             </div>
 
-            <button onClick={goCheckout} style={{ width: '100%', background: 'var(--liora-lima)', color: 'var(--liora-uva)', border: 'none', borderRadius: 999, padding: '16px 24px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 16, cursor: 'pointer', marginTop: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+            {/* Banner conversión guest → cuenta */}
+            {isGuest && featuredCoupon && !appliedCouponCode && (
+              <div style={{ marginTop: 20, background: 'rgba(201,240,72,0.12)', border: '1.5px solid var(--liora-lima)', borderRadius: 16, padding: '14px 16px' }}>
+                <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, color: 'var(--liora-lima)', marginBottom: 4 }}>
+                  🎁 {featuredCoupon.discountText} para ti
+                </div>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--liora-crema)', opacity: 0.8, lineHeight: 1.4, marginBottom: 10 }}>
+                  Crea tu cuenta gratis y aplica el descuento en esta compra.
+                </div>
+                <Link
+                  href={`/login?next=${encodeURIComponent(typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/carrito')}`}
+                  style={{ display: 'block', textAlign: 'center', background: 'var(--liora-lima)', color: 'var(--liora-uva)', borderRadius: 999, padding: '9px 16px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 13, textDecoration: 'none' }}
+                >
+                  Registrarme y ahorrar {featuredCoupon.discountText} →
+                </Link>
+              </div>
+            )}
+
+            <button onClick={goCheckout} style={{ width: '100%', background: 'var(--liora-lima)', color: 'var(--liora-uva)', border: 'none', borderRadius: 999, padding: '16px 24px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 16, cursor: 'pointer', marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
               Ir a pagar <Lock size={18} weight="bold" />
             </button>
 
@@ -491,7 +528,7 @@ export function CartPageClient() {
           <button onClick={goCheckout} style={{ width: '100%', background: 'var(--liora-lima)', color: 'var(--liora-uva)', border: 'none', borderRadius: 999, padding: '16px 24px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 16, cursor: 'pointer', marginTop: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
             <Lock size={18} weight="bold" /> Ir a pagar
           </button>
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: 11, opacity: 0.6, textAlign: 'center', marginTop: 14 }}>Prueba <strong>BIENVENIDA15</strong> para −15%</p>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 11, opacity: 0.6, textAlign: 'center', marginTop: 14 }}>Prueba <strong>{featuredCoupon?.code ?? 'BIENVENIDA10'}</strong> para −15%</p>
         </aside>
       </div>
     </div>

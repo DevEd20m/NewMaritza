@@ -1,19 +1,23 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { getGuideBySlug, GUIDES } from '@/lib/guides'
+import { getGuideBySlugDB, getAllGuideSlugsDB } from '@/lib/guides/db'
 import { GuideAccordion } from '@/components/guides/GuideAccordion'
+import { PersonalizedIntro } from '@/components/guides/PersonalizedIntro'
+import { getStoreSettings } from '@/lib/settings'
 import { ArrowLeft } from '@phosphor-icons/react/dist/ssr'
+import { Suspense } from 'react'
 
 interface Props { params: Promise<{ slug: string }> }
 
 export async function generateStaticParams() {
-  return GUIDES.map(g => ({ slug: g.slug }))
+  const slugs = await getAllGuideSlugsDB()
+  return slugs.map(slug => ({ slug }))
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const guide = getGuideBySlug(slug)
+  const guide = await getGuideBySlugDB(slug)
   if (!guide) return { title: 'Guía no encontrada' }
   return {
     title: `Guía de uso — ${guide.kitName} | LIORA`,
@@ -23,10 +27,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function GuidePage({ params }: Props) {
   const { slug } = await params
-  const guide = getGuideBySlug(slug)
+  const [guide, settings] = await Promise.all([getGuideBySlugDB(slug), getStoreSettings()])
   if (!guide) notFound()
 
   const kitSlug = slug.replace('kit-', '')
+  const waNumber = settings.whatsapp_number
 
   return (
     <div style={{ background: 'var(--liora-crema)', minHeight: '100vh' }}>
@@ -61,6 +66,11 @@ export default async function GuidePage({ params }: Props) {
 
       {/* ── Contenido ─────────────────────────────────────────────────────── */}
       <div style={{ maxWidth: 760, margin: '0 auto', padding: '56px 48px 96px' }}>
+
+        {/* ── Intro personalizada (solo si hay profileId en URL) ─────────── */}
+        <Suspense>
+          <PersonalizedIntro guideSlug={slug} guideColor={guide.color} tips={guide.tips} />
+        </Suspense>
 
         {/* ── Tu rutina del día ──────────────────────────────────────────── */}
         <section style={{ marginBottom: 64 }}>
@@ -244,7 +254,7 @@ export default async function GuidePage({ params }: Props) {
                 Ir al kit →
               </Link>
               <a
-                href={`https://wa.me/51999999999?text=Hola%2C%20tengo%20preguntas%20sobre%20el%20${encodeURIComponent(guide.kitName)}`}
+                href={`https://wa.me/${waNumber}?text=Hola%2C%20tengo%20preguntas%20sobre%20el%20${encodeURIComponent(guide.kitName)}`}
                 target="_blank" rel="noopener"
                 style={{
                   background: '#25d366', color: '#ffffff',

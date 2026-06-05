@@ -21,7 +21,7 @@ export interface PrefillData {
 }
 
 
-export function CheckoutForm({ prefill }: { prefill: PrefillData | null }) {
+export function CheckoutForm({ prefill, shippingCostCents = 1500, freeShippingThresholdCents = 15000 }: { prefill: PrefillData | null; shippingCostCents?: number; freeShippingThresholdCents?: number }) {
   const router = useRouter()
   const { items, subtotalCents, totalCents, discountCents, appliedCouponCode, sessionToken, clearCart } = useCartStore()
   const [loading, setLoading] = useState(false)
@@ -32,7 +32,7 @@ export function CheckoutForm({ prefill }: { prefill: PrefillData | null }) {
 
   const sub = subtotalCents()
   const discount = discountCents
-  const shipping = sub >= 15000 ? 0 : 1500
+  const shipping = sub >= freeShippingThresholdCents ? 0 : shippingCostCents
   const total = totalCents() + shipping
   const fmt = (cents: number) => `S/${(cents / 100).toFixed(0)}`
 

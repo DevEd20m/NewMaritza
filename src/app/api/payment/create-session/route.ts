@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const customerEmail = user?.email ?? order.guest_email ?? 'guest@liora.pe'
+    const customerEmail = user?.email ?? order.guest_email ?? ''
     const customerName = order.guest_name ?? user?.email ?? 'Cliente LIORA'
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'

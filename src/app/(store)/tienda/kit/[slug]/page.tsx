@@ -7,7 +7,7 @@ import { buildKitMetadata, buildKitJsonLd } from '@/lib/seo/metadata'
 import { ViewerBadge } from '@/components/urgency/ViewerBadge'
 import { StockUrgency } from '@/components/urgency/StockUrgency'
 import Link from 'next/link'
-import { getGuideBySlug } from '@/lib/guides'
+import { getGuideBySlugDB } from '@/lib/guides/db'
 
 interface Props { params: Promise<{ slug: string }> }
 
@@ -84,7 +84,7 @@ export default async function KitPage({ params }: Props) {
   if (!kit) notFound()
 
   const bg = kitColor(slug)
-  const guide = getGuideBySlug(slug)
+  const guide = await getGuideBySlugDB(slug)
   const items = (kit.kit_products ?? []) as any[]
   const totalCents = items.reduce((s: number, kp: any) => {
     const price = kp.product_variants?.product_prices?.find((p: any) => !p.effective_to)

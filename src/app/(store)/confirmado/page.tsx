@@ -19,6 +19,13 @@ async function getOrder(orderNumber: string) {
   return data
 }
 
+async function getQuizProfileId(userId: string | null): Promise<string | null> {
+  if (!userId) return null
+  const admin = createAdminClient()
+  const { data } = await admin.from('profiles').select('quiz_profile_id').eq('id', userId).single()
+  return (data as any)?.quiz_profile_id ?? null
+}
+
 async function confirmOrderFromSession(sessionId: string, orderNumber: string) {
   try {
     const admin = createAdminClient()
@@ -70,5 +77,6 @@ export default async function SuccessPage({ searchParams }: Props) {
     )
   }
 
-  return <SuccessClient order={order} whatsappNumber={settings.whatsapp_number} />
+  const quizProfileId = await getQuizProfileId((order as any).user_id ?? null)
+  return <SuccessClient order={order} whatsappNumber={settings.whatsapp_number} quizProfileId={quizProfileId} />
 }

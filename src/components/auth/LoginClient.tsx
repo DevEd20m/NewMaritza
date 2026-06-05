@@ -1,11 +1,14 @@
 'use client'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Logo } from '@/components/layout/Logo'
 
 export function LoginClient() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const nextPath = searchParams.get('next') ?? '/cuenta'
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [mode, setMode] = useState<'login' | 'signup'>('login')
@@ -16,7 +19,8 @@ export function LoginClient() {
   const supabase = createClient()
 
   const handleGoogle = async () => {
-    await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${window.location.origin}/auth/callback` } })
+    const callbackUrl = `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`
+    await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: callbackUrl } })
   }
 
   const handleEmail = async (e: React.FormEvent) => {
@@ -27,9 +31,10 @@ export function LoginClient() {
       if (mode === 'login') {
         const { error } = await supabase.auth.signInWithPassword({ email, password })
         if (error) throw error
-        router.push('/cuenta')
+        router.push(nextPath)
       } else {
-        const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${window.location.origin}/auth/callback` } })
+        const callbackUrl = `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`
+        const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: callbackUrl } })
         if (error) throw error
         setMagicSent(true)
       }

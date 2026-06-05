@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { CheckCircle, Copy, Check, ArrowRight, WhatsappLogo } from '@phosphor-icons/react'
 import { useCartStore } from '@/lib/store/cart'
 import { trackPurchase } from '@/lib/analytics/events'
-import { detectKitFromItems, type KitGuide } from '@/lib/guides'
+import type { KitGuide } from '@/lib/guides'
 
 interface Order {
   id: string
@@ -18,7 +18,7 @@ interface Order {
   order_items: { product_name_snapshot: string; variant_name_snapshot: string; quantity: number; unit_price_cents: number }[]
 }
 
-export function SuccessClient({ order, whatsappNumber }: { order: Order; whatsappNumber?: string }) {
+export function SuccessClient({ order, whatsappNumber, quizProfileId }: { order: Order; whatsappNumber?: string; quizProfileId?: string | null }) {
   const WHATSAPP_NUMBER = whatsappNumber ?? '51999999999'
   const { clearCart } = useCartStore()
   const [copied, setCopied] = useState(false)
@@ -42,8 +42,11 @@ export function SuccessClient({ order, whatsappNumber }: { order: Order; whatsap
         quantity: i.quantity,
       })),
     })
-    const detectedGuide = detectKitFromItems(order.order_items.map(i => i.product_name_snapshot))
-    if (detectedGuide) setGuide(detectedGuide)
+    fetch('/api/guides/detect', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ productNames: order.order_items.map(i => i.product_name_snapshot) }),
+    }).then(r => r.json()).then(g => { if (g) setGuide(g) }).catch(() => {})
   }, []) // eslint-disable-line
 
   const handleActivate = async () => {
@@ -240,7 +243,7 @@ export function SuccessClient({ order, whatsappNumber }: { order: Order; whatsap
             <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-uva)', opacity: 0.65, margin: 0 }}>
               Consejos avanzados, recetas y FAQs en la guía completa.
             </p>
-            <Link href={`/guia/${guide.slug}`} style={{
+            <Link href={`/guia/${guide.slug}${quizProfileId ? `?profileId=${quizProfileId}` : ''}`} style={{
               display: 'inline-flex', alignItems: 'center', gap: 6,
               background: 'var(--liora-uva)', color: 'var(--liora-crema)',
               borderRadius: 999, padding: '10px 18px',
