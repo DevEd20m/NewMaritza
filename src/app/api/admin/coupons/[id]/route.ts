@@ -19,6 +19,11 @@ const schema = z.object({
   new_customers_only: z.boolean(),
   scope: z.enum(['all', 'category']),
   scope_category_ids: z.array(z.string().uuid()).nullable().optional(),
+  audience: z.enum(['everyone', 'logged_out', 'logged_in', 'returning']).default('everyone'),
+  placements: z.array(z.string()).default(['exit_modal']),
+  promo_title: z.string().nullable().optional(),
+  promo_subtitle: z.string().nullable().optional(),
+  promo_cta: z.string().nullable().optional(),
 })
 
 async function requireAdmin() {

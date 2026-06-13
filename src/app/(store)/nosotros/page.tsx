@@ -2,18 +2,21 @@ import Link from 'next/link'
 import { ArrowLeft, ArrowRight } from '@phosphor-icons/react/dist/ssr'
 import type { Metadata } from 'next'
 
-export const metadata: Metadata = { title: 'Nosotros — LIORA' }
+export const metadata: Metadata = {
+  title: 'Nosotros — LIORA',
+  description: 'Conoce LIORA. Kits de autocuidado armados con criterio para que compres con claridad, no a ciegas.',
+}
 
 const STATS = [
-  ['12,400+', 'clientas confiando en su kit'],
-  ['2,400+',  'reseñas con 4.8★ promedio'],
-  ['38h',     'tiempo promedio de entrega'],
-  ['73%',     'menos suplementos innecesarios'],
+  ['Kits guiados',    'seleccionados con criterio, no al azar'],
+  ['Rutinas simples', 'menos pasos innecesarios en tu día'],
+  ['Soporte cercano', 'acompañamiento antes y después de comprar'],
+  ['Compra más clara','sabes qué eliges y por qué'],
 ]
 
 const VALUES = [
-  { n: '01', title: 'Tu cuerpo manda.', desc: 'No hay "fórmula universal". Cada kit responde al cuestionario y al historial de la clienta — no a una tendencia.', bg: 'var(--cat-coral)' },
-  { n: '02', title: 'Sin redundancia.', desc: 'Si ya estás tomando algo, no te lo vendemos. Preferimos vender menos hoy y tenerte mañana.', bg: 'var(--cat-menta)' },
+  { n: '01', title: 'Tu cuerpo manda.', desc: 'No hay "fórmula universal". Cada kit responde al cuestionario y al historial de cada persona — no a una tendencia.', bg: 'var(--cat-coral)' },
+  { n: '02', title: 'Sin redundancia.', desc: 'Si ya usas algo parecido, te ayudamos a evitar duplicados. Preferimos recomendar con cuidado antes que llenar tu rutina de productos.', bg: 'var(--cat-menta)' },
   { n: '03', title: 'Hablamos claro.', desc: 'Sin "déficit", sin "patología", sin promesas mágicas. Te decimos lo que sabemos y lo que no.', bg: 'var(--cat-lavanda)' },
 ]
 
@@ -42,7 +45,9 @@ export default function NosotrosPage() {
           Bienestar que <span style={{ fontFamily: 'var(--font-script)' }}>cabe</span> en tu vida.
         </h1>
         <p style={{ fontFamily: 'var(--font-body)', fontSize: 20, lineHeight: 1.5, color: 'var(--liora-uva)', opacity: 0.85, marginTop: 28, maxWidth: 720 }}>
-          Empezamos en 2024 cansadas de los suplementos que se venden a todo el mundo igual. Tu cuerpo no es el promedio — tu kit tampoco debería serlo. Hoy somos un equipo de 14 personas en Lima, armando kits a mano para más de 12,000 clientes peruanas.
+          Empezamos con una idea simple: nadie debería comprar productos de autocuidado a ciegas.
+          Tu piel, tu rutina, tu viaje y tu bienestar no se parecen a los de nadie más.
+          Por eso LIORA arma kits guiados según lo que necesitas, cómo vives y qué debes evitar.
         </p>
       </div>
 
@@ -84,7 +89,9 @@ export default function NosotrosPage() {
             <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, color: 'var(--liora-uva)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12 }}>Quienes lo hacen</div>
             <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 40, color: 'var(--liora-uva)', margin: 0, lineHeight: 1, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>14 personas. Un taller en Lima. Cero magia.</h3>
             <p style={{ fontFamily: 'var(--font-body)', fontSize: 16, lineHeight: 1.5, color: 'var(--liora-uva)', opacity: 0.85, marginTop: 20 }}>
-              Nuestro equipo combina nutricionistas, formuladoras certificadas y especialistas en piel — más las personas que arman cada kit a mano, en Surquillo. Si tienes una duda, alguien del taller te responde.
+              Diseñamos cada kit con información clara, reglas de seguridad y guías de uso.
+              Cuando una respuesta requiere atención profesional, lo decimos.
+              Las personas detrás de cada kit trabajan desde Lima para que llegue armado y listo.
             </p>
             <Link href="/cuestionario" style={{ background: 'var(--liora-uva)', color: 'var(--liora-crema)', border: 'none', borderRadius: 999, padding: '14px 24px', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginTop: 28, display: 'inline-flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
               Hacer mi cuestionario <ArrowRight size={16} weight="bold" />

@@ -7,6 +7,11 @@ const schema = z.object({
   name: z.string().min(1).max(60).optional(),
   slug: z.string().min(1).max(60).regex(/^[a-z0-9-]+$/).optional(),
   sort_order: z.number().int().min(0).optional(),
+  show_in_hero: z.boolean().optional(),
+  hero_sort_order: z.number().int().min(0).optional(),
+  hero_tagline: z.string().max(100).nullable().optional(),
+  color: z.string().max(80).optional(),
+  image_url: z.string().url().nullable().optional(),
 })
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -19,7 +24,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (!parsed.success) return NextResponse.json({ error: 'Datos inválidos' }, { status: 400 })
 
   const admin = createAdminClient()
-  const { error } = await admin.from('categories').update(parsed.data).eq('id', id)
+  const { error } = await (admin as any).from('categories').update(parsed.data).eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   return NextResponse.json({ ok: true })

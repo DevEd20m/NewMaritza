@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { z } from 'zod'
 import { requireAdmin } from '@/lib/auth/guards'
+import { generateSkuBase } from '@/lib/utils/generate-sku'
 
 const schema = z.object({
   name: z.string().min(1),
@@ -15,6 +16,10 @@ const schema = z.object({
   sku: z.string().optional(),
   price_cents: z.number().int().positive(),
   compare_at_cents: z.number().int().positive().nullable().optional(),
+  usage_instructions: z.string().optional(),
+  indications: z.string().optional(),
+  contraindications: z.string().optional(),
+  gallery_urls: z.array(z.string().url()).optional(),
 })
 
 function toSlug(name: string) {
@@ -34,7 +39,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: msg || 'Datos inválidos' }, { status: 400 })
     }
 
-    const { name, description, brand, category_id, cover_image_url, is_active, stock_quantity, variant_name, sku, price_cents, compare_at_cents } = parsed.data
+    const { name, description, brand, category_id, cover_image_url, is_active, stock_quantity, variant_name, sku, price_cents, compare_at_cents, usage_instructions, indications, contraindications, gallery_urls } = parsed.data
     const admin = createAdminClient()
 
     // Ensure unique slug
@@ -49,13 +54,29 @@ export async function POST(request: NextRequest) {
       name, slug, description: description ?? null, brand: brand ?? null,
       category_id: category_id ?? null, cover_image_url: cover_image_url ?? null,
       is_active, stock_quantity,
+      usage_instructions: usage_instructions ?? null,
+      indications: indications ?? null,
+      contraindications: contraindications ?? null,
+      gallery_urls: gallery_urls ?? [],
     }).select('id').single()
     if (pErr || !product) return NextResponse.json({ error: pErr?.message ?? 'Error al crear producto' }, { status: 500 })
+
+    let finalSku = sku || ''
+    if (!finalSku) {
+      const { data: catRow } = await admin.from('categories').select('slug').eq('id', category_id ?? '').single()
+      const base = generateSkuBase(catRow?.slug ?? null, name, variant_name)
+      finalSku = base
+      for (let i = 2; i <= 5; i++) {
+        const { data: clash } = await (admin as any).from('product_variants').select('id').eq('sku', finalSku).maybeSingle()
+        if (!clash) break
+        finalSku = `${base}-${i}`
+      }
+    }
 
     const { data: variant, error: vErr } = await (admin as any).from('product_variants').insert({
       product_id: product.id,
       name: variant_name,
-      sku: sku || `SKU-${Date.now()}`,
+      sku: finalSku,
       is_active: true,
     }).select('id').single()
     if (vErr || !variant) return NextResponse.json({ error: vErr?.message ?? 'Error al crear variante' }, { status: 500 })

@@ -4,18 +4,26 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { ProductCard } from '@/components/products/ProductCard'
 
 const CATEGORY_COLORS: Record<string, string> = {
-  gym: 'var(--cat-durazno)',
-  'skin-care': 'var(--cat-coral)',
-  vitaminas: 'var(--cat-mostaza)',
-  organicos: 'var(--cat-menta)',
+  piel:          'var(--cat-coral)',
+  solar:         'var(--cat-mostaza)',
+  bienestar:     'var(--cat-lavanda)',
+  gym:           'var(--cat-durazno)',
+  viaje:         'var(--cat-cielo)',
+  hogar:         'var(--cat-rosa)',
+  digestivo:     'var(--cat-menta)',
+  'pies-cuerpo': 'var(--cat-durazno)',
 }
 
 const FILTERS = [
-  { slug: '',          label: 'Todos' },
-  { slug: 'organicos', label: 'Orgánicos' },
-  { slug: 'gym',       label: 'Gym & proteínas' },
-  { slug: 'skin-care', label: 'Skin care' },
-  { slug: 'vitaminas', label: 'Vitaminas' },
+  { slug: '',            label: 'Todos' },
+  { slug: 'piel',        label: 'Piel' },
+  { slug: 'solar',       label: 'Solar' },
+  { slug: 'bienestar',   label: 'Bienestar' },
+  { slug: 'gym',         label: 'Gym' },
+  { slug: 'viaje',       label: 'Viaje' },
+  { slug: 'hogar',       label: 'Hogar' },
+  { slug: 'digestivo',   label: 'Digestivo' },
+  { slug: 'pies-cuerpo', label: 'Pies & cuerpo' },
 ] as const
 
 export interface ShopProduct {
@@ -24,7 +32,7 @@ export interface ShopProduct {
   slug: string
   cover_image_url: string | null
   category_id: string | null
-  categories: { slug: string } | null
+  categories: { slug: string; name?: string } | null
   product_variants: Array<{
     id: string
     name: string
@@ -141,6 +149,7 @@ export function ShopProductsSection({ products, initialCategoria = '' }: Props) 
               priceCents={price.amount_cents}
               compareAtCents={price.compare_at_cents ?? undefined}
               categoryColor={CATEGORY_COLORS[catSlug] ?? 'var(--cat-lavanda)'}
+              categoryName={p.categories?.name}
               imageUrl={p.cover_image_url ?? undefined}
             />
           )

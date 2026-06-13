@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { InstagramLogo, TiktokLogo, WhatsappLogo, EnvelopeSimple } from '@phosphor-icons/react/dist/ssr'
 import { Logo } from './Logo'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getStoreSettings } from '@/lib/settings'
 
 const STATIC_LINKS = {
   Tienda: [
@@ -11,13 +12,12 @@ const STATIC_LINKS = {
   ],
   Ayuda: [
     { href: '/ayuda', label: 'Preguntas frecuentes' },
-    { href: '/ayuda#envios', label: 'Envíos y tracking' },
+    { href: '/ayuda#envios', label: 'Envíos y seguimiento' },
     { href: '/ayuda#devoluciones', label: 'Devoluciones' },
     { href: '/contacto', label: 'Contacto' },
   ],
   Nosotros: [
     { href: '/nosotros', label: 'Sobre nosotros' },
-    { href: '/nosotros#sostenibilidad', label: 'Sostenibilidad' },
     { href: '/privacidad', label: 'Privacidad' },
     { href: '/terminos', label: 'Términos' },
   ],
@@ -25,12 +25,19 @@ const STATIC_LINKS = {
 
 async function getActiveKits() {
   const admin = createAdminClient()
-  const { data } = await admin.from('kits').select('name, slug').eq('is_active', true).order('name')
+  const { data } = await admin.from('kits').select('name, slug').eq('is_active', true).order('name').limit(6)
   return (data ?? []) as { name: string; slug: string }[]
 }
 
 export async function Footer() {
-  const kits = await getActiveKits()
+  const [kits, settings] = await Promise.all([getActiveKits(), getStoreSettings()])
+
+  const social = [
+    { Icon: InstagramLogo,  href: settings.instagram_url  || null,                                    label: 'Instagram de LIORA' },
+    { Icon: TiktokLogo,     href: settings.tiktok_url     || null,                                    label: 'TikTok de LIORA' },
+    { Icon: WhatsappLogo,   href: settings.whatsapp_number ? `https://wa.me/${settings.whatsapp_number}` : null, label: 'WhatsApp de LIORA' },
+    { Icon: EnvelopeSimple, href: settings.email_contact   ? `mailto:${settings.email_contact}` : null,          label: 'Email de LIORA' },
+  ].filter((s): s is { Icon: typeof InstagramLogo; href: string; label: string } => s.href !== null)
   return (
     <footer
       className="liora-footer-root"
@@ -56,18 +63,15 @@ export async function Footer() {
           >
             Bienestar personalizado. Tu cuerpo no es como el de nadie — tu kit tampoco.
           </p>
-          <div style={{ display: 'flex', gap: 14, marginTop: 24 }}>
-            {([
-              { Icon: InstagramLogo, key: 'ig', href: '#' },
-              { Icon: TiktokLogo, key: 'tt', href: '#' },
-              { Icon: WhatsappLogo, key: 'wa', href: '#' },
-              { Icon: EnvelopeSimple, key: 'em', href: '#' },
-            ] as const).map(({ Icon, key, href }) => (
-              <Link key={key} href={href} style={{ color: 'var(--liora-crema)', display: 'flex' }}>
-                <Icon size={22} />
-              </Link>
-            ))}
-          </div>
+          {social.length > 0 && (
+            <div style={{ display: 'flex', gap: 14, marginTop: 24 }}>
+              {social.map(({ Icon, href, label }) => (
+                <Link key={label} href={href} aria-label={label} style={{ color: 'var(--liora-crema)', display: 'flex' }}>
+                  <Icon size={22} />
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Kits column */}
@@ -84,6 +88,11 @@ export async function Footer() {
                   </Link>
                 </li>
               ))}
+              <li>
+                <Link href="/tienda?modo=kits" style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--liora-crema)', fontWeight: 600 }}>
+                  Ver todos los kits →
+                </Link>
+              </li>
             </ul>
           </div>
         )}

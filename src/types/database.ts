@@ -209,6 +209,7 @@ export interface ProductWithDetails extends Product {
 }
 
 export interface KitWithProducts extends Kit {
+  benefits?: Array<{ icon: string; title: string; desc: string }>
   kit_products: (KitProduct & {
     variant: ProductVariant & {
       product: Product

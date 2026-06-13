@@ -1,0 +1,4422 @@
+{
+  "generated": "2026-06-13T16:51:01.382Z",
+  "mode": "standard",
+  "totalVariants": 200,
+  "stats": {
+    "categoryCounts": {
+      "gym": 20,
+      "piel": 40,
+      "bienestar": 40,
+      "digestivo": 20,
+      "solar": 20,
+      "viaje": 20,
+      "hogar": 20,
+      "pies-cuerpo": 20
+    },
+    "nullCategory": 0,
+    "safetyVariants": 0,
+    "reviewNeeded": 0
+  },
+  "variants": [
+    {
+      "id": 1,
+      "objective": "obj-rendimiento",
+      "slugs": [
+        "gym-fuerza",
+        "nivel-principiante",
+        "obj-rendimiento",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-dolor",
+        "sin-restriccion",
+        "tipo-fuerza"
+      ],
+      "scores": {
+        "gym": 12
+      },
+      "topCategory": "gym",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 2,
+      "objective": "obj-rendimiento",
+      "slugs": [
+        "gym-fuerza",
+        "nivel-principiante",
+        "obj-rendimiento",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-dolor",
+        "sin-restriccion",
+        "tipo-fuerza"
+      ],
+      "scores": {
+        "gym": 12
+      },
+      "topCategory": "gym",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 3,
+      "objective": "obj-rendimiento",
+      "slugs": [
+        "gym-fuerza",
+        "nivel-principiante",
+        "obj-rendimiento",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-dolor",
+        "sin-restriccion",
+        "tipo-fuerza"
+      ],
+      "scores": {
+        "gym": 12
+      },
+      "topCategory": "gym",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 4,
+      "objective": "obj-rendimiento",
+      "slugs": [
+        "gym-fuerza",
+        "nivel-principiante",
+        "obj-rendimiento",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-dolor",
+        "sin-restriccion",
+        "tipo-fuerza"
+      ],
+      "scores": {
+        "gym": 12
+      },
+      "topCategory": "gym",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 5,
+      "objective": "obj-rendimiento",
+      "slugs": [
+        "gym-fuerza",
+        "nivel-principiante",
+        "obj-rendimiento",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-dolor",
+        "sin-restriccion",
+        "tipo-fuerza"
+      ],
+      "scores": {
+        "gym": 12
+      },
+      "topCategory": "gym",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 6,
+      "objective": "obj-rendimiento",
+      "slugs": [
+        "gym-fuerza",
+        "nivel-principiante",
+        "obj-rendimiento",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-dolor",
+        "sin-restriccion",
+        "tipo-fuerza"
+      ],
+      "scores": {
+        "gym": 12
+      },
+      "topCategory": "gym",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 7,
+      "objective": "obj-rendimiento",
+      "slugs": [
+        "gym-fuerza",
+        "nivel-principiante",
+        "obj-rendimiento",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-dolor",
+        "sin-restriccion",
+        "tipo-fuerza"
+      ],
+      "scores": {
+        "gym": 12
+      },
+      "topCategory": "gym",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 8,
+      "objective": "obj-rendimiento",
+      "slugs": [
+        "gym-fuerza",
+        "nivel-principiante",
+        "obj-rendimiento",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-dolor",
+        "sin-restriccion",
+        "tipo-fuerza"
+      ],
+      "scores": {
+        "gym": 12
+      },
+      "topCategory": "gym",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 9,
+      "objective": "obj-rendimiento",
+      "slugs": [
+        "gym-fuerza",
+        "nivel-principiante",
+        "obj-rendimiento",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-dolor",
+        "sin-restriccion",
+        "tipo-fuerza"
+      ],
+      "scores": {
+        "gym": 12
+      },
+      "topCategory": "gym",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 10,
+      "objective": "obj-rendimiento",
+      "slugs": [
+        "gym-fuerza",
+        "nivel-principiante",
+        "obj-rendimiento",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-dolor",
+        "sin-restriccion",
+        "tipo-fuerza"
+      ],
+      "scores": {
+        "gym": 12
+      },
+      "topCategory": "gym",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 11,
+      "objective": "obj-rendimiento",
+      "slugs": [
+        "gym-fuerza",
+        "nivel-principiante",
+        "obj-rendimiento",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-dolor",
+        "sin-restriccion",
+        "tipo-fuerza"
+      ],
+      "scores": {
+        "gym": 12
+      },
+      "topCategory": "gym",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 12,
+      "objective": "obj-rendimiento",
+      "slugs": [
+        "gym-fuerza",
+        "nivel-principiante",
+        "obj-rendimiento",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-dolor",
+        "sin-restriccion",
+        "tipo-fuerza"
+      ],
+      "scores": {
+        "gym": 12
+      },
+      "topCategory": "gym",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 13,
+      "objective": "obj-rendimiento",
+      "slugs": [
+        "gym-fuerza",
+        "nivel-principiante",
+        "obj-rendimiento",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-dolor",
+        "sin-restriccion",
+        "tipo-fuerza"
+      ],
+      "scores": {
+        "gym": 12
+      },
+      "topCategory": "gym",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 14,
+      "objective": "obj-rendimiento",
+      "slugs": [
+        "gym-fuerza",
+        "nivel-principiante",
+        "obj-rendimiento",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-dolor",
+        "sin-restriccion",
+        "tipo-fuerza"
+      ],
+      "scores": {
+        "gym": 12
+      },
+      "topCategory": "gym",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 15,
+      "objective": "obj-rendimiento",
+      "slugs": [
+        "gym-fuerza",
+        "nivel-principiante",
+        "obj-rendimiento",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-dolor",
+        "sin-restriccion",
+        "tipo-fuerza"
+      ],
+      "scores": {
+        "gym": 12
+      },
+      "topCategory": "gym",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 16,
+      "objective": "obj-rendimiento",
+      "slugs": [
+        "gym-fuerza",
+        "nivel-principiante",
+        "obj-rendimiento",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-dolor",
+        "sin-restriccion",
+        "tipo-fuerza"
+      ],
+      "scores": {
+        "gym": 12
+      },
+      "topCategory": "gym",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 17,
+      "objective": "obj-rendimiento",
+      "slugs": [
+        "gym-fuerza",
+        "natural-importante",
+        "nivel-principiante",
+        "obj-rendimiento",
+        "presupuesto-bajo",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-dolor",
+        "sin-restriccion",
+        "tipo-fuerza"
+      ],
+      "scores": {
+        "gym": 12
+      },
+      "topCategory": "gym",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 18,
+      "objective": "obj-rendimiento",
+      "slugs": [
+        "gym-fuerza",
+        "natural-importante",
+        "nivel-principiante",
+        "obj-rendimiento",
+        "presupuesto-medio",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-dolor",
+        "sin-restriccion",
+        "tipo-fuerza"
+      ],
+      "scores": {
+        "gym": 12
+      },
+      "topCategory": "gym",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 19,
+      "objective": "obj-rendimiento",
+      "slugs": [
+        "gym-fuerza",
+        "natural-importante",
+        "nivel-principiante",
+        "obj-rendimiento",
+        "presupuesto-alto",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-dolor",
+        "sin-restriccion",
+        "tipo-fuerza"
+      ],
+      "scores": {
+        "gym": 12
+      },
+      "topCategory": "gym",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 20,
+      "objective": "obj-rendimiento",
+      "slugs": [
+        "gym-fuerza",
+        "natural-importante",
+        "nivel-principiante",
+        "obj-rendimiento",
+        "presupuesto-premium",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-dolor",
+        "sin-restriccion",
+        "tipo-fuerza"
+      ],
+      "scores": {
+        "gym": 12
+      },
+      "topCategory": "gym",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 21,
+      "objective": "obj-belleza",
+      "slugs": [
+        "foco-piel",
+        "obj-belleza",
+        "piel-arrugas",
+        "piel-grasa",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 12,
+        "bienestar": 1
+      },
+      "topCategory": "piel",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 22,
+      "objective": "obj-belleza",
+      "slugs": [
+        "foco-piel",
+        "obj-belleza",
+        "piel-arrugas",
+        "piel-grasa",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 12,
+        "bienestar": 1
+      },
+      "topCategory": "piel",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 23,
+      "objective": "obj-belleza",
+      "slugs": [
+        "foco-piel",
+        "obj-belleza",
+        "piel-arrugas",
+        "piel-grasa",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 12,
+        "bienestar": 1
+      },
+      "topCategory": "piel",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 24,
+      "objective": "obj-belleza",
+      "slugs": [
+        "foco-piel",
+        "obj-belleza",
+        "piel-arrugas",
+        "piel-grasa",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 12,
+        "bienestar": 1
+      },
+      "topCategory": "piel",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 25,
+      "objective": "obj-belleza",
+      "slugs": [
+        "foco-piel",
+        "obj-belleza",
+        "piel-arrugas",
+        "piel-grasa",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 12,
+        "bienestar": 1
+      },
+      "topCategory": "piel",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 26,
+      "objective": "obj-belleza",
+      "slugs": [
+        "foco-piel",
+        "obj-belleza",
+        "piel-arrugas",
+        "piel-grasa",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 12,
+        "bienestar": 1
+      },
+      "topCategory": "piel",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 27,
+      "objective": "obj-belleza",
+      "slugs": [
+        "foco-piel",
+        "obj-belleza",
+        "piel-arrugas",
+        "piel-grasa",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 12,
+        "bienestar": 1
+      },
+      "topCategory": "piel",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 28,
+      "objective": "obj-belleza",
+      "slugs": [
+        "foco-piel",
+        "obj-belleza",
+        "piel-arrugas",
+        "piel-grasa",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 12,
+        "bienestar": 1
+      },
+      "topCategory": "piel",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 29,
+      "objective": "obj-belleza",
+      "slugs": [
+        "foco-piel",
+        "obj-belleza",
+        "piel-arrugas",
+        "piel-grasa",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 12,
+        "bienestar": 1
+      },
+      "topCategory": "piel",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 30,
+      "objective": "obj-belleza",
+      "slugs": [
+        "foco-piel",
+        "obj-belleza",
+        "piel-arrugas",
+        "piel-grasa",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 12,
+        "bienestar": 1
+      },
+      "topCategory": "piel",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 31,
+      "objective": "obj-belleza",
+      "slugs": [
+        "foco-piel",
+        "obj-belleza",
+        "piel-arrugas",
+        "piel-grasa",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 12,
+        "bienestar": 1
+      },
+      "topCategory": "piel",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 32,
+      "objective": "obj-belleza",
+      "slugs": [
+        "foco-piel",
+        "obj-belleza",
+        "piel-arrugas",
+        "piel-grasa",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 12,
+        "bienestar": 1
+      },
+      "topCategory": "piel",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 33,
+      "objective": "obj-belleza",
+      "slugs": [
+        "foco-piel",
+        "obj-belleza",
+        "piel-arrugas",
+        "piel-grasa",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 12,
+        "bienestar": 1
+      },
+      "topCategory": "piel",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 34,
+      "objective": "obj-belleza",
+      "slugs": [
+        "foco-piel",
+        "obj-belleza",
+        "piel-arrugas",
+        "piel-grasa",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 12,
+        "bienestar": 1
+      },
+      "topCategory": "piel",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 35,
+      "objective": "obj-belleza",
+      "slugs": [
+        "foco-piel",
+        "obj-belleza",
+        "piel-arrugas",
+        "piel-grasa",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 12,
+        "bienestar": 1
+      },
+      "topCategory": "piel",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 36,
+      "objective": "obj-belleza",
+      "slugs": [
+        "foco-piel",
+        "obj-belleza",
+        "piel-arrugas",
+        "piel-grasa",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 12,
+        "bienestar": 1
+      },
+      "topCategory": "piel",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 37,
+      "objective": "obj-belleza",
+      "slugs": [
+        "foco-piel",
+        "natural-importante",
+        "obj-belleza",
+        "piel-arrugas",
+        "piel-grasa",
+        "presupuesto-bajo",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 12,
+        "bienestar": 1
+      },
+      "topCategory": "piel",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 38,
+      "objective": "obj-belleza",
+      "slugs": [
+        "foco-piel",
+        "natural-importante",
+        "obj-belleza",
+        "piel-arrugas",
+        "piel-grasa",
+        "presupuesto-medio",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 12,
+        "bienestar": 1
+      },
+      "topCategory": "piel",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 39,
+      "objective": "obj-belleza",
+      "slugs": [
+        "foco-piel",
+        "natural-importante",
+        "obj-belleza",
+        "piel-arrugas",
+        "piel-grasa",
+        "presupuesto-alto",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 12,
+        "bienestar": 1
+      },
+      "topCategory": "piel",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 40,
+      "objective": "obj-belleza",
+      "slugs": [
+        "foco-piel",
+        "natural-importante",
+        "obj-belleza",
+        "piel-arrugas",
+        "piel-grasa",
+        "presupuesto-premium",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 12,
+        "bienestar": 1
+      },
+      "topCategory": "piel",
+      "topScore": 12,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 41,
+      "objective": "obj-bienestar",
+      "slugs": [
+        "foco-sueno",
+        "frecuencia-diaria",
+        "obj-bienestar",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 8
+      },
+      "topCategory": "bienestar",
+      "topScore": 8,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 42,
+      "objective": "obj-bienestar",
+      "slugs": [
+        "foco-sueno",
+        "frecuencia-diaria",
+        "obj-bienestar",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 8
+      },
+      "topCategory": "bienestar",
+      "topScore": 8,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 43,
+      "objective": "obj-bienestar",
+      "slugs": [
+        "foco-sueno",
+        "frecuencia-diaria",
+        "obj-bienestar",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 8
+      },
+      "topCategory": "bienestar",
+      "topScore": 8,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 44,
+      "objective": "obj-bienestar",
+      "slugs": [
+        "foco-sueno",
+        "frecuencia-diaria",
+        "obj-bienestar",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 8
+      },
+      "topCategory": "bienestar",
+      "topScore": 8,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 45,
+      "objective": "obj-bienestar",
+      "slugs": [
+        "foco-sueno",
+        "frecuencia-diaria",
+        "obj-bienestar",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 8
+      },
+      "topCategory": "bienestar",
+      "topScore": 8,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 46,
+      "objective": "obj-bienestar",
+      "slugs": [
+        "foco-sueno",
+        "frecuencia-diaria",
+        "obj-bienestar",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 8
+      },
+      "topCategory": "bienestar",
+      "topScore": 8,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 47,
+      "objective": "obj-bienestar",
+      "slugs": [
+        "foco-sueno",
+        "frecuencia-diaria",
+        "obj-bienestar",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 8
+      },
+      "topCategory": "bienestar",
+      "topScore": 8,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 48,
+      "objective": "obj-bienestar",
+      "slugs": [
+        "foco-sueno",
+        "frecuencia-diaria",
+        "obj-bienestar",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 8
+      },
+      "topCategory": "bienestar",
+      "topScore": 8,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 49,
+      "objective": "obj-bienestar",
+      "slugs": [
+        "foco-sueno",
+        "frecuencia-diaria",
+        "obj-bienestar",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 8
+      },
+      "topCategory": "bienestar",
+      "topScore": 8,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 50,
+      "objective": "obj-bienestar",
+      "slugs": [
+        "foco-sueno",
+        "frecuencia-diaria",
+        "obj-bienestar",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 8
+      },
+      "topCategory": "bienestar",
+      "topScore": 8,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 51,
+      "objective": "obj-bienestar",
+      "slugs": [
+        "foco-sueno",
+        "frecuencia-diaria",
+        "obj-bienestar",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 8
+      },
+      "topCategory": "bienestar",
+      "topScore": 8,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 52,
+      "objective": "obj-bienestar",
+      "slugs": [
+        "foco-sueno",
+        "frecuencia-diaria",
+        "obj-bienestar",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 8
+      },
+      "topCategory": "bienestar",
+      "topScore": 8,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 53,
+      "objective": "obj-bienestar",
+      "slugs": [
+        "foco-sueno",
+        "frecuencia-diaria",
+        "obj-bienestar",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 8
+      },
+      "topCategory": "bienestar",
+      "topScore": 8,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 54,
+      "objective": "obj-bienestar",
+      "slugs": [
+        "foco-sueno",
+        "frecuencia-diaria",
+        "obj-bienestar",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 8
+      },
+      "topCategory": "bienestar",
+      "topScore": 8,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 55,
+      "objective": "obj-bienestar",
+      "slugs": [
+        "foco-sueno",
+        "frecuencia-diaria",
+        "obj-bienestar",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 8
+      },
+      "topCategory": "bienestar",
+      "topScore": 8,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 56,
+      "objective": "obj-bienestar",
+      "slugs": [
+        "foco-sueno",
+        "frecuencia-diaria",
+        "obj-bienestar",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 8
+      },
+      "topCategory": "bienestar",
+      "topScore": 8,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 57,
+      "objective": "obj-bienestar",
+      "slugs": [
+        "foco-sueno",
+        "frecuencia-diaria",
+        "natural-importante",
+        "obj-bienestar",
+        "presupuesto-bajo",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 8
+      },
+      "topCategory": "bienestar",
+      "topScore": 8,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 58,
+      "objective": "obj-bienestar",
+      "slugs": [
+        "foco-sueno",
+        "frecuencia-diaria",
+        "natural-importante",
+        "obj-bienestar",
+        "presupuesto-medio",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 8
+      },
+      "topCategory": "bienestar",
+      "topScore": 8,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 59,
+      "objective": "obj-bienestar",
+      "slugs": [
+        "foco-sueno",
+        "frecuencia-diaria",
+        "natural-importante",
+        "obj-bienestar",
+        "presupuesto-alto",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 8
+      },
+      "topCategory": "bienestar",
+      "topScore": 8,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 60,
+      "objective": "obj-bienestar",
+      "slugs": [
+        "foco-sueno",
+        "frecuencia-diaria",
+        "natural-importante",
+        "obj-bienestar",
+        "presupuesto-premium",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 8
+      },
+      "topCategory": "bienestar",
+      "topScore": 8,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 61,
+      "objective": "obj-digestivo",
+      "slugs": [
+        "digestivo-hinchazon",
+        "obj-digestivo",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "gym": 1,
+        "digestivo": 5
+      },
+      "topCategory": "digestivo",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 62,
+      "objective": "obj-digestivo",
+      "slugs": [
+        "digestivo-hinchazon",
+        "obj-digestivo",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "gym": 1,
+        "digestivo": 5
+      },
+      "topCategory": "digestivo",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 63,
+      "objective": "obj-digestivo",
+      "slugs": [
+        "digestivo-hinchazon",
+        "obj-digestivo",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "gym": 1,
+        "digestivo": 5
+      },
+      "topCategory": "digestivo",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 64,
+      "objective": "obj-digestivo",
+      "slugs": [
+        "digestivo-hinchazon",
+        "obj-digestivo",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "gym": 1,
+        "digestivo": 5
+      },
+      "topCategory": "digestivo",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 65,
+      "objective": "obj-digestivo",
+      "slugs": [
+        "digestivo-hinchazon",
+        "obj-digestivo",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "gym": 1,
+        "digestivo": 5
+      },
+      "topCategory": "digestivo",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 66,
+      "objective": "obj-digestivo",
+      "slugs": [
+        "digestivo-hinchazon",
+        "obj-digestivo",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "gym": 1,
+        "digestivo": 5
+      },
+      "topCategory": "digestivo",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 67,
+      "objective": "obj-digestivo",
+      "slugs": [
+        "digestivo-hinchazon",
+        "obj-digestivo",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "gym": 1,
+        "digestivo": 5
+      },
+      "topCategory": "digestivo",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 68,
+      "objective": "obj-digestivo",
+      "slugs": [
+        "digestivo-hinchazon",
+        "obj-digestivo",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "gym": 1,
+        "digestivo": 5
+      },
+      "topCategory": "digestivo",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 69,
+      "objective": "obj-digestivo",
+      "slugs": [
+        "digestivo-hinchazon",
+        "obj-digestivo",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "gym": 1,
+        "digestivo": 5
+      },
+      "topCategory": "digestivo",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 70,
+      "objective": "obj-digestivo",
+      "slugs": [
+        "digestivo-hinchazon",
+        "obj-digestivo",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "gym": 1,
+        "digestivo": 5
+      },
+      "topCategory": "digestivo",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 71,
+      "objective": "obj-digestivo",
+      "slugs": [
+        "digestivo-hinchazon",
+        "obj-digestivo",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "gym": 1,
+        "digestivo": 5
+      },
+      "topCategory": "digestivo",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 72,
+      "objective": "obj-digestivo",
+      "slugs": [
+        "digestivo-hinchazon",
+        "obj-digestivo",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "gym": 1,
+        "digestivo": 5
+      },
+      "topCategory": "digestivo",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 73,
+      "objective": "obj-digestivo",
+      "slugs": [
+        "digestivo-hinchazon",
+        "obj-digestivo",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "gym": 1,
+        "digestivo": 5
+      },
+      "topCategory": "digestivo",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 74,
+      "objective": "obj-digestivo",
+      "slugs": [
+        "digestivo-hinchazon",
+        "obj-digestivo",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "gym": 1,
+        "digestivo": 5
+      },
+      "topCategory": "digestivo",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 75,
+      "objective": "obj-digestivo",
+      "slugs": [
+        "digestivo-hinchazon",
+        "obj-digestivo",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "gym": 1,
+        "digestivo": 5
+      },
+      "topCategory": "digestivo",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 76,
+      "objective": "obj-digestivo",
+      "slugs": [
+        "digestivo-hinchazon",
+        "obj-digestivo",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "gym": 1,
+        "digestivo": 5
+      },
+      "topCategory": "digestivo",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 77,
+      "objective": "obj-digestivo",
+      "slugs": [
+        "digestivo-hinchazon",
+        "natural-importante",
+        "obj-digestivo",
+        "presupuesto-bajo",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "gym": 1,
+        "digestivo": 5
+      },
+      "topCategory": "digestivo",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 78,
+      "objective": "obj-digestivo",
+      "slugs": [
+        "digestivo-hinchazon",
+        "natural-importante",
+        "obj-digestivo",
+        "presupuesto-medio",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "gym": 1,
+        "digestivo": 5
+      },
+      "topCategory": "digestivo",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 79,
+      "objective": "obj-digestivo",
+      "slugs": [
+        "digestivo-hinchazon",
+        "natural-importante",
+        "obj-digestivo",
+        "presupuesto-alto",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "gym": 1,
+        "digestivo": 5
+      },
+      "topCategory": "digestivo",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 80,
+      "objective": "obj-digestivo",
+      "slugs": [
+        "digestivo-hinchazon",
+        "natural-importante",
+        "obj-digestivo",
+        "presupuesto-premium",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "gym": 1,
+        "digestivo": 5
+      },
+      "topCategory": "digestivo",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 81,
+      "objective": "obj-nutricion",
+      "slugs": [
+        "nutricion-energia",
+        "obj-nutricion",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 5,
+        "digestivo": 3
+      },
+      "topCategory": "bienestar",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 82,
+      "objective": "obj-nutricion",
+      "slugs": [
+        "nutricion-energia",
+        "obj-nutricion",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 5,
+        "digestivo": 3
+      },
+      "topCategory": "bienestar",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 83,
+      "objective": "obj-nutricion",
+      "slugs": [
+        "nutricion-energia",
+        "obj-nutricion",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 5,
+        "digestivo": 3
+      },
+      "topCategory": "bienestar",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 84,
+      "objective": "obj-nutricion",
+      "slugs": [
+        "nutricion-energia",
+        "obj-nutricion",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 5,
+        "digestivo": 3
+      },
+      "topCategory": "bienestar",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 85,
+      "objective": "obj-nutricion",
+      "slugs": [
+        "nutricion-energia",
+        "obj-nutricion",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 5,
+        "digestivo": 3
+      },
+      "topCategory": "bienestar",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 86,
+      "objective": "obj-nutricion",
+      "slugs": [
+        "nutricion-energia",
+        "obj-nutricion",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 5,
+        "digestivo": 3
+      },
+      "topCategory": "bienestar",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 87,
+      "objective": "obj-nutricion",
+      "slugs": [
+        "nutricion-energia",
+        "obj-nutricion",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 5,
+        "digestivo": 3
+      },
+      "topCategory": "bienestar",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 88,
+      "objective": "obj-nutricion",
+      "slugs": [
+        "nutricion-energia",
+        "obj-nutricion",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 5,
+        "digestivo": 3
+      },
+      "topCategory": "bienestar",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 89,
+      "objective": "obj-nutricion",
+      "slugs": [
+        "nutricion-energia",
+        "obj-nutricion",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 5,
+        "digestivo": 3
+      },
+      "topCategory": "bienestar",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 90,
+      "objective": "obj-nutricion",
+      "slugs": [
+        "nutricion-energia",
+        "obj-nutricion",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 5,
+        "digestivo": 3
+      },
+      "topCategory": "bienestar",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 91,
+      "objective": "obj-nutricion",
+      "slugs": [
+        "nutricion-energia",
+        "obj-nutricion",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 5,
+        "digestivo": 3
+      },
+      "topCategory": "bienestar",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 92,
+      "objective": "obj-nutricion",
+      "slugs": [
+        "nutricion-energia",
+        "obj-nutricion",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 5,
+        "digestivo": 3
+      },
+      "topCategory": "bienestar",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 93,
+      "objective": "obj-nutricion",
+      "slugs": [
+        "nutricion-energia",
+        "obj-nutricion",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 5,
+        "digestivo": 3
+      },
+      "topCategory": "bienestar",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 94,
+      "objective": "obj-nutricion",
+      "slugs": [
+        "nutricion-energia",
+        "obj-nutricion",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 5,
+        "digestivo": 3
+      },
+      "topCategory": "bienestar",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 95,
+      "objective": "obj-nutricion",
+      "slugs": [
+        "nutricion-energia",
+        "obj-nutricion",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 5,
+        "digestivo": 3
+      },
+      "topCategory": "bienestar",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 96,
+      "objective": "obj-nutricion",
+      "slugs": [
+        "nutricion-energia",
+        "obj-nutricion",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 5,
+        "digestivo": 3
+      },
+      "topCategory": "bienestar",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 97,
+      "objective": "obj-nutricion",
+      "slugs": [
+        "natural-importante",
+        "nutricion-energia",
+        "obj-nutricion",
+        "presupuesto-bajo",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 5,
+        "digestivo": 3
+      },
+      "topCategory": "bienestar",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 98,
+      "objective": "obj-nutricion",
+      "slugs": [
+        "natural-importante",
+        "nutricion-energia",
+        "obj-nutricion",
+        "presupuesto-medio",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 5,
+        "digestivo": 3
+      },
+      "topCategory": "bienestar",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 99,
+      "objective": "obj-nutricion",
+      "slugs": [
+        "natural-importante",
+        "nutricion-energia",
+        "obj-nutricion",
+        "presupuesto-alto",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 5,
+        "digestivo": 3
+      },
+      "topCategory": "bienestar",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 100,
+      "objective": "obj-nutricion",
+      "slugs": [
+        "natural-importante",
+        "nutricion-energia",
+        "obj-nutricion",
+        "presupuesto-premium",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "bienestar": 5,
+        "digestivo": 3
+      },
+      "topCategory": "bienestar",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 101,
+      "objective": "obj-solar",
+      "slugs": [
+        "obj-solar",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion",
+        "solar-diario"
+      ],
+      "scores": {
+        "solar": 6
+      },
+      "topCategory": "solar",
+      "topScore": 6,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 102,
+      "objective": "obj-solar",
+      "slugs": [
+        "obj-solar",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion",
+        "solar-diario"
+      ],
+      "scores": {
+        "solar": 6
+      },
+      "topCategory": "solar",
+      "topScore": 6,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 103,
+      "objective": "obj-solar",
+      "slugs": [
+        "obj-solar",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion",
+        "solar-diario"
+      ],
+      "scores": {
+        "solar": 6
+      },
+      "topCategory": "solar",
+      "topScore": 6,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 104,
+      "objective": "obj-solar",
+      "slugs": [
+        "obj-solar",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion",
+        "solar-diario"
+      ],
+      "scores": {
+        "solar": 6
+      },
+      "topCategory": "solar",
+      "topScore": 6,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 105,
+      "objective": "obj-solar",
+      "slugs": [
+        "obj-solar",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion",
+        "solar-diario"
+      ],
+      "scores": {
+        "solar": 6
+      },
+      "topCategory": "solar",
+      "topScore": 6,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 106,
+      "objective": "obj-solar",
+      "slugs": [
+        "obj-solar",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion",
+        "solar-diario"
+      ],
+      "scores": {
+        "solar": 6
+      },
+      "topCategory": "solar",
+      "topScore": 6,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 107,
+      "objective": "obj-solar",
+      "slugs": [
+        "obj-solar",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion",
+        "solar-diario"
+      ],
+      "scores": {
+        "solar": 6
+      },
+      "topCategory": "solar",
+      "topScore": 6,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 108,
+      "objective": "obj-solar",
+      "slugs": [
+        "obj-solar",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion",
+        "solar-diario"
+      ],
+      "scores": {
+        "solar": 6
+      },
+      "topCategory": "solar",
+      "topScore": 6,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 109,
+      "objective": "obj-solar",
+      "slugs": [
+        "obj-solar",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion",
+        "solar-diario"
+      ],
+      "scores": {
+        "solar": 6
+      },
+      "topCategory": "solar",
+      "topScore": 6,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 110,
+      "objective": "obj-solar",
+      "slugs": [
+        "obj-solar",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion",
+        "solar-diario"
+      ],
+      "scores": {
+        "solar": 6
+      },
+      "topCategory": "solar",
+      "topScore": 6,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 111,
+      "objective": "obj-solar",
+      "slugs": [
+        "obj-solar",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion",
+        "solar-diario"
+      ],
+      "scores": {
+        "solar": 6
+      },
+      "topCategory": "solar",
+      "topScore": 6,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 112,
+      "objective": "obj-solar",
+      "slugs": [
+        "obj-solar",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion",
+        "solar-diario"
+      ],
+      "scores": {
+        "solar": 6
+      },
+      "topCategory": "solar",
+      "topScore": 6,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 113,
+      "objective": "obj-solar",
+      "slugs": [
+        "obj-solar",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion",
+        "solar-diario"
+      ],
+      "scores": {
+        "solar": 6
+      },
+      "topCategory": "solar",
+      "topScore": 6,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 114,
+      "objective": "obj-solar",
+      "slugs": [
+        "obj-solar",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion",
+        "solar-diario"
+      ],
+      "scores": {
+        "solar": 6
+      },
+      "topCategory": "solar",
+      "topScore": 6,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 115,
+      "objective": "obj-solar",
+      "slugs": [
+        "obj-solar",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion",
+        "solar-diario"
+      ],
+      "scores": {
+        "solar": 6
+      },
+      "topCategory": "solar",
+      "topScore": 6,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 116,
+      "objective": "obj-solar",
+      "slugs": [
+        "obj-solar",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion",
+        "solar-diario"
+      ],
+      "scores": {
+        "solar": 6
+      },
+      "topCategory": "solar",
+      "topScore": 6,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 117,
+      "objective": "obj-solar",
+      "slugs": [
+        "natural-importante",
+        "obj-solar",
+        "presupuesto-bajo",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion",
+        "solar-diario"
+      ],
+      "scores": {
+        "solar": 6
+      },
+      "topCategory": "solar",
+      "topScore": 6,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 118,
+      "objective": "obj-solar",
+      "slugs": [
+        "natural-importante",
+        "obj-solar",
+        "presupuesto-medio",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion",
+        "solar-diario"
+      ],
+      "scores": {
+        "solar": 6
+      },
+      "topCategory": "solar",
+      "topScore": 6,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 119,
+      "objective": "obj-solar",
+      "slugs": [
+        "natural-importante",
+        "obj-solar",
+        "presupuesto-alto",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion",
+        "solar-diario"
+      ],
+      "scores": {
+        "solar": 6
+      },
+      "topCategory": "solar",
+      "topScore": 6,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 120,
+      "objective": "obj-solar",
+      "slugs": [
+        "natural-importante",
+        "obj-solar",
+        "presupuesto-premium",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion",
+        "solar-diario"
+      ],
+      "scores": {
+        "solar": 6
+      },
+      "topCategory": "solar",
+      "topScore": 6,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 121,
+      "objective": "obj-viaje",
+      "slugs": [
+        "obj-viaje",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion",
+        "viaje-playa"
+      ],
+      "scores": {
+        "solar": 2,
+        "viaje": 5
+      },
+      "topCategory": "viaje",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 122,
+      "objective": "obj-viaje",
+      "slugs": [
+        "obj-viaje",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion",
+        "viaje-playa"
+      ],
+      "scores": {
+        "solar": 2,
+        "viaje": 5
+      },
+      "topCategory": "viaje",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 123,
+      "objective": "obj-viaje",
+      "slugs": [
+        "obj-viaje",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion",
+        "viaje-playa"
+      ],
+      "scores": {
+        "solar": 2,
+        "viaje": 5
+      },
+      "topCategory": "viaje",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 124,
+      "objective": "obj-viaje",
+      "slugs": [
+        "obj-viaje",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion",
+        "viaje-playa"
+      ],
+      "scores": {
+        "solar": 2,
+        "viaje": 5
+      },
+      "topCategory": "viaje",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 125,
+      "objective": "obj-viaje",
+      "slugs": [
+        "obj-viaje",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion",
+        "viaje-playa"
+      ],
+      "scores": {
+        "solar": 2,
+        "viaje": 5
+      },
+      "topCategory": "viaje",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 126,
+      "objective": "obj-viaje",
+      "slugs": [
+        "obj-viaje",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion",
+        "viaje-playa"
+      ],
+      "scores": {
+        "solar": 2,
+        "viaje": 5
+      },
+      "topCategory": "viaje",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 127,
+      "objective": "obj-viaje",
+      "slugs": [
+        "obj-viaje",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion",
+        "viaje-playa"
+      ],
+      "scores": {
+        "solar": 2,
+        "viaje": 5
+      },
+      "topCategory": "viaje",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 128,
+      "objective": "obj-viaje",
+      "slugs": [
+        "obj-viaje",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion",
+        "viaje-playa"
+      ],
+      "scores": {
+        "solar": 2,
+        "viaje": 5
+      },
+      "topCategory": "viaje",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 129,
+      "objective": "obj-viaje",
+      "slugs": [
+        "obj-viaje",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion",
+        "viaje-playa"
+      ],
+      "scores": {
+        "solar": 2,
+        "viaje": 5
+      },
+      "topCategory": "viaje",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 130,
+      "objective": "obj-viaje",
+      "slugs": [
+        "obj-viaje",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion",
+        "viaje-playa"
+      ],
+      "scores": {
+        "solar": 2,
+        "viaje": 5
+      },
+      "topCategory": "viaje",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 131,
+      "objective": "obj-viaje",
+      "slugs": [
+        "obj-viaje",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion",
+        "viaje-playa"
+      ],
+      "scores": {
+        "solar": 2,
+        "viaje": 5
+      },
+      "topCategory": "viaje",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 132,
+      "objective": "obj-viaje",
+      "slugs": [
+        "obj-viaje",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion",
+        "viaje-playa"
+      ],
+      "scores": {
+        "solar": 2,
+        "viaje": 5
+      },
+      "topCategory": "viaje",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 133,
+      "objective": "obj-viaje",
+      "slugs": [
+        "obj-viaje",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion",
+        "viaje-playa"
+      ],
+      "scores": {
+        "solar": 2,
+        "viaje": 5
+      },
+      "topCategory": "viaje",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 134,
+      "objective": "obj-viaje",
+      "slugs": [
+        "obj-viaje",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion",
+        "viaje-playa"
+      ],
+      "scores": {
+        "solar": 2,
+        "viaje": 5
+      },
+      "topCategory": "viaje",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 135,
+      "objective": "obj-viaje",
+      "slugs": [
+        "obj-viaje",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion",
+        "viaje-playa"
+      ],
+      "scores": {
+        "solar": 2,
+        "viaje": 5
+      },
+      "topCategory": "viaje",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 136,
+      "objective": "obj-viaje",
+      "slugs": [
+        "obj-viaje",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion",
+        "viaje-playa"
+      ],
+      "scores": {
+        "solar": 2,
+        "viaje": 5
+      },
+      "topCategory": "viaje",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 137,
+      "objective": "obj-viaje",
+      "slugs": [
+        "natural-importante",
+        "obj-viaje",
+        "presupuesto-bajo",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion",
+        "viaje-playa"
+      ],
+      "scores": {
+        "solar": 2,
+        "viaje": 5
+      },
+      "topCategory": "viaje",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 138,
+      "objective": "obj-viaje",
+      "slugs": [
+        "natural-importante",
+        "obj-viaje",
+        "presupuesto-medio",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion",
+        "viaje-playa"
+      ],
+      "scores": {
+        "solar": 2,
+        "viaje": 5
+      },
+      "topCategory": "viaje",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 139,
+      "objective": "obj-viaje",
+      "slugs": [
+        "natural-importante",
+        "obj-viaje",
+        "presupuesto-alto",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion",
+        "viaje-playa"
+      ],
+      "scores": {
+        "solar": 2,
+        "viaje": 5
+      },
+      "topCategory": "viaje",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 140,
+      "objective": "obj-viaje",
+      "slugs": [
+        "natural-importante",
+        "obj-viaje",
+        "presupuesto-premium",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion",
+        "viaje-playa"
+      ],
+      "scores": {
+        "solar": 2,
+        "viaje": 5
+      },
+      "topCategory": "viaje",
+      "topScore": 5,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 141,
+      "objective": "obj-hogar",
+      "slugs": [
+        "hogar-familiar",
+        "obj-hogar",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "hogar": 7
+      },
+      "topCategory": "hogar",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 142,
+      "objective": "obj-hogar",
+      "slugs": [
+        "hogar-familiar",
+        "obj-hogar",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "hogar": 7
+      },
+      "topCategory": "hogar",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 143,
+      "objective": "obj-hogar",
+      "slugs": [
+        "hogar-familiar",
+        "obj-hogar",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "hogar": 7
+      },
+      "topCategory": "hogar",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 144,
+      "objective": "obj-hogar",
+      "slugs": [
+        "hogar-familiar",
+        "obj-hogar",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "hogar": 7
+      },
+      "topCategory": "hogar",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 145,
+      "objective": "obj-hogar",
+      "slugs": [
+        "hogar-familiar",
+        "obj-hogar",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "hogar": 7
+      },
+      "topCategory": "hogar",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 146,
+      "objective": "obj-hogar",
+      "slugs": [
+        "hogar-familiar",
+        "obj-hogar",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "hogar": 7
+      },
+      "topCategory": "hogar",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 147,
+      "objective": "obj-hogar",
+      "slugs": [
+        "hogar-familiar",
+        "obj-hogar",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "hogar": 7
+      },
+      "topCategory": "hogar",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 148,
+      "objective": "obj-hogar",
+      "slugs": [
+        "hogar-familiar",
+        "obj-hogar",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "hogar": 7
+      },
+      "topCategory": "hogar",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 149,
+      "objective": "obj-hogar",
+      "slugs": [
+        "hogar-familiar",
+        "obj-hogar",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "hogar": 7
+      },
+      "topCategory": "hogar",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 150,
+      "objective": "obj-hogar",
+      "slugs": [
+        "hogar-familiar",
+        "obj-hogar",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "hogar": 7
+      },
+      "topCategory": "hogar",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 151,
+      "objective": "obj-hogar",
+      "slugs": [
+        "hogar-familiar",
+        "obj-hogar",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "hogar": 7
+      },
+      "topCategory": "hogar",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 152,
+      "objective": "obj-hogar",
+      "slugs": [
+        "hogar-familiar",
+        "obj-hogar",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "hogar": 7
+      },
+      "topCategory": "hogar",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 153,
+      "objective": "obj-hogar",
+      "slugs": [
+        "hogar-familiar",
+        "obj-hogar",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "hogar": 7
+      },
+      "topCategory": "hogar",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 154,
+      "objective": "obj-hogar",
+      "slugs": [
+        "hogar-familiar",
+        "obj-hogar",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "hogar": 7
+      },
+      "topCategory": "hogar",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 155,
+      "objective": "obj-hogar",
+      "slugs": [
+        "hogar-familiar",
+        "obj-hogar",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "hogar": 7
+      },
+      "topCategory": "hogar",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 156,
+      "objective": "obj-hogar",
+      "slugs": [
+        "hogar-familiar",
+        "obj-hogar",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "hogar": 7
+      },
+      "topCategory": "hogar",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 157,
+      "objective": "obj-hogar",
+      "slugs": [
+        "hogar-familiar",
+        "natural-importante",
+        "obj-hogar",
+        "presupuesto-bajo",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "hogar": 7
+      },
+      "topCategory": "hogar",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 158,
+      "objective": "obj-hogar",
+      "slugs": [
+        "hogar-familiar",
+        "natural-importante",
+        "obj-hogar",
+        "presupuesto-medio",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "hogar": 7
+      },
+      "topCategory": "hogar",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 159,
+      "objective": "obj-hogar",
+      "slugs": [
+        "hogar-familiar",
+        "natural-importante",
+        "obj-hogar",
+        "presupuesto-alto",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "hogar": 7
+      },
+      "topCategory": "hogar",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 160,
+      "objective": "obj-hogar",
+      "slugs": [
+        "hogar-familiar",
+        "natural-importante",
+        "obj-hogar",
+        "presupuesto-premium",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "hogar": 7
+      },
+      "topCategory": "hogar",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 161,
+      "objective": "obj-pies-cuerpo",
+      "slugs": [
+        "obj-pies-cuerpo",
+        "pies-durezas",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "pies-cuerpo": 7
+      },
+      "topCategory": "pies-cuerpo",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 162,
+      "objective": "obj-pies-cuerpo",
+      "slugs": [
+        "obj-pies-cuerpo",
+        "pies-durezas",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "pies-cuerpo": 7
+      },
+      "topCategory": "pies-cuerpo",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 163,
+      "objective": "obj-pies-cuerpo",
+      "slugs": [
+        "obj-pies-cuerpo",
+        "pies-durezas",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "pies-cuerpo": 7
+      },
+      "topCategory": "pies-cuerpo",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 164,
+      "objective": "obj-pies-cuerpo",
+      "slugs": [
+        "obj-pies-cuerpo",
+        "pies-durezas",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "pies-cuerpo": 7
+      },
+      "topCategory": "pies-cuerpo",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 165,
+      "objective": "obj-pies-cuerpo",
+      "slugs": [
+        "obj-pies-cuerpo",
+        "pies-durezas",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "pies-cuerpo": 7
+      },
+      "topCategory": "pies-cuerpo",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 166,
+      "objective": "obj-pies-cuerpo",
+      "slugs": [
+        "obj-pies-cuerpo",
+        "pies-durezas",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "pies-cuerpo": 7
+      },
+      "topCategory": "pies-cuerpo",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 167,
+      "objective": "obj-pies-cuerpo",
+      "slugs": [
+        "obj-pies-cuerpo",
+        "pies-durezas",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "pies-cuerpo": 7
+      },
+      "topCategory": "pies-cuerpo",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 168,
+      "objective": "obj-pies-cuerpo",
+      "slugs": [
+        "obj-pies-cuerpo",
+        "pies-durezas",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "pies-cuerpo": 7
+      },
+      "topCategory": "pies-cuerpo",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 169,
+      "objective": "obj-pies-cuerpo",
+      "slugs": [
+        "obj-pies-cuerpo",
+        "pies-durezas",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "pies-cuerpo": 7
+      },
+      "topCategory": "pies-cuerpo",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 170,
+      "objective": "obj-pies-cuerpo",
+      "slugs": [
+        "obj-pies-cuerpo",
+        "pies-durezas",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "pies-cuerpo": 7
+      },
+      "topCategory": "pies-cuerpo",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 171,
+      "objective": "obj-pies-cuerpo",
+      "slugs": [
+        "obj-pies-cuerpo",
+        "pies-durezas",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "pies-cuerpo": 7
+      },
+      "topCategory": "pies-cuerpo",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 172,
+      "objective": "obj-pies-cuerpo",
+      "slugs": [
+        "obj-pies-cuerpo",
+        "pies-durezas",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "pies-cuerpo": 7
+      },
+      "topCategory": "pies-cuerpo",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 173,
+      "objective": "obj-pies-cuerpo",
+      "slugs": [
+        "obj-pies-cuerpo",
+        "pies-durezas",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "pies-cuerpo": 7
+      },
+      "topCategory": "pies-cuerpo",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 174,
+      "objective": "obj-pies-cuerpo",
+      "slugs": [
+        "obj-pies-cuerpo",
+        "pies-durezas",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "pies-cuerpo": 7
+      },
+      "topCategory": "pies-cuerpo",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 175,
+      "objective": "obj-pies-cuerpo",
+      "slugs": [
+        "obj-pies-cuerpo",
+        "pies-durezas",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "pies-cuerpo": 7
+      },
+      "topCategory": "pies-cuerpo",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 176,
+      "objective": "obj-pies-cuerpo",
+      "slugs": [
+        "obj-pies-cuerpo",
+        "pies-durezas",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "pies-cuerpo": 7
+      },
+      "topCategory": "pies-cuerpo",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 177,
+      "objective": "obj-pies-cuerpo",
+      "slugs": [
+        "natural-importante",
+        "obj-pies-cuerpo",
+        "pies-durezas",
+        "presupuesto-bajo",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "pies-cuerpo": 7
+      },
+      "topCategory": "pies-cuerpo",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 178,
+      "objective": "obj-pies-cuerpo",
+      "slugs": [
+        "natural-importante",
+        "obj-pies-cuerpo",
+        "pies-durezas",
+        "presupuesto-medio",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "pies-cuerpo": 7
+      },
+      "topCategory": "pies-cuerpo",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 179,
+      "objective": "obj-pies-cuerpo",
+      "slugs": [
+        "natural-importante",
+        "obj-pies-cuerpo",
+        "pies-durezas",
+        "presupuesto-alto",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "pies-cuerpo": 7
+      },
+      "topCategory": "pies-cuerpo",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 180,
+      "objective": "obj-pies-cuerpo",
+      "slugs": [
+        "natural-importante",
+        "obj-pies-cuerpo",
+        "pies-durezas",
+        "presupuesto-premium",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "pies-cuerpo": 7
+      },
+      "topCategory": "pies-cuerpo",
+      "topScore": 7,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 181,
+      "objective": "obj-guia",
+      "slugs": [
+        "guia-piel",
+        "obj-guia",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 2
+      },
+      "topCategory": "piel",
+      "topScore": 2,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 182,
+      "objective": "obj-guia",
+      "slugs": [
+        "guia-piel",
+        "obj-guia",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 2
+      },
+      "topCategory": "piel",
+      "topScore": 2,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 183,
+      "objective": "obj-guia",
+      "slugs": [
+        "guia-piel",
+        "obj-guia",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 2
+      },
+      "topCategory": "piel",
+      "topScore": 2,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 184,
+      "objective": "obj-guia",
+      "slugs": [
+        "guia-piel",
+        "obj-guia",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 2
+      },
+      "topCategory": "piel",
+      "topScore": 2,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 185,
+      "objective": "obj-guia",
+      "slugs": [
+        "guia-piel",
+        "obj-guia",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 2
+      },
+      "topCategory": "piel",
+      "topScore": 2,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 186,
+      "objective": "obj-guia",
+      "slugs": [
+        "guia-piel",
+        "obj-guia",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 2
+      },
+      "topCategory": "piel",
+      "topScore": 2,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 187,
+      "objective": "obj-guia",
+      "slugs": [
+        "guia-piel",
+        "obj-guia",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 2
+      },
+      "topCategory": "piel",
+      "topScore": 2,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 188,
+      "objective": "obj-guia",
+      "slugs": [
+        "guia-piel",
+        "obj-guia",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-balanceada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 2
+      },
+      "topCategory": "piel",
+      "topScore": 2,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 189,
+      "objective": "obj-guia",
+      "slugs": [
+        "guia-piel",
+        "obj-guia",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 2
+      },
+      "topCategory": "piel",
+      "topScore": 2,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 190,
+      "objective": "obj-guia",
+      "slugs": [
+        "guia-piel",
+        "obj-guia",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 2
+      },
+      "topCategory": "piel",
+      "topScore": 2,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 191,
+      "objective": "obj-guia",
+      "slugs": [
+        "guia-piel",
+        "obj-guia",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 2
+      },
+      "topCategory": "piel",
+      "topScore": 2,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 192,
+      "objective": "obj-guia",
+      "slugs": [
+        "guia-piel",
+        "obj-guia",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-completa",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 2
+      },
+      "topCategory": "piel",
+      "topScore": 2,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 193,
+      "objective": "obj-guia",
+      "slugs": [
+        "guia-piel",
+        "obj-guia",
+        "prefiere-natural",
+        "presupuesto-bajo",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 2
+      },
+      "topCategory": "piel",
+      "topScore": 2,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 194,
+      "objective": "obj-guia",
+      "slugs": [
+        "guia-piel",
+        "obj-guia",
+        "prefiere-natural",
+        "presupuesto-medio",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 2
+      },
+      "topCategory": "piel",
+      "topScore": 2,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 195,
+      "objective": "obj-guia",
+      "slugs": [
+        "guia-piel",
+        "obj-guia",
+        "prefiere-natural",
+        "presupuesto-alto",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 2
+      },
+      "topCategory": "piel",
+      "topScore": 2,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 196,
+      "objective": "obj-guia",
+      "slugs": [
+        "guia-piel",
+        "obj-guia",
+        "prefiere-natural",
+        "presupuesto-premium",
+        "rutina-guiada",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 2
+      },
+      "topCategory": "piel",
+      "topScore": 2,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 197,
+      "objective": "obj-guia",
+      "slugs": [
+        "guia-piel",
+        "natural-importante",
+        "obj-guia",
+        "presupuesto-bajo",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 2
+      },
+      "topCategory": "piel",
+      "topScore": 2,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 198,
+      "objective": "obj-guia",
+      "slugs": [
+        "guia-piel",
+        "natural-importante",
+        "obj-guia",
+        "presupuesto-medio",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 2
+      },
+      "topCategory": "piel",
+      "topScore": 2,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 199,
+      "objective": "obj-guia",
+      "slugs": [
+        "guia-piel",
+        "natural-importante",
+        "obj-guia",
+        "presupuesto-alto",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 2
+      },
+      "topCategory": "piel",
+      "topScore": 2,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    },
+    {
+      "id": 200,
+      "objective": "obj-guia",
+      "slugs": [
+        "guia-piel",
+        "natural-importante",
+        "obj-guia",
+        "presupuesto-premium",
+        "rutina-simple",
+        "sin-condicion",
+        "sin-restriccion"
+      ],
+      "scores": {
+        "piel": 2
+      },
+      "topCategory": "piel",
+      "topScore": 2,
+      "safetyFlags": [],
+      "restrictions": [],
+      "needsReview": false
+    }
+  ]
+}

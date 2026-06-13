@@ -63,6 +63,16 @@
   --cat-rosa: #FFC3D0;
   --cat-uva-clara: #E8D5E6;
 
+  /* Deep accents — readable on cream/white, paired with each cat pastel */
+  --cat-coral-deep: #E0654A;
+  --cat-durazno-deep: #E8853C;
+  --cat-mostaza-deep: #C7920A;
+  --cat-menta-deep: #2E8B5F;
+  --cat-cielo-deep: #2E7FA8;
+  --cat-lavanda-deep: #7A5BBF;
+  --cat-rosa-deep: #D95C7E;
+  --cat-uva-clara-deep: #8E5A89;
+
   --font-display: 'Fraunces', Georgia, serif;
   --font-body: 'DM Sans', system-ui, sans-serif;
   --font-script: 'Caveat', cursive;
@@ -104,4 +114,9 @@ a.underline-lima:hover {
   text-decoration: underline;
   text-decoration-color: var(--liora-lima);
   text-underline-offset: 4px;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }

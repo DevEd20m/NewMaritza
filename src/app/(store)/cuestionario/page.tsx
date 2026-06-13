@@ -4,7 +4,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Cuestionario de bienestar',
-  description: 'Responde 8 preguntas y armamos tu kit personalizado de bienestar.',
+  description: 'Responde unas preguntas y la IA arma tu kit personalizado de bienestar — en menos de 2 minutos.',
 }
 
 interface QuizTemplate { id: string; name: string; max_questions: number | null }
@@ -53,8 +53,19 @@ async function getQuizData() {
 
 export default async function QuizPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  const quizData = await getQuizData()
+  const [{ data: { user } }, quizData] = await Promise.all([
+    supabase.auth.getUser(),
+    getQuizData(),
+  ])
+
+  let userName: string | undefined
+  let userEmail: string | undefined
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles').select('first_name').eq('id', user.id).single()
+    userName = (profile as { first_name: string | null } | null)?.first_name ?? undefined
+    userEmail = user.email ?? undefined
+  }
 
   if (!quizData) {
     return (
@@ -66,5 +77,13 @@ export default async function QuizPage() {
     )
   }
 
-  return <QuizClient templateId={quizData.template.id} groups={quizData.groups} isLoggedIn={!!user} />
+  return (
+    <QuizClient
+      templateId={quizData.template.id}
+      groups={quizData.groups}
+      isLoggedIn={!!user}
+      userName={userName}
+      userEmail={userEmail}
+    />
+  )
 }

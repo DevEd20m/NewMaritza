@@ -9,6 +9,14 @@ const kitSchema = z.object({
   type: z.enum(['static', 'dynamic']).default('static'),
   is_active: z.boolean().default(true),
   variantIds: z.array(z.string()).min(1),
+  cover_image_url: z.string().url().nullable().optional(),
+  show_in_home: z.boolean().optional(),
+  home_sort_order: z.number().int().min(0).optional(),
+  benefits: z.array(z.object({
+    icon: z.string(),
+    title: z.string().min(1),
+    desc: z.string(),
+  })).max(3).optional(),
 })
 
 function toSlug(name: string) {
@@ -32,12 +40,17 @@ export async function POST(request: NextRequest) {
     const { name, description, type, is_active, variantIds } = parsed.data
     const admin = createAdminClient()
 
+    const { cover_image_url, show_in_home, home_sort_order, benefits } = parsed.data
     const { data: kit } = await (admin as any).from('kits').insert({
       name,
       slug: toSlug(name),
       description: description ?? null,
       type,
       is_active,
+      cover_image_url: cover_image_url ?? null,
+      show_in_home: show_in_home ?? false,
+      home_sort_order: home_sort_order ?? 0,
+      benefits: benefits ?? [],
     }).select('id').single()
 
     if (!kit) return NextResponse.json({ error: 'Error al crear kit' }, { status: 500 })
@@ -68,7 +81,7 @@ export async function PUT(request: NextRequest) {
     const parsed = kitSchema.extend({ id: z.string() }).safeParse(body)
     if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
 
-    const { id, name, description, type, is_active, variantIds } = parsed.data
+    const { id, name, description, type, is_active, variantIds, cover_image_url, show_in_home, home_sort_order, benefits } = parsed.data
     const admin = createAdminClient()
 
     await (admin as any).from('kits').update({
@@ -77,6 +90,10 @@ export async function PUT(request: NextRequest) {
       description: description ?? null,
       type,
       is_active,
+      cover_image_url: cover_image_url ?? null,
+      show_in_home: show_in_home ?? false,
+      home_sort_order: home_sort_order ?? 0,
+      benefits: benefits ?? [],
     }).eq('id', id)
 
     await (admin as any).from('kit_products').delete().eq('kit_id', id)
@@ -93,6 +110,23 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ ok: true })
   } catch (err) {
     console.error('[admin/kits PUT]', err)
+    return NextResponse.json({ error: 'Error interno' }, { status: 500 })
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const guard = await requireAdmin()
+    if (!guard.ok) return guard.response
+    const { id, ...fields } = await request.json()
+    if (!id) return NextResponse.json({ error: 'ID requerido' }, { status: 400 })
+    const allowed = ['show_in_home', 'home_sort_order', 'cover_image_url', 'is_active']
+    const update = Object.fromEntries(Object.entries(fields).filter(([k]) => allowed.includes(k)))
+    const admin = createAdminClient()
+    await (admin as any).from('kits').update(update).eq('id', id)
+    return NextResponse.json({ ok: true })
+  } catch (err) {
+    console.error('[admin/kits PATCH]', err)
     return NextResponse.json({ error: 'Error interno' }, { status: 500 })
   }
 }

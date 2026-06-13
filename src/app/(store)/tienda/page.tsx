@@ -17,7 +17,7 @@ async function getProducts(): Promise<ShopProduct[]> {
     .from('products')
     .select(`
       id, name, slug, cover_image_url, category_id,
-      categories ( slug ),
+      categories ( slug, name ),
       product_variants (
         id, name,
         product_prices ( amount_cents, compare_at_cents, currency, effective_to )

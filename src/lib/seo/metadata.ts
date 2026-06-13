@@ -3,7 +3,7 @@ import type { Product, Category, Kit } from '@/types/database'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://liora.pe'
 const SITE_NAME = 'LIORA'
-const DEFAULT_DESCRIPTION = 'Bienestar personalizado. Tu cuerpo, tu cuestionario, tu kit. Orgánicos, vitaminas, skin care y gym — armados para ti.'
+const DEFAULT_DESCRIPTION = 'Kits personalizados de autocuidado con guía clara. Responde el cuestionario y encuentra productos para tu piel, rutina, viaje, descanso, gym y hogar.'
 
 export function buildBaseMetadata(overrides?: Partial<Metadata>): Metadata {
   return {

@@ -15,6 +15,7 @@ interface DetailProduct {
   description: string | null
   indications: string | null
   usage_instructions: string | null
+  contraindications: string | null
   cover_image_url: string | null
   gallery_urls: string[]
   categories: { id: string; name: string; slug: string } | null
@@ -56,8 +57,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
-  gym: 'var(--cat-durazno)', 'skin-care': 'var(--cat-coral)',
-  vitaminas: 'var(--cat-mostaza)', organicos: 'var(--cat-menta)',
+  piel:          'var(--cat-coral)',
+  solar:         'var(--cat-mostaza)',
+  bienestar:     'var(--cat-lavanda)',
+  gym:           'var(--cat-durazno)',
+  viaje:         'var(--cat-cielo)',
+  hogar:         'var(--cat-rosa)',
+  digestivo:     'var(--cat-menta)',
+  'pies-cuerpo': 'var(--cat-durazno)',
 }
 
 export default async function ProductDetailPage({ params }: Props) {
@@ -166,6 +173,12 @@ export default async function ProductDetailPage({ params }: Props) {
               <div style={{ marginTop: 24 }}>
                 <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20, marginBottom: 12 }}>¿Cómo usarlo?</h3>
                 <p style={{ fontFamily: 'var(--font-body)', fontSize: 15, lineHeight: 1.6, opacity: 0.85 }}>{product.usage_instructions}</p>
+              </div>
+            )}
+            {product.contraindications && (
+              <div style={{ marginTop: 24 }}>
+                <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20, marginBottom: 12 }}>Contraindicaciones</h3>
+                <p style={{ fontFamily: 'var(--font-body)', fontSize: 15, lineHeight: 1.6, opacity: 0.85 }}>{product.contraindications}</p>
               </div>
             )}
           </div>

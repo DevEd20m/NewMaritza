@@ -5,6 +5,7 @@ import { CartDrawer } from '@/components/layout/CartDrawer'
 import { LiveActivityToast } from '@/components/urgency/LiveActivityToast'
 import { ExitIntentModal } from '@/components/urgency/ExitIntentModal'
 import { WhatsAppButton } from '@/components/layout/WhatsAppButton'
+import HideOnQuiz from '@/components/layout/HideOnQuiz'
 import { createClient } from '@/lib/supabase/server'
 import { getStoreSettings } from '@/lib/settings'
 
@@ -27,10 +28,12 @@ export default async function StoreLayout({ children }: { children: React.ReactN
 
   return (
     <>
-      <AnnouncementBar
-        thresholdCents={settings.free_shipping_threshold_cents}
-        deliveryMessage={settings.delivery_message}
-      />
+      <HideOnQuiz>
+        <AnnouncementBar
+          thresholdCents={settings.free_shipping_threshold_cents}
+          deliveryMessage={settings.delivery_message}
+        />
+      </HideOnQuiz>
       <Header user={profile} />
       <main style={{ flex: 1 }}>{children}</main>
       <Footer />
@@ -39,8 +42,10 @@ export default async function StoreLayout({ children }: { children: React.ReactN
         shippingCostCents={settings.shipping_cost_cents}
       />
       <LiveActivityToast />
-      <ExitIntentModal />
-      <WhatsAppButton number={settings.whatsapp_number} />
+      <ExitIntentModal isLoggedIn={!!user} />
+      <HideOnQuiz>
+        <WhatsAppButton number={settings.whatsapp_number} />
+      </HideOnQuiz>
     </>
   )
 }

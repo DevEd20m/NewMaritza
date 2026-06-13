@@ -8,18 +8,25 @@ export interface AdminTag {
   name: string
   slug: string
   group: string
+  is_internal: boolean
   product_count: number
 }
 
 const GROUP_META: Record<string, { label: string; color: string; bg: string }> = {
-  objetivo:   { label: 'Objetivo',   color: 'var(--liora-uva)',   bg: 'var(--cat-lavanda)' },
-  actividad:  { label: 'Actividad',  color: 'var(--liora-uva)',   bg: 'var(--cat-menta)' },
-  piel:       { label: 'Tipo de piel', color: 'var(--liora-uva)', bg: 'var(--cat-rosa)' },
+  objetivo:    { label: 'Objetivo',              color: 'var(--liora-uva)', bg: 'var(--cat-lavanda)' },
+  uso:         { label: 'Categoría de uso',       color: 'var(--liora-uva)', bg: 'var(--cat-cielo)' },
+  nivel:       { label: 'Nivel de experiencia',   color: 'var(--liora-uva)', bg: 'var(--cat-menta)' },
+  intensidad:  { label: 'Intensidad de rutina',   color: 'var(--liora-uva)', bg: 'var(--cat-durazno)' },
+  piel:        { label: 'Tipo de piel',           color: 'var(--liora-uva)', bg: 'var(--cat-rosa)' },
+  preferencia: { label: 'Preferencias',           color: 'var(--liora-uva)', bg: 'var(--cat-menta)' },
+  momento:     { label: 'Momento de uso',         color: 'var(--liora-uva)', bg: 'var(--cat-mostaza)' },
+  alerta:      { label: 'Alertas internas (IA)',  color: 'var(--liora-uva)', bg: 'var(--cat-coral)' },
 }
 
-const GROUPS: Array<'objetivo' | 'actividad' | 'piel'> = ['objetivo', 'actividad', 'piel']
+type TagGroup = 'objetivo' | 'uso' | 'nivel' | 'intensidad' | 'piel' | 'preferencia' | 'momento' | 'alerta'
+const GROUPS: TagGroup[] = ['objetivo', 'uso', 'nivel', 'intensidad', 'piel', 'preferencia', 'momento', 'alerta']
 
-const emptyForm = { name: '', slug: '', group: 'objetivo' as const }
+const emptyForm = { name: '', slug: '', group: 'objetivo' as TagGroup }
 
 export function TagsClient({ initialTags }: { initialTags: AdminTag[] }) {
   const router = useRouter()
@@ -33,7 +40,7 @@ export function TagsClient({ initialTags }: { initialTags: AdminTag[] }) {
   const grouped = GROUPS.reduce<Record<string, AdminTag[]>>((acc, g) => {
     acc[g] = tags.filter(t => t.group === g)
     return acc
-  }, { objetivo: [], actividad: [], piel: [] })
+  }, Object.fromEntries(GROUPS.map(g => [g, []])))
 
   const autoSlug = (name: string) =>
     name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
@@ -113,12 +120,17 @@ export function TagsClient({ initialTags }: { initialTags: AdminTag[] }) {
               <label style={labelStyle}>Grupo *</label>
               <select
                 value={form.group}
-                onChange={e => setForm(f => ({ ...f, group: e.target.value as typeof form.group }))}
+                onChange={e => setForm(f => ({ ...f, group: e.target.value as TagGroup }))}
                 style={inputStyle}
               >
                 <option value="objetivo">Objetivo</option>
-                <option value="actividad">Actividad</option>
+                <option value="uso">Categoría de uso</option>
+                <option value="nivel">Nivel de experiencia</option>
+                <option value="intensidad">Intensidad de rutina</option>
                 <option value="piel">Tipo de piel</option>
+                <option value="preferencia">Preferencias</option>
+                <option value="momento">Momento de uso</option>
+                <option value="alerta">Alertas internas (IA)</option>
               </select>
             </div>
           </div>

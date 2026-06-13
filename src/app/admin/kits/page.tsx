@@ -11,7 +11,7 @@ export default async function AdminKitsPage() {
     (admin as any)
       .from('kits')
       .select(`
-        id, name, slug, description, is_active, type,
+        id, name, slug, description, is_active, type, cover_image_url, show_in_home, home_sort_order, benefits,
         kit_products(
           variant_id, quantity, sort_order,
           product_variants(id, name, product_prices(amount_cents, effective_to))
@@ -28,6 +28,7 @@ export default async function AdminKitsPage() {
 
   type RawKit = {
     id: string; name: string; slug: string; description: string | null; is_active: boolean; type: string
+    cover_image_url: string | null; show_in_home: boolean; home_sort_order: number; benefits: unknown[]
     kit_products: Array<{
       variant_id: string; quantity: number; sort_order: number
       product_variants: { id: string; name: string; product_prices: Array<{ amount_cents: number; effective_to: string | null }> } | null
@@ -66,6 +67,10 @@ export default async function AdminKitsPage() {
       description: k.description,
       is_active: k.is_active,
       type: k.type,
+      cover_image_url: k.cover_image_url,
+      show_in_home: k.show_in_home,
+      home_sort_order: k.home_sort_order,
+      benefits: (k.benefits ?? []) as import('@/lib/kit-benefits').KitBenefit[],
       kitProducts,
       totalCents,
     }

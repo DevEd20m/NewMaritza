@@ -1,85 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { SLUG_WEIGHTS, ALLERGY_LABELS, SAFETY_FLAG_TEXTS } from '@/lib/recommendation/slug-weights'
+import { calculateCategoryScores } from '@/lib/recommendation/score'
 
 const CAT_COLORS: Record<string, string> = {
-  organicos: 'var(--cat-menta)',
-  gym: 'var(--cat-coral)',
-  'skin-care': 'var(--cat-lavanda)',
-  vitaminas: 'var(--cat-mostaza)',
+  piel:          'var(--cat-coral)',
+  solar:         'var(--cat-mostaza)',
+  bienestar:     'var(--cat-lavanda)',
+  gym:           'var(--cat-durazno)',
+  viaje:         'var(--cat-cielo)',
+  hogar:         'var(--cat-rosa)',
+  digestivo:     'var(--cat-menta)',
+  'pies-cuerpo': 'var(--cat-durazno)',
 }
 
-const SLUG_WEIGHTS: Record<string, Record<string, number>> = {
-  // Objetivos
-  gym: { gym: 3 },
-  skin: { 'skin-care': 3 },
-  organico: { organicos: 3 },
-  energia: { vitaminas: 3, organicos: 1 },
-  // Entrenamiento
-  'alto-rendimiento': { gym: 3 },
-  elite: { gym: 3 },
-  activo: { gym: 2 },
-  ligero: { gym: 1 },
-  principiante: { gym: 1 },
-  // Preocupaciones
-  peso: { gym: 2, vitaminas: 1 },
-  belleza: { 'skin-care': 2, vitaminas: 1 },
-  'energia-mental': { vitaminas: 3 },
-  inmune: { vitaminas: 2 },
-  // Piel
-  'piel-grasa': { 'skin-care': 3 },
-  'piel-seca': { 'skin-care': 3 },
-  'piel-mixta': { 'skin-care': 2 },
-  'piel-sensible': { 'skin-care': 2 },
-  'piel-manchas': { 'skin-care': 3 },
-  'piel-hidratacion': { 'skin-care': 2 },
-  'piel-poros': { 'skin-care': 2 },
-  'piel-rojeces': { 'skin-care': 2 },
-  // Alimentación
-  'muy-saludable': { organicos: 2 },
-  'en-proceso': { organicos: 2 },
-  'quiero-mejorar': { organicos: 2 },
-  irregular: { organicos: 1 },
-  // Preferencia natural/sintético
-  'natural-puro': { organicos: 3 },
-  efectivo: {},
-  'precio-valor': {},
-  resultados: {},
-  // Digestivo
-  digestivo: { organicos: 2 },
-  'digestivo-hinchazon': { organicos: 2 },
-  'digestivo-reflujo': { organicos: 2 },
-  'digestivo-estrenimiento': { organicos: 2 },
-  'reset-exceso': { organicos: 2, vitaminas: 1 },
-  // Restricciones (no suman categoría pero se pasan a la IA)
-  'sin-restriccion': {},
-  'alerg-lactosa': {},
-  'alerg-gluten': {},
-  'alerg-soya': {},
-  'alerg-piel': { 'skin-care': 1 },
-  // Edad (no suman categoría, la IA los interpreta)
-  'edad-25': {},
-  'edad-25-35': {},
-  'edad-35-45': {},
-  'edad-45': {},
-  // Presupuesto (la IA filtra por precio)
-  'presupuesto-bajo': {},
-  'presupuesto-medio': {},
-  'presupuesto-alto': {},
-  'presupuesto-premium': {},
-  // Energía timing
-  'energia-manana': { vitaminas: 2 },
-  'energia-entreno': { gym: 2 },
-  'energia-tarde': { vitaminas: 2 },
-  'energia-todo': { vitaminas: 2 },
-  // Solar / entreno tipo (señales menores)
-  'solar-no': { 'skin-care': 1 },
-  'solar-aveces': {},
-  'solar-si': {},
-  'entreno-fuerza': { gym: 3 },
-  'entreno-cardio': { gym: 2, vitaminas: 1 },
-  'entreno-mixto': { gym: 2 },
-  'entreno-hiit': { gym: 3 },
-}
 
 export interface KitItem {
   variantId: string
@@ -225,16 +159,33 @@ export async function GET(request: NextRequest) {
         'presupuesto-alto': 'entre S/150 y S/250',
         'presupuesto-premium': 'sin límite de presupuesto',
       }
-      const allergySlugs = allSlugs.filter(s => s.startsWith('alerg-'))
-      const allergyLabels: Record<string, string> = {
-        'alerg-lactosa': 'lactosa',
-        'alerg-gluten': 'gluten',
-        'alerg-soya': 'soya',
-        'alerg-piel': 'irritantes cutáneos',
-      }
-      const restrictions = allergySlugs.map(s => allergyLabels[s]).filter(Boolean)
-      const prefersNatural = allSlugs.includes('natural-puro')
+      const allergySlugs = allSlugs.filter(s => s in ALLERGY_LABELS)
+      const restrictions = allergySlugs.map(s => ALLERGY_LABELS[s]).filter(Boolean)
+      const prefersNatural = allSlugs.includes('prefiere-natural')
+
+      const activeSafetyFlags = allSlugs
+        .filter(s => SAFETY_FLAG_TEXTS[s])
+        .map(s => SAFETY_FLAG_TEXTS[s])
       const ageSlug = allSlugs.find(s => s.startsWith('edad-'))
+
+      const genderSlug = allSlugs.find(s => s.startsWith('genero-'))
+      const genderLabel = genderSlug === 'genero-femenino' ? 'mujer' : genderSlug === 'genero-masculino' ? 'hombre' : null
+      const pronoun = genderSlug === 'genero-masculino' ? 'él' : 'ella'
+
+      const objSlug = allSlugs.find(s => s.startsWith('obj-'))
+      const objLabels: Record<string, string> = {
+        'obj-rendimiento':  'rendimiento físico y deporte',
+        'obj-belleza':      'cuidado de piel y cabello',
+        'obj-bienestar':    'bienestar emocional (estrés o sueño)',
+        'obj-digestivo':    'digestión e hidratación',
+        'obj-nutricion':    'nutrición general y vitaminas',
+        'obj-solar':        'protección solar y cuidado al sol',
+        'obj-viaje':        'kit de viaje y outdoor',
+        'obj-hogar':        'botiquín y primeros auxilios en casa',
+        'obj-pies-cuerpo':  'cuidado de pies y cuerpo',
+        'obj-guia':         'descubrir qué productos necesita',
+      }
+      const objLabel = objSlug ? objLabels[objSlug] : null
 
       const completion = await openai.chat.completions.create({
         model: 'gpt-4o-mini',
@@ -243,8 +194,8 @@ export async function GET(request: NextRequest) {
         messages: [
           {
             role: 'system',
-            content: `Eres el motor de recomendaciones de LIORA, una marca peruana de bienestar.
-Dado el cuestionario de una clienta y el catálogo, devuelve un kit personalizado.
+            content: `Eres el motor de recomendaciones de LIORA, una marca peruana de bienestar natural.
+Dado el cuestionario de un/a cliente/a y el catálogo actual, devuelve un kit personalizado.
 
 Responde SOLO con JSON:
 {
@@ -257,13 +208,16 @@ Responde SOLO con JSON:
 Reglas estrictas:
 - kit_variant_ids: 4-5 variantes en orden de prioridad (IDs exactos del catálogo)
 - suggestion_variant_ids: 3-4 variantes adicionales NO incluidas en el kit
-- diagnosis: 1-2 oraciones personalizadas en español, menciona la etapa de vida si la conoces
-- tags: 3-5 etiquetas cortas en español
-- NO repitas el mismo producto
-- PRESUPUESTO: ${budgetSlug ? `La clienta quiere invertir ${budgetLabel[budgetSlug] ?? 'precio moderado'}. Prioriza productos dentro de ese rango; si el kit supera el presupuesto, elige productos más accesibles.` : 'Sin dato de presupuesto.'}
-- RESTRICCIONES: ${restrictions.length ? `EXCLUIR productos que contengan ${restrictions.join(', ')}. Esto es crítico para su seguridad.` : 'Sin restricciones alimentarias.'}
-- PREFERENCIA: ${prefersNatural ? 'Prefiere productos 100% naturales y orgánicos. Prioriza la categoría Orgánicos.' : 'Abierta a suplementos convencionales.'}
-- EDAD: ${ageSlug ? `Etapa: ${ageSlug}. Adapta las recomendaciones a sus necesidades según la edad.` : ''}
+- diagnosis: 2-3 oraciones personalizadas. Empieza con un insight sobre el perfil de la persona (no empieces con "Te recomendamos"). Usa el pronombre correcto si conoces el género.
+- tags: 3-5 etiquetas cortas en español que describan el perfil
+- NO repitas el mismo producto en kit y suggestions
+- OBJETIVO PRINCIPAL: ${objLabel ? `La persona busca ${objLabel}. Prioriza productos de esa área.` : 'Objetivo no especificado — analiza las respuestas.'}
+- GÉNERO: ${genderLabel ? `La persona es ${genderLabel}. Usa pronombres correctos (${pronoun}) en el diagnosis y adapta si hay necesidades específicas de su biología.` : 'Género no especificado — usa lenguaje neutro.'}
+- PRESUPUESTO: ${budgetSlug ? `Quiere invertir ${budgetLabel[budgetSlug] ?? 'precio moderado'}. Prioriza productos dentro de ese rango.` : 'Sin dato de presupuesto.'}
+- RESTRICCIONES: ${restrictions.length ? `EXCLUIR productos que contengan ${restrictions.join(', ')}. CRÍTICO para su seguridad.` : 'Sin restricciones.'}
+- PREFERENCIA: ${prefersNatural ? 'Prefiere productos 100% naturales y orgánicos.' : 'Abierta/o a todo tipo de suplementos.'}
+- EDAD: ${ageSlug ? `Etapa: ${ageSlug}. Adapta según necesidades de esa etapa de vida.` : ''}
+- CONTEXTO LOCAL: Somos una marca peruana. El clima costero (húmedo) afecta la piel — menciónalo si aplica al perfil de skin care.${activeSafetyFlags.length ? `\n- ADVERTENCIAS MÉDICAS (CRÍTICO — reportadas por el usuario, respetar siempre):\n${activeSafetyFlags.map((f, i) => `  ${i + 1}. ${f}`).join('\n')}` : ''}
 - Responde completamente en español`,
           },
           {
@@ -286,13 +240,7 @@ Reglas estrictas:
 
   // Scoring fallback
   if (kitVariantIds.length === 0) {
-    const scores: Record<string, number> = { organicos: 0, gym: 0, 'skin-care': 0, vitaminas: 0 }
-    for (const slug of allSlugs) {
-      const w = SLUG_WEIGHTS[slug]
-      if (w) {
-        for (const [cat, pts] of Object.entries(w)) scores[cat] = (scores[cat] ?? 0) + pts
-      }
-    }
+    const scores = calculateCategoryScores(allSlugs)
 
     const sortedCats = Object.entries(scores).sort(([, a], [, b]) => b - a)
     const usedProducts = new Set<string>()
@@ -318,10 +266,17 @@ Reglas estrictas:
     suggestionVariantIds = suggItems.map((c) => c.variantId)
 
     const topTags: string[] = []
-    if (scores.gym > 0) topTags.push('Gym')
-    if (scores['skin-care'] > 0) topTags.push('Skin Care')
-    if (scores.organicos > 0) topTags.push('Alimentación limpia')
-    if (scores.vitaminas > 0) topTags.push('Vitaminas')
+    if (scores.gym > 0) topTags.push('Rendimiento')
+    if (scores.piel > 0) topTags.push('Cuidado de piel')
+    if (scores.digestivo > 0) topTags.push('Alimentación limpia')
+    if (scores.bienestar > 0) topTags.push('Bienestar')
+    const objFallback = allSlugs.find(s => s.startsWith('obj-'))
+    const objFallbackLabels: Record<string, string> = {
+      'obj-bienestar': 'Bienestar emocional',
+      'obj-digestivo': 'Digestión',
+      'obj-cabello': 'Cuidado capilar',
+    }
+    if (objFallback && objFallbackLabels[objFallback]) topTags.push(objFallbackLabels[objFallback])
     diagnosis = 'Seleccionamos los productos que mejor se adaptan a tus objetivos de bienestar.'
     tags = topTags.length ? topTags : ['Bienestar', 'Personalizado']
   }

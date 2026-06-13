@@ -15,9 +15,9 @@ export async function GET() {
   if (!guard.ok) return guard.response
 
   const admin = createAdminClient()
-  const { data: categories } = await admin
+  const { data: categories } = await (admin as any)
     .from('categories')
-    .select('id, name, slug, parent_id, sort_order, created_at')
+    .select('id, name, slug, parent_id, sort_order, created_at, show_in_hero, hero_sort_order, hero_tagline, color, image_url')
     .order('sort_order')
     .order('name')
 
@@ -31,8 +31,8 @@ export async function GET() {
     if (p.category_id) countMap[p.category_id] = (countMap[p.category_id] ?? 0) + 1
   }
 
-  const result = ((categories ?? []) as Array<{ id: string; name: string; slug: string; parent_id: string | null; sort_order: number; created_at: string }>)
-    .map(c => ({ ...c, product_count: countMap[c.id] ?? 0 }))
+  const result = ((categories ?? []) as Array<Record<string, unknown>>)
+    .map(c => ({ ...c, product_count: countMap[c.id as string] ?? 0 }))
 
   return NextResponse.json({ categories: result })
 }

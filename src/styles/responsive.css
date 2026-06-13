@@ -42,10 +42,17 @@
 .liora-mobile-nav-link:last-of-type { border-bottom: none; }
 
 /* ── Hero — homepage ─────────────────────────────────── */
+@media (max-width: 900px) {
+  .liora-kits-section    { padding-left: 20px !important; padding-right: 20px !important; }
+  .liora-products-section { padding-left: 20px !important; padding-right: 20px !important; }
+}
+
 @media (max-width: 768px) {
   .liora-hero-section {
-    padding: 48px 20px 64px !important;
+    padding: 48px 20px 56px !important;
   }
+  .liora-kits-section    { padding-bottom: 56px !important; }
+  .liora-products-section { padding-bottom: 56px !important; }
   .liora-hero-grid {
     grid-template-columns: 1fr !important;
     gap: 0 !important;
@@ -150,17 +157,27 @@
   .liora-testimonial-quote { font-size: 28px !important; }
 }
 
-/* ── KitCard ─────────────────────────────────────────── */
-@media (max-width: 640px) {
-  .liora-kit-card { min-height: auto !important; }
-  .liora-kit-card-inner {
-    flex-direction: column !important;
+/* ── KitCard (nuevo layout ancho) ───────────────────── */
+@media (max-width: 900px) {
+  .liora-kit-card-grid {
+    grid-template-columns: 1fr !important;
     gap: 16px !important;
-    padding: 24px !important;
   }
-  .liora-kit-card-images { display: none !important; }
-  .liora-kit-card-title { font-size: 24px !important; }
-  .liora-kit-card-price { font-size: 22px !important; }
+  .liora-kit-card-title { font-size: 26px !important; }
+}
+@media (max-width: 640px) {
+  .liora-kit-card { padding: 18px !important; }
+  .liora-kit-card-title { font-size: 22px !important; }
+  .liora-kit-card-footer {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 14px !important;
+  }
+  .liora-kit-card-footer > div:last-child {
+    width: 100% !important;
+    align-items: stretch !important;
+  }
+  .liora-kit-card-price { font-size: 28px !important; }
 }
 
 /* ── Footer ──────────────────────────────────────────── */
@@ -241,6 +258,83 @@
   .liora-product-grid {
     grid-template-columns: 1fr !important;
     gap: 32px !important;
+  }
+}
+
+
+/* ── Hero image ──────────────────────────────────────── */
+.liora-hero-image-wrap {
+  position: relative;
+  height: 520px;
+  border-radius: 28px;
+  overflow: hidden;
+}
+
+@media (max-width: 900px) {
+  .liora-hero-section {
+    padding: 64px 20px 0 !important;
+  }
+  .liora-hero-grid {
+    grid-template-columns: 1fr !important;
+    gap: 40px !important;
+  }
+  .liora-hero-image-wrap {
+    height: 320px !important;
+    border-radius: 20px !important;
+    margin-right: 0 !important;
+    order: -1;
+  }
+}
+
+@media (max-width: 480px) {
+  .liora-hero-image-wrap {
+    height: 260px !important;
+    border-radius: 16px !important;
+  }
+  .liora-hero-section {
+    padding: 40px 20px 0 !important;
+  }
+}
+
+
+/* ── Quiz questions ──────────────────────────────────── */
+
+/* Tablet: 3-col grid → 2-col */
+@media (min-width: 641px) and (max-width: 860px) {
+  .liora-quiz-options-grid-many {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* CTA button — in-flow on desktop, sticky on mobile */
+.liora-quiz-content {
+  padding-bottom: 96px;
+}
+
+.liora-quiz-actions {
+  margin-top: 28px;
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 640px) {
+  .liora-quiz-options-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .liora-quiz-title { font-size: 36px !important; line-height: 1.05 !important; }
+  .liora-quiz-option { padding: 16px 18px !important; }
+  .liora-quiz-option-text { font-size: 17px !important; }
+  .liora-quiz-content {
+    padding-bottom: 140px;
+  }
+  .liora-quiz-actions {
+    position: sticky;
+    bottom: 16px;
+    z-index: 20;
+    background: var(--liora-crema);
+    padding: 12px 0 4px;
+    border-radius: 16px;
   }
 }
 

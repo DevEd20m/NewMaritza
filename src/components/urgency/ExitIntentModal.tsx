@@ -1,26 +1,40 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react'
+import { usePathname } from 'next/navigation'
 
 const STORAGE_KEY = 'liora_exit_shown'
 
-interface FeaturedCoupon { code: string; discountText: string; description: string | null }
+interface FeaturedCoupon {
+  code: string
+  discountText: string
+  description: string | null
+  newCustomersOnly: boolean
+  isLoggedIn: boolean
+  promoTitle: string | null
+  promoSubtitle: string | null
+  promoCta: string | null
+}
 
-export function ExitIntentModal() {
-  const [visible, setVisible]   = useState(false)
-  const [animIn, setAnimIn]     = useState(false)
-  const [copied, setCopied]     = useState(false)
-  const [email, setEmail]       = useState('')
+export function ExitIntentModal({ isLoggedIn }: { isLoggedIn: boolean }) {
+  const pathname = usePathname()
+  const [visible, setVisible]     = useState(false)
+  const [animIn, setAnimIn]       = useState(false)
+  const [copied, setCopied]       = useState(false)
+  const [email, setEmail]         = useState('')
   const [submitted, setSubmitted] = useState(false)
-  const [coupon, setCoupon]     = useState<FeaturedCoupon | null>(null)
+  const [coupon, setCoupon]       = useState<FeaturedCoupon | null>(null)
 
   useEffect(() => {
-    fetch('/api/coupons/featured')
+    fetch('/api/coupons/featured?placement=exit_modal')
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data) setCoupon(data) })
       .catch(() => {})
   }, [])
 
+  const HIDE_ON = ['/cuestionario', '/cuenta', '/pagar', '/login']
+
   const openModal = useCallback(() => {
+    if (HIDE_ON.some(r => pathname?.startsWith(r))) return
     if (sessionStorage.getItem(STORAGE_KEY)) return
     sessionStorage.setItem(STORAGE_KEY, '1')
     setVisible(true)
@@ -33,12 +47,10 @@ export function ExitIntentModal() {
   }, [])
 
   useEffect(() => {
-    // Desktop: exit intent por mouse saliendo del viewport por arriba
     const onMouseLeave = (e: MouseEvent) => {
       if (e.clientY <= 10) openModal()
     }
 
-    // Mobile: intent after 40 seconds of inactivity
     let mobileTimer: ReturnType<typeof setTimeout>
     const isMobile = window.innerWidth < 768
 
@@ -48,7 +60,6 @@ export function ExitIntentModal() {
       document.addEventListener('mouseleave', onMouseLeave)
     }
 
-    // También al dar click en "back" del navegador (popstate)
     const onPopState = () => openModal()
     window.addEventListener('popstate', onPopState)
 
@@ -59,7 +70,6 @@ export function ExitIntentModal() {
     }
   }, [openModal])
 
-  // Cerrar con Escape
   useEffect(() => {
     if (!visible) return
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeModal() }
@@ -69,9 +79,7 @@ export function ExitIntentModal() {
 
   const handleCopy = async () => {
     if (!coupon) return
-    try {
-      await navigator.clipboard.writeText(coupon.code)
-    } catch {}
+    try { await navigator.clipboard.writeText(coupon.code) } catch {}
     setCopied(true)
     setTimeout(() => setCopied(false), 2500)
   }
@@ -79,20 +87,42 @@ export function ExitIntentModal() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!email.trim()) return
-    // Registrar el lead (mismo endpoint del quiz)
     try {
       await fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim(), source: 'exit_intent' }),
       })
-    } catch {
-      // Silently fail — the UX is what matters
-    }
+    } catch {}
     setSubmitted(true)
   }
 
   if (!visible || !coupon) return null
+  if (HIDE_ON.some(r => pathname?.startsWith(r))) return null
+
+  // Texts: use configured fields or smart defaults based on context
+  const title = coupon.promoTitle ?? (
+    isLoggedIn
+      ? 'Tenemos algo para ti'
+      : 'Espera — tienes\nun regalo esperándote'
+  )
+  const subtitle = coupon.promoSubtitle ?? (
+    isLoggedIn
+      ? `Usa este código y obtén <strong>${coupon.discountText}</strong> en tu próxima compra`
+      : `Crea tu cuenta gratis y obtén <strong>${coupon.discountText}</strong> en tu primera compra`
+  )
+  const ctaText = coupon.promoCta ?? (
+    isLoggedIn
+      ? `Ir al carrito con ${coupon.discountText}`
+      : `Crear cuenta y obtener ${coupon.discountText} →`
+  )
+  const ctaHref = isLoggedIn
+    ? '/carrito'
+    : `/login?next=${encodeURIComponent('/carrito')}`
+
+  const fine = coupon.newCustomersOnly
+    ? 'Solo válido para cuentas nuevas · Una vez por cuenta'
+    : `Una vez por cliente · ${coupon.discountText}`
 
   return (
     <>
@@ -106,7 +136,6 @@ export function ExitIntentModal() {
         .liora-exit-input:focus { outline: 2px solid var(--liora-uva); outline-offset: 2px }
       `}</style>
 
-      {/* Overlay */}
       <div
         className="liora-modal-wrap-in"
         onClick={closeModal}
@@ -117,7 +146,6 @@ export function ExitIntentModal() {
           padding: 20,
         }}
       >
-        {/* Card */}
         <div
           className={animIn ? 'liora-modal-card-in' : 'liora-modal-card-out'}
           onClick={e => e.stopPropagation()}
@@ -131,7 +159,7 @@ export function ExitIntentModal() {
             position: 'relative',
           }}
         >
-          {/* Header coloreado */}
+          {/* Header */}
           <div style={{
             background: 'var(--cat-coral)',
             padding: '32px 32px 28px',
@@ -143,26 +171,27 @@ export function ExitIntentModal() {
               fontWeight: 800, fontSize: 30,
               color: 'var(--liora-uva)', margin: 0,
               lineHeight: 1.1,
+              whiteSpace: 'pre-line',
               fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1",
             }}>
-              Espera — tienes<br />un regalo esperándote
+              {title}
             </h2>
-            <p style={{
-              fontFamily: 'var(--font-body)',
-              fontSize: 15, color: 'var(--liora-uva)',
-              opacity: 0.8, marginTop: 10, marginBottom: 0, lineHeight: 1.45,
-            }}>
-              Crea tu cuenta gratis y obtén <strong>{coupon.discountText}</strong> en tu primera compra
-            </p>
+            <p
+              style={{
+                fontFamily: 'var(--font-body)',
+                fontSize: 15, color: 'var(--liora-uva)',
+                opacity: 0.8, marginTop: 10, marginBottom: 0, lineHeight: 1.45,
+              }}
+              dangerouslySetInnerHTML={{ __html: subtitle }}
+            />
           </div>
 
           {/* Body */}
           <div style={{ padding: '28px 32px 32px' }}>
             {!submitted ? (
               <>
-                {/* CTA principal — crear cuenta */}
                 <a
-                  href={`/login?next=${encodeURIComponent('/carrito')}`}
+                  href={ctaHref}
                   onClick={closeModal}
                   style={{
                     display: 'block', width: '100%', textAlign: 'center',
@@ -174,10 +203,9 @@ export function ExitIntentModal() {
                     cursor: 'pointer',
                   }}
                 >
-                  Crear cuenta y obtener {coupon.discountText} →
+                  {ctaText}
                 </a>
 
-                {/* Código copiable (secundario) */}
                 <button
                   onClick={handleCopy}
                   style={{
@@ -207,53 +235,47 @@ export function ExitIntentModal() {
                   color: 'var(--liora-uva)', opacity: 0.5,
                   textAlign: 'center', marginTop: 8, marginBottom: 20,
                 }}>
-                  Solo válido para cuentas nuevas · Una vez por cuenta
+                  {fine}
                 </div>
 
-                {/* Email para ofertas */}
-                <div style={{ borderTop: '1.5px solid var(--liora-arena)', paddingTop: 18 }}>
-                  <p style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--liora-uva)', opacity: 0.65, margin: '0 0 10px', textAlign: 'center' }}>
-                    O déjanos tu email para recibir ofertas exclusivas
-                  </p>
-                  <form onSubmit={handleSubmit} style={{ display: 'flex', gap: 8 }}>
-                    <input
-                      className="liora-exit-input"
-                      type="email"
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                      placeholder="tu@email.com"
-                      required
-                      style={{ flex: 1, padding: '10px 14px', border: '1.5px solid var(--liora-arena)', borderRadius: 10, fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-uva)', background: 'var(--liora-blanco)' }}
-                    />
-                    <button
-                      type="submit"
-                      style={{ background: 'var(--liora-uva)', color: 'var(--liora-crema)', border: 'none', borderRadius: 10, padding: '10px 16px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}
-                    >
-                      Enviar
-                    </button>
-                  </form>
-                </div>
+                {!isLoggedIn && (
+                  <div style={{ borderTop: '1.5px solid var(--liora-arena)', paddingTop: 18 }}>
+                    <p style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--liora-uva)', opacity: 0.65, margin: '0 0 10px', textAlign: 'center' }}>
+                      O déjanos tu email para recibir ofertas exclusivas
+                    </p>
+                    <form onSubmit={handleSubmit} style={{ display: 'flex', gap: 8 }}>
+                      <input
+                        className="liora-exit-input"
+                        type="email"
+                        value={email}
+                        onChange={e => setEmail(e.target.value)}
+                        placeholder="tu@email.com"
+                        required
+                        style={{ flex: 1, padding: '10px 14px', border: '1.5px solid var(--liora-arena)', borderRadius: 10, fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-uva)', background: 'var(--liora-blanco)' }}
+                      />
+                      <button
+                        type="submit"
+                        style={{ background: 'var(--liora-uva)', color: 'var(--liora-crema)', border: 'none', borderRadius: 10, padding: '10px 16px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                      >
+                        Enviar
+                      </button>
+                    </form>
+                  </div>
+                )}
               </>
             ) : (
               <div style={{ textAlign: 'center', padding: '8px 0' }}>
                 <div style={{ fontSize: 48, marginBottom: 12 }}>🌿</div>
-                <p style={{
-                  fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20,
-                  color: 'var(--liora-uva)', margin: '0 0 8px',
-                }}>
+                <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20, color: 'var(--liora-uva)', margin: '0 0 8px' }}>
                   ¡Listo! Ya tienes tu código
                 </p>
-                <p style={{
-                  fontFamily: 'var(--font-body)', fontSize: 14,
-                  color: 'var(--liora-uva)', opacity: 0.7, margin: 0,
-                }}>
+                <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--liora-uva)', opacity: 0.7, margin: 0 }}>
                   Usa <strong>{coupon.code}</strong> al finalizar tu compra.<br />
                   Te enviamos más beneficios a tu email.
                 </p>
               </div>
             )}
 
-            {/* Cerrar */}
             <button
               onClick={closeModal}
               style={{
@@ -268,7 +290,6 @@ export function ExitIntentModal() {
             </button>
           </div>
 
-          {/* X button */}
           <button
             onClick={closeModal}
             aria-label="Cerrar"

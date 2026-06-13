@@ -3,57 +3,43 @@ import { createClient } from '@/lib/supabase/server'
 import { ProductCard } from '@/components/products/ProductCard'
 import type { Metadata } from 'next'
 import { buildBaseMetadata } from '@/lib/seo/metadata'
-import type { Category } from '@/types/database'
 import { ArrowRight, Star, Play, Heart } from '@phosphor-icons/react/dist/ssr'
-import { CategoryGrid } from '@/components/ui/CategoryGrid'
 import { HomeBanners } from '@/components/home/HomeBanners'
-import { PublicCouponsSection, type PublicCoupon } from '@/components/home/PublicCouponsSection'
+import { FeaturedKits } from '@/components/home/FeaturedKits'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getStoreSettings } from '@/lib/settings'
+import { Suspense } from 'react'
+import Image from 'next/image'
 
 export const metadata: Metadata = buildBaseMetadata()
 
 interface FeaturedProduct {
   id: string; name: string; slug: string; cover_image_url: string | null; category_id: string | null
+  categories: { slug: string; name: string } | null
   product_variants: Array<{ id: string; name: string; product_prices: Array<{ amount_cents: number; compare_at_cents: number | null; currency: string; effective_to: string | null }> }>
+}
+
+const CATEGORY_COLORS: Record<string, string> = {
+  piel:          'var(--cat-coral)',
+  solar:         'var(--cat-mostaza)',
+  bienestar:     'var(--cat-lavanda)',
+  gym:           'var(--cat-durazno)',
+  viaje:         'var(--cat-cielo)',
+  hogar:         'var(--cat-rosa)',
+  digestivo:     'var(--cat-menta)',
+  'pies-cuerpo': 'var(--cat-durazno)',
 }
 
 async function getFeaturedProducts() {
   const supabase = await createClient()
   const { data } = await supabase
     .from('products')
-    .select(`id, name, slug, cover_image_url, category_id, product_variants (id, name, product_prices ( amount_cents, compare_at_cents, currency, effective_to ))`)
+    .select(`id, name, slug, cover_image_url, category_id, categories ( slug, name ), product_variants (id, name, product_prices ( amount_cents, compare_at_cents, currency, effective_to ))`)
     .eq('is_active', true)
     .limit(4)
-  return (data as FeaturedProduct[]) ?? []
+  return (data as unknown as FeaturedProduct[]) ?? []
 }
 
-async function getCategories() {
-  const supabase = await createClient()
-  const { data } = await supabase.from('categories').select('*').order('sort_order')
-  return (data as Category[]) ?? []
-}
-
-async function getCategoryCounts(): Promise<Record<string, number>> {
-  const supabase = await createClient()
-  const { data } = await (supabase as any)
-    .from('products')
-    .select('categories(slug)')
-    .eq('is_active', true)
-  if (!data) return {}
-  const counts: Record<string, number> = {}
-  for (const row of (data as Array<{ categories: { slug: string } | null }>) ) {
-    const slug = row.categories?.slug
-    if (slug) counts[slug] = (counts[slug] ?? 0) + 1
-  }
-  return counts
-}
-
-const CATEGORY_COLORS: Record<string, string> = {
-  gym: 'var(--cat-durazno)',
-  'skin-care': 'var(--cat-coral)',
-  vitaminas: 'var(--cat-mostaza)',
-  organicos: 'var(--cat-menta)',
-}
 
 const STEPS = [
   { n: '01', title: 'Responde 8 preguntas', desc: 'Sobre tu día, tu cuerpo, tu rutina. Cero juicios.' },
@@ -74,19 +60,6 @@ const TIKTOK_CLIPS = [
   { tag: 'Mi quiz', handle: '@josss', views: '47K', bg: 'var(--cat-menta)', label: 'Resultados' },
 ]
 
-async function getPublicCoupons(): Promise<PublicCoupon[]> {
-  const admin = createAdminClient()
-  const { data } = await (admin as any)
-    .from('coupons')
-    .select('id, code, type, value, description, expires_at, color')
-    .eq('is_active', true)
-    .eq('is_public', true)
-    .or('expires_at.is.null,expires_at.gt.' + new Date().toISOString())
-    .order('created_at', { ascending: false })
-    .limit(6)
-  return (data ?? []) as PublicCoupon[]
-}
-
 async function getHomeUserData() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -105,8 +78,7 @@ async function getHomeUserData() {
 
   const { data: rec } = await (supabase as any)
     .from('recommendations')
-    .select('quiz_profiles(id, quiz_question_answers(quiz_question_options(quiz_questions(categories(name)))))')
-    .eq('user_id', user.id)
+    .select('quiz_profile_id')
     .order('created_at', { ascending: false })
     .limit(1)
     .single()
@@ -120,9 +92,10 @@ async function getHomeUserData() {
   }
 }
 
+
 export default async function HomePage() {
-  const [products, categories, userData, publicCoupons, categoryCounts] = await Promise.all([
-    getFeaturedProducts(), getCategories(), getHomeUserData(), getPublicCoupons(), getCategoryCounts(),
+  const [products, userData, settings] = await Promise.all([
+    getFeaturedProducts(), getHomeUserData(), getStoreSettings(),
   ])
 
   return (
@@ -136,76 +109,97 @@ export default async function HomePage() {
       />
 
       {/* Hero */}
-      <section className="liora-hero-section" style={{ background: 'var(--liora-crema)', padding: '64px 48px 96px', position: 'relative' }}>
-        <div className="liora-hero-grid" style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: 48, alignItems: 'center', maxWidth: 1280, margin: '0 auto' }}>
+      <section className="liora-hero-section" style={{ background: 'var(--liora-crema)', padding: '64px 48px 80px', position: 'relative' }}>
+        <div className="liora-hero-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 56, alignItems: 'center', maxWidth: 1280, margin: '0 auto' }}>
+
+          {/* Left */}
           <div>
-            <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 13, color: 'var(--liora-uva)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 20, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ width: 24, height: 1.5, background: 'var(--liora-uva)', display: 'block' }} />
-              Bienestar personalizado · 8 preguntas
+            <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, color: 'var(--liora-uva)', textTransform: 'uppercase', letterSpacing: '0.14em', marginBottom: 20, opacity: 0.65 }}>
+              Bienestar personalizado · 8 preguntas · 2 minutos
             </div>
-            <h1 className="liora-hero-title" style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 88, lineHeight: 0.98, letterSpacing: '-0.025em', color: 'var(--liora-uva)', margin: 0, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>
+            <h1 className="liora-hero-title" style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 84, lineHeight: 0.98, letterSpacing: '-0.025em', color: 'var(--liora-uva)', margin: 0, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>
               Hecho<br />
-              <span className="liora-hero-script" style={{ fontFamily: 'var(--font-script)', fontWeight: 600, fontSize: 92, color: 'var(--liora-uva)' }}>para </span>
+              <span className="liora-hero-script" style={{ fontFamily: 'var(--font-script)', fontWeight: 600, fontSize: 88 }}>para </span>
               ti.
             </h1>
-            <p className="liora-hero-body" style={{ fontFamily: 'var(--font-body)', fontSize: 18, lineHeight: 1.5, color: 'var(--liora-uva)', marginTop: 24, maxWidth: 460 }}>
-              Tu cuerpo no es como el de nadie. Tu kit, tampoco. Responde 8 preguntas y armamos tu rutina de bienestar — orgánicos, vitaminas, skin care y gym.
+            <p className="liora-hero-body" style={{ fontFamily: 'var(--font-body)', fontSize: 17, lineHeight: 1.55, color: 'var(--liora-uva)', opacity: 0.8, marginTop: 24, maxWidth: 420 }}>
+              Tu cuerpo no es como el de nadie. Tu kit, tampoco. Responde 8 preguntas y armamos tu rutina de bienestar — orgánicos, vitaminas, skin care y gym — según tus necesidades.
             </p>
-            <div className="liora-hero-ctas" style={{ display: 'flex', gap: 14, marginTop: 36 }}>
-              <Link href="/cuestionario" style={{ background: 'var(--liora-uva)', color: 'var(--liora-crema)', border: 'none', borderRadius: 999, padding: '16px 32px', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 16, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                Empezar mi cuestionario <ArrowRight size={18} weight="bold" />
+
+            {/* Trust signals */}
+            <div style={{ display: 'flex', gap: 20, marginTop: 28, flexWrap: 'wrap' }}>
+              {[
+                { icon: '🎯', label: '100% Personalizado' },
+                { icon: '✓',  label: 'Productos de calidad' },
+                { icon: '💬', label: 'Te acompañamos 24/7' },
+              ].map(t => (
+                <div key={t.label} style={{ display: 'flex', alignItems: 'center', gap: 7, fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-uva)', opacity: 0.75, fontWeight: 600 }}>
+                  <span style={{ fontSize: 15 }}>{t.icon}</span>
+                  {t.label}
+                </div>
+              ))}
+            </div>
+
+            {/* CTAs */}
+            <div className="liora-hero-ctas" style={{ display: 'flex', gap: 12, marginTop: 32 }}>
+              <Link href="/cuestionario" style={{ background: 'var(--liora-uva)', color: 'var(--liora-crema)', border: 'none', borderRadius: 999, padding: '15px 30px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 15, display: 'inline-flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
+                Empezar mi cuestionario <ArrowRight size={16} weight="bold" />
               </Link>
-              <Link href="/tienda" style={{ background: 'transparent', color: 'var(--liora-uva)', border: '1.5px solid var(--liora-uva)', borderRadius: 999, padding: '16px 28px', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 16 }}>
+              <Link href="/tienda" style={{ background: 'transparent', color: 'var(--liora-uva)', border: '1.5px solid var(--liora-uva)', borderRadius: 999, padding: '15px 26px', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 15, textDecoration: 'none' }}>
                 Ver tienda
               </Link>
             </div>
+
+            {/* Social proof */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 28 }}>
+              <div style={{ display: 'flex' }}>
+                {['var(--cat-coral)', 'var(--cat-menta)', 'var(--cat-cielo)'].map((c, i) => (
+                  <div key={i} style={{ width: 32, height: 32, borderRadius: '50%', background: c, border: '2px solid var(--liora-crema)', marginLeft: i > 0 ? -10 : 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 12, color: 'var(--liora-uva)' }}>
+                    {['C', 'D', 'V'][i]}
+                  </div>
+                ))}
+              </div>
+              <div>
+                <div style={{ display: 'flex', gap: 2 }}>
+                  {[1,2,3,4,5].map(i => <Star key={i} size={13} weight="fill" style={{ color: '#f5a623' }} />)}
+                </div>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--liora-uva)', opacity: 0.65, marginTop: 2 }}>
+                  Más de 12,000 personas ya encontraron su kit ideal.
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Hero product stack */}
-          <div className="liora-hero-cards" style={{ position: 'relative', height: 520 }}>
-            <div style={{ position: 'absolute', top: 20, left: 0, width: 260, height: 320, background: 'var(--cat-durazno)', borderRadius: 28, transform: 'rotate(-6deg)', boxShadow: 'var(--shadow-2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div style={{ background: 'var(--liora-crema)', padding: '16px 20px', borderRadius: 12, fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--liora-uva)', textAlign: 'center' }}>
-                <div style={{ fontSize: 22, lineHeight: 1 }}>Whey</div>
-                <div style={{ fontSize: 12, fontFamily: 'var(--font-body)', fontWeight: 500, marginTop: 6, opacity: 0.7 }}>Proteína</div>
-              </div>
-            </div>
-            <div style={{ position: 'absolute', top: 60, right: 60, width: 240, height: 300, background: 'var(--cat-lavanda)', borderRadius: 28, transform: 'rotate(8deg)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'var(--shadow-2)' }}>
-              <div style={{ background: 'var(--liora-crema)', padding: '16px 20px', borderRadius: 12, fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--liora-uva)', textAlign: 'center' }}>
-                <div style={{ fontSize: 22, lineHeight: 1 }}>Sérum</div>
-                <div style={{ fontSize: 12, fontFamily: 'var(--font-body)', fontWeight: 500, marginTop: 6, opacity: 0.7 }}>Vit. C</div>
-              </div>
-            </div>
-            <div style={{ position: 'absolute', bottom: 30, left: 80, width: 260, height: 280, background: 'var(--cat-menta)', borderRadius: 28, transform: 'rotate(-2deg)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'var(--shadow-2)' }}>
-              <div style={{ background: 'var(--liora-crema)', padding: '16px 20px', borderRadius: 12, fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--liora-uva)', textAlign: 'center' }}>
-                <div style={{ fontSize: 22, lineHeight: 1 }}>Granola</div>
-                <div style={{ fontSize: 12, fontFamily: 'var(--font-body)', fontWeight: 500, marginTop: 6, opacity: 0.7 }}>Orgánica</div>
-              </div>
-            </div>
-            <div style={{ position: 'absolute', bottom: 80, right: 0, width: 96, height: 96, background: 'var(--liora-lima)', borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', transform: 'rotate(-12deg)', fontFamily: 'var(--font-display)', fontWeight: 800, color: 'var(--liora-uva)', fontSize: 13, textAlign: 'center', lineHeight: 1.1, letterSpacing: '0.04em' }}>
-              ¡TU<br />KIT!
-            </div>
+          {/* Right — hero image, bleeds to right viewport edge */}
+          <div className="liora-hero-image-wrap" style={{ borderRadius: '28px 0 0 28px', marginRight: 'calc(-1 * max(48px, 50vw - 640px))' }}>
+            <Image
+              src={settings.hero_image_url || '/products/hero-banner.png'}
+              alt="Productos LIORA"
+              fill
+              sizes="(max-width: 768px) 100vw, 60vw"
+              style={{ objectFit: 'cover', objectPosition: 'center center' }}
+              priority
+            />
+            {/* Left fade — dissolves image into the text column */}
+            <div style={{
+              position: 'absolute',
+              top: 0, left: 0, bottom: 0,
+              width: '18%',
+              background: 'linear-gradient(to right, #FBF1E2 0%, transparent 100%)',
+              zIndex: 1,
+              pointerEvents: 'none',
+            }} />
           </div>
         </div>
       </section>
 
-      {/* Category grid */}
-      <section className="liora-section-pad" style={{ background: 'var(--liora-crema)', padding: '32px 48px 64px' }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
-          <div className="liora-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 32 }}>
-            <div>
-              <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12 }}>Nuestras categorías</div>
-              <h2 className="liora-section-title" style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 56, color: 'var(--liora-uva)', margin: 0, lineHeight: 1, fontVariationSettings: "'opsz' 144,'SOFT' 60,'WONK' 0" }}>¿Por dónde empezamos?</h2>
-            </div>
-            <Link href="/tienda" style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 15, color: 'var(--liora-uva)', display: 'inline-flex', alignItems: 'center', gap: 6, borderBottom: '1.5px solid var(--liora-uva)', paddingBottom: 2 }}>
-              Ver todas <ArrowRight size={14} weight="bold" />
-            </Link>
-          </div>
-          <CategoryGrid counts={categoryCounts} />
-        </div>
-      </section>
+      {/* Featured kits */}
+      <Suspense fallback={null}>
+        <FeaturedKits />
+      </Suspense>
 
       {/* Featured products */}
-      <section className="liora-section-pad" style={{ background: 'var(--liora-crema)', padding: '64px 48px' }}>
+      <section className="liora-products-section liora-section-pad" style={{ background: 'var(--liora-crema)', padding: '0 48px 80px' }}>
         <div style={{ maxWidth: 1280, margin: '0 auto' }}>
           <div className="liora-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 32 }}>
             <div>
@@ -221,7 +215,6 @@ export default async function HomePage() {
               const variant = p.product_variants?.[0]
               const price = variant?.product_prices?.find((pp) => !pp.effective_to)
               if (!variant || !price) return null
-              const catColor = CATEGORY_COLORS[p.category_id ?? ''] ?? 'var(--cat-lavanda)'
               return (
                 <ProductCard
                   key={p.id}
@@ -232,7 +225,8 @@ export default async function HomePage() {
                   subname={variant.name}
                   priceCents={price.amount_cents}
                   compareAtCents={price.compare_at_cents ?? undefined}
-                  categoryColor={catColor}
+                  categoryColor={CATEGORY_COLORS[p.categories?.slug ?? ''] ?? 'var(--cat-lavanda)'}
+                  categoryName={p.categories?.name}
                   imageUrl={p.cover_image_url ?? undefined}
                 />
               )
@@ -240,8 +234,6 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-
-      <PublicCouponsSection coupons={publicCoupons} />
 
       {/* Personalize section */}
       <section className="liora-personalize-section" style={{ background: 'var(--liora-uva)', padding: '96px 48px', borderRadius: '32px 32px 0 0' }}>

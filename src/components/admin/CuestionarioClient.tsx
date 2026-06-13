@@ -1,27 +1,27 @@
 'use client'
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { PencilSimple, Check, X, ChatCircle, Funnel, Export, Warning, ArrowSquareOut, Users, ChartBar, Tag } from '@phosphor-icons/react'
+import {
+  PencilSimple, Check, X, ChatCircle, Export, ArrowSquareOut,
+  Users, ChartBar, Tag, Plus, Trash, Warning,
+  RadioButton, CheckSquare, ArrowRight, GitBranch,
+} from '@phosphor-icons/react'
 import type { AdminTag } from './TagsClient'
 
 export interface AdminQuizOption { id: string; text: string; slug: string; sort_order: number; tag_ids: string[] }
-
 export interface AdminQuizQuestion {
   id: string; text: string; subtext: string | null; type: 'single' | 'multi'
   sort_order: number; conditions: { if_any_slug?: string[] } | null
   quiz_question_options: AdminQuizOption[]
 }
-
 export interface AdminQuizGroup {
   id: string; title: string; sort_order: number; interstitial_text: string | null
   quiz_questions: AdminQuizQuestion[]
 }
-
 export interface AdminMiniKit {
   templateId: string; kitId: string; kitName: string; kitSlug: string
   groups: AdminQuizGroup[]
 }
-
 export interface AdminLead {
   id: string; email: string; phone: string | null; source: string | null; created_at: string
 }
@@ -35,13 +35,25 @@ interface Props {
   tags: AdminTag[]
 }
 
-const KIT_COLORS: Record<string, string> = {
-  energia: 'var(--cat-mostaza)', piel: 'var(--cat-coral)',
-  'post-entreno': 'var(--cat-durazno)', reset: 'var(--cat-menta)', detox: 'var(--cat-menta)',
-}
-function kitColor(slug: string) {
-  for (const [k, v] of Object.entries(KIT_COLORS)) if (slug.includes(k)) return v
-  return 'var(--cat-lavanda)'
+// Slugs del routing + su color + label legible
+// IMPORTANTE: estos slugs deben coincidir exactamente con los slugs de las opciones en Sección 1
+const BRANCHES: { slug: string; label: string; color: string; emoji: string }[] = [
+  { slug: 'obj-rendimiento', label: 'Rendimiento físico', color: 'var(--cat-durazno)',   emoji: '💪' },
+  { slug: 'obj-belleza',     label: 'Piel y cabello',     color: 'var(--cat-coral)',     emoji: '🧴' },
+  { slug: 'obj-bienestar',   label: 'Bienestar',          color: 'var(--cat-lavanda)',   emoji: '🌙' },
+  { slug: 'obj-digestivo',   label: 'Digestión',          color: 'var(--cat-menta)',     emoji: '🌿' },
+  { slug: 'obj-nutricion',   label: 'Nutrición',          color: 'var(--cat-mostaza)',   emoji: '🍊' },
+  { slug: 'obj-solar',       label: 'Protección solar',   color: 'var(--cat-cielo)',     emoji: '☀️' },
+  { slug: 'obj-viaje',       label: 'Viaje & outdoor',    color: 'var(--cat-uva-clara)', emoji: '🧳' },
+  { slug: 'obj-hogar',       label: 'Hogar & botiquín',   color: 'var(--cat-rosa)',      emoji: '🏠' },
+  { slug: 'obj-pies-cuerpo', label: 'Pies y cuerpo',      color: 'var(--cat-durazno)',   emoji: '👟' },
+  { slug: 'obj-guia',        label: 'Necesita orientación', color: '#EDE8F5',             emoji: '✨' },
+]
+const BRANCH_MAP = Object.fromEntries(BRANCHES.map(b => [b.slug, b]))
+
+function branchOf(q: AdminQuizQuestion) {
+  const slugs = q.conditions?.if_any_slug ?? []
+  return BRANCHES.find(b => slugs.includes(b.slug)) ?? null
 }
 
 // ─── Inline editable text ──────────────────────────────────────────────────
@@ -89,7 +101,7 @@ function InlineEdit({ value, onSave, multiline = false, placeholder, style }: {
   )
 }
 
-// ─── Tag picker for quiz options ───────────────────────────────────────────
+// ─── Tag picker ────────────────────────────────────────────────────────────
 function TagPicker({ optionId, selectedIds, tags, onSave }: {
   optionId: string; selectedIds: string[]; tags: AdminTag[]
   onSave: (ids: string[]) => Promise<void>
@@ -145,102 +157,312 @@ function TagPicker({ optionId, selectedIds, tags, onSave }: {
   )
 }
 
-// ─── Question tree (reused for main quiz and mini-quizzes) ─────────────────
-function QuestionTree({ groups, onPatch, tags = [] }: { groups: AdminQuizGroup[]; onPatch: (url: string, body: Record<string, unknown>) => Promise<void>; tags?: AdminTag[] }) {
-  const [expanded, setExpanded] = useState<Set<string>>(new Set(groups.map(g => g.id)))
+// ─── Conditions editor ─────────────────────────────────────────────────────
+function ConditionsBadge({ question, onSave }: {
+  question: AdminQuizQuestion
+  onSave: (conditions: { if_any_slug: string[] } | null) => Promise<void>
+}) {
+  const [open, setOpen] = useState(false)
+  const [selected, setSelected] = useState<string[]>(question.conditions?.if_any_slug ?? [])
+  const [saving, setSaving] = useState(false)
+
+  const branch = branchOf(question)
+
+  const toggle = (slug: string) => setSelected(prev =>
+    prev.includes(slug) ? prev.filter(s => s !== slug) : [...prev, slug]
+  )
+  const save = async () => {
+    setSaving(true)
+    await onSave(selected.length ? { if_any_slug: selected } : null)
+    setSaving(false)
+    setOpen(false)
+  }
+
+  if (!open) return (
+    <button onClick={() => setOpen(true)} title="Editar condición de visibilidad"
+      style={{
+        background: branch ? branch.color : 'var(--liora-arena)',
+        border: 'none', borderRadius: 999, padding: '3px 10px',
+        fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 10,
+        color: 'var(--liora-uva)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5,
+      }}>
+      {branch ? `Rama: ${branch.label}` : 'Aparece siempre'}
+      <PencilSimple size={9} />
+    </button>
+  )
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-      {groups.map((group, gi) => {
-        const open = expanded.has(group.id)
+    <div style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-uva)', borderRadius: 10, padding: 12, display: 'inline-flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.6 }}>¿Cuándo aparece esta pregunta?</div>
+      <button
+        onClick={() => setSelected([])}
+        style={{ background: selected.length === 0 ? 'var(--liora-uva)' : 'transparent', color: selected.length === 0 ? 'var(--liora-crema)' : 'var(--liora-uva)', border: '1.5px solid var(--liora-arena)', borderRadius: 999, padding: '4px 12px', fontFamily: 'var(--font-body)', fontSize: 11, fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}>
+        Siempre (sin condición)
+      </button>
+      {BRANCHES.map(b => {
+        const sel = selected.includes(b.slug)
+        return (
+          <button key={b.slug} onClick={() => toggle(b.slug)}
+            style={{ background: sel ? b.color : 'transparent', color: 'var(--liora-uva)', border: `1.5px solid ${sel ? 'var(--liora-uva)' : 'var(--liora-arena)'}`, borderRadius: 999, padding: '4px 12px', fontFamily: 'var(--font-body)', fontSize: 11, fontWeight: 600, cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 6 }}>
+            {sel && <Check size={10} weight="bold" />}
+            Solo si eligió: {b.label}
+          </button>
+        )
+      })}
+      <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+        <button onClick={save} disabled={saving} style={{ background: 'var(--liora-uva)', color: 'var(--liora-crema)', border: 'none', borderRadius: 6, padding: '5px 12px', fontFamily: 'var(--font-body)', fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>
+          {saving ? '…' : 'Guardar'}
+        </button>
+        <button onClick={() => { setSelected(question.conditions?.if_any_slug ?? []); setOpen(false) }} style={{ background: 'transparent', border: '1px solid var(--liora-arena)', borderRadius: 6, padding: '5px 10px', fontFamily: 'var(--font-body)', fontSize: 10, cursor: 'pointer', color: 'var(--liora-uva)' }}>Cancelar</button>
+      </div>
+    </div>
+  )
+}
+
+// ─── Question card ─────────────────────────────────────────────────────────
+function QuestionCard({ q, qi, groupId, onPatch, onDelete, onAddOption, onDeleteOption, tags }: {
+  q: AdminQuizQuestion; qi: number; groupId: string
+  onPatch: (url: string, body: Record<string, unknown>) => Promise<void>
+  onDelete: (questionId: string) => Promise<void>
+  onAddOption: (questionId: string, groupId: string) => Promise<void>
+  onDeleteOption: (optionId: string, questionId: string) => Promise<void>
+  tags: AdminTag[]
+}) {
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const branch = branchOf(q)
+
+  const branchColor = branch ? branch.color : 'var(--liora-lima)'
+
+  return (
+    <div style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderLeft: `4px solid ${branchColor}`, borderRadius: 14, overflow: 'hidden' }}>
+      {/* Question header */}
+      <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--liora-arena)', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+        <span style={{ fontFamily: 'var(--font-body)', fontWeight: 800, fontSize: 13, color: 'var(--liora-uva)', opacity: 0.5, flexShrink: 0, marginTop: 2, minWidth: 20 }}>{qi + 1}</span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {/* Badges */}
+          <div style={{ display: 'flex', gap: 6, marginBottom: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+            <span style={{
+              background: q.type === 'multi' ? 'var(--cat-lavanda)' : 'var(--liora-arena)',
+              borderRadius: 999, padding: '2px 10px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 10, color: 'var(--liora-uva)', textTransform: 'uppercase',
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+            }}>
+              {q.type === 'multi'
+                ? <><CheckSquare size={10} weight="bold" /> Varias opciones</>
+                : <><RadioButton size={10} weight="bold" /> Una opción</>
+              }
+            </span>
+            <ConditionsBadge
+              question={q}
+              onSave={conditions => onPatch(`/api/admin/quiz/questions/${q.id}`, { conditions })}
+            />
+          </div>
+          {/* Question text */}
+          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: 'var(--liora-uva)', marginBottom: 4 }}>
+            <InlineEdit value={q.text} onSave={v => onPatch(`/api/admin/quiz/questions/${q.id}`, { text: v })} style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16 }} />
+          </div>
+          {/* Subtext */}
+          <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--liora-uva)', opacity: 0.6 }}>
+            <InlineEdit value={q.subtext ?? ''} placeholder="Descripción opcional" onSave={v => onPatch(`/api/admin/quiz/questions/${q.id}`, { subtext: v || null })} style={{ fontFamily: 'var(--font-body)', fontSize: 12 }} />
+          </div>
+        </div>
+
+        {/* Delete question */}
+        <div style={{ flexShrink: 0 }}>
+          {confirmDelete ? (
+            <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+              <span style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: '#C2433A', fontWeight: 600 }}>¿Eliminar?</span>
+              <button onClick={() => onDelete(q.id)} style={{ background: '#C2433A', color: 'white', border: 'none', borderRadius: 6, padding: '4px 8px', cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: 10, fontWeight: 700 }}>Sí</button>
+              <button onClick={() => setConfirmDelete(false)} style={{ background: 'transparent', border: '1px solid var(--liora-arena)', borderRadius: 6, padding: '4px 8px', cursor: 'pointer', color: 'var(--liora-uva)', fontSize: 10 }}>No</button>
+            </div>
+          ) : (
+            <button onClick={() => setConfirmDelete(true)} title="Eliminar pregunta"
+              style={{ background: 'transparent', border: '1px solid var(--liora-arena)', borderRadius: 8, padding: '6px 8px', cursor: 'pointer', color: 'var(--liora-uva)', opacity: 0.45, display: 'flex', alignItems: 'center' }}>
+              <Trash size={13} />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Options */}
+      <div style={{ padding: '12px 16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 6, marginBottom: 8 }}>
+          {q.quiz_question_options.sort((a, b) => a.sort_order - b.sort_order).map(opt => (
+            <div key={opt.id} style={{ background: 'var(--liora-crema)', border: '1.5px solid var(--liora-arena)', borderRadius: 10, padding: '8px 10px', position: 'relative' }}>
+              {/* Delete option */}
+              <button onClick={() => onDeleteOption(opt.id, q.id)} title="Quitar opción"
+                style={{ position: 'absolute', top: 5, right: 5, background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--liora-uva)', opacity: 0.3, padding: 2, display: 'flex', alignItems: 'center' }}
+                onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
+                onMouseLeave={e => (e.currentTarget.style.opacity = '0.3')}>
+                <X size={10} weight="bold" />
+              </button>
+              <div style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13, color: 'var(--liora-uva)', marginBottom: 3, paddingRight: 16 }}>
+                <InlineEdit value={opt.text} onSave={v => onPatch(`/api/admin/quiz/options/${opt.id}`, { text: v })} style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13 }} />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: tags.length > 0 ? 5 : 0 }}>
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: 9, opacity: 0.4 }}>slug:</span>
+                <code style={{ fontFamily: 'monospace', fontSize: 9, background: 'var(--liora-arena)', borderRadius: 4, padding: '1px 5px', color: 'var(--liora-uva)' }}>
+                  <InlineEdit value={opt.slug} onSave={v => onPatch(`/api/admin/quiz/options/${opt.id}`, { slug: v })} style={{ fontFamily: 'monospace', fontSize: 9 }} />
+                </code>
+              </div>
+              {tags.length > 0 && (
+                <TagPicker optionId={opt.id} selectedIds={opt.tag_ids ?? []} tags={tags}
+                  onSave={ids => onPatch(`/api/admin/quiz/options/${opt.id}`, { tag_ids: ids })} />
+              )}
+            </div>
+          ))}
+
+          {/* Add option */}
+          <button onClick={() => onAddOption(q.id, groupId)}
+            style={{ background: 'transparent', border: '1.5px dashed var(--liora-arena)', borderRadius: 10, padding: '8px 10px', cursor: 'pointer', color: 'var(--liora-uva)', opacity: 0.55, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 600, minHeight: 52 }}>
+            <Plus size={12} weight="bold" /> Agregar opción
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Branch section (questions grouped by obj-* condition) ────────────────
+function BranchSection({ branch, questions, groupId, onPatch, onDelete, onAddQuestion, onAddOption, onDeleteOption, tags }: {
+  branch: typeof BRANCHES[0] | null
+  questions: AdminQuizQuestion[]
+  groupId: string
+  onPatch: (url: string, body: Record<string, unknown>) => Promise<void>
+  onDelete: (questionId: string) => Promise<void>
+  onAddQuestion: (groupId: string, condition: string | null) => Promise<void>
+  onAddOption: (questionId: string, groupId: string) => Promise<void>
+  onDeleteOption: (optionId: string, questionId: string) => Promise<void>
+  tags: AdminTag[]
+}) {
+  const [expanded, setExpanded] = useState(true)
+  const isUniversal = !branch
+  const label = branch ? `${branch.emoji}  ${branch.label}` : 'Para todos los perfiles'
+  const color = branch ? branch.color : 'var(--liora-lima)'
+
+  return (
+    <div style={{ marginBottom: 16 }}>
+      {/* Branch header */}
+      <button onClick={() => setExpanded(v => !v)}
+        style={{ width: '100%', background: color, border: 'none', borderRadius: 12, padding: '10px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, marginBottom: expanded ? 8 : 0 }}>
+        {isUniversal
+          ? <Users size={14} weight="bold" style={{ flexShrink: 0, color: 'var(--liora-uva)' }} />
+          : <span style={{ width: 8, height: 8, borderRadius: 999, background: 'var(--liora-uva)', flexShrink: 0 }} />
+        }
+        <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, color: 'var(--liora-uva)', flex: 1, textAlign: 'left' }}>{label}</span>
+        {isUniversal && (
+          <span style={{ fontFamily: 'var(--font-body)', fontSize: 10, color: 'var(--liora-uva)', opacity: 0.55, fontStyle: 'italic', marginRight: 8 }}>sin importar el objetivo</span>
+        )}
+        <span style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--liora-uva)', opacity: 0.6 }}>{questions.length} pregunta{questions.length !== 1 ? 's' : ''} {expanded ? '▲' : '▼'}</span>
+      </button>
+
+      {expanded && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingLeft: 16, borderLeft: `3px solid ${color}` }}>
+          {questions.sort((a, b) => a.sort_order - b.sort_order).map((q, qi) => (
+            <QuestionCard key={q.id} q={q} qi={qi} groupId={groupId}
+              onPatch={onPatch} onDelete={onDelete} onAddOption={onAddOption} onDeleteOption={onDeleteOption} tags={tags} />
+          ))}
+          <button onClick={() => onAddQuestion(groupId, branch?.slug ?? null)}
+            style={{ background: 'transparent', border: `1.5px dashed ${color}`, borderRadius: 12, padding: '10px 16px', cursor: 'pointer', color: 'var(--liora-uva)', opacity: 0.7, display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600 }}>
+            <Plus size={14} weight="bold" />
+            {isUniversal ? 'Agregar pregunta para todos los perfiles' : `Agregar pregunta en "${branch.label}"`}
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Quiz editor for a set of groups ──────────────────────────────────────
+function QuizEditor({ groups, onPatch, onDeleteQuestion, onAddQuestion, onAddOption, onDeleteOption, tags }: {
+  groups: AdminQuizGroup[]
+  onPatch: (url: string, body: Record<string, unknown>) => Promise<void>
+  onDeleteQuestion: (questionId: string) => Promise<void>
+  onAddQuestion: (groupId: string, condition: string | null) => Promise<void>
+  onAddOption: (questionId: string, groupId: string) => Promise<void>
+  onDeleteOption: (optionId: string, questionId: string) => Promise<void>
+  tags: AdminTag[]
+}) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      {groups.sort((a, b) => a.sort_order - b.sort_order).map(group => {
+        const isBranchGroup = group.quiz_questions.some(q => q.conditions?.if_any_slug?.some(s => s.startsWith('obj-')))
+
         return (
           <div key={group.id} style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 18, overflow: 'hidden' }}>
-            {/* Group row */}
-            <div onClick={() => setExpanded(prev => { const n = new Set(prev); n.has(group.id) ? n.delete(group.id) : n.add(group.id); return n })}
-              style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', background: gi % 2 === 0 ? 'var(--liora-crema)' : 'var(--liora-blanco)' }}>
+            {/* Group header */}
+            <div style={{ padding: '14px 20px', background: 'var(--liora-crema)', borderBottom: '1px solid var(--liora-arena)', display: 'flex', alignItems: 'center', gap: 12 }}>
               <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 10, background: 'var(--liora-lima)', color: 'var(--liora-uva)', borderRadius: 999, padding: '2px 10px', textTransform: 'uppercase', letterSpacing: '0.1em', flexShrink: 0 }}>
                 Sección {group.sort_order}
               </span>
               <span style={{ flex: 1, fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 14, color: 'var(--liora-uva)' }}>
                 <InlineEdit value={group.title} onSave={v => onPatch(`/api/admin/quiz/groups/${group.id}`, { title: v })} style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 14 }} />
               </span>
-              <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--liora-uva)', opacity: 0.4 }}>{group.quiz_questions.length} preguntas {open ? '▲' : '▼'}</span>
+              <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--liora-uva)', opacity: 0.4 }}>
+                {group.quiz_questions.length} preguntas
+              </span>
             </div>
 
-            {/* Interstitial message */}
-            {open && (
-              <div style={{ padding: '8px 18px', background: 'var(--cat-mostaza)', display: 'flex', alignItems: 'flex-start', gap: 10, borderTop: '1px solid rgba(61,26,58,0.1)' }}>
-                <ChatCircle size={15} weight="bold" style={{ marginTop: 3, flexShrink: 0, opacity: 0.7 }} />
+            {/* Interstitial */}
+            {group.interstitial_text !== undefined && (
+              <div style={{ padding: '10px 20px', background: 'rgba(243,187,56,0.12)', borderBottom: '1px solid rgba(61,26,58,0.08)', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                <ChatCircle size={14} weight="bold" style={{ marginTop: 3, flexShrink: 0, opacity: 0.6 }} />
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 3, opacity: 0.7 }}>
-                    Mensaje de pausa — aparece entre esta sección y la siguiente
+                  <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 3, opacity: 0.6 }}>
+                    Mensaje motivacional — aparece al inicio de esta sección
                   </div>
                   <InlineEdit
                     value={group.interstitial_text ?? ''}
-                    placeholder="Sin mensaje — click para agregar uno"
+                    placeholder="Sin mensaje — click para agregar"
                     multiline
                     onSave={v => onPatch(`/api/admin/quiz/groups/${group.id}`, { interstitial_text: v || null })}
-                    style={{ fontFamily: 'var(--font-body)', fontSize: 13 }}
+                    style={{ fontFamily: 'var(--font-body)', fontSize: 12 }}
                   />
                 </div>
               </div>
             )}
 
-            {/* Questions */}
-            {open && group.quiz_questions.sort((a, b) => a.sort_order - b.sort_order).map((q, qi) => (
-              <div key={q.id} style={{ borderTop: '1px solid var(--liora-arena)', padding: '14px 18px' }}>
-                <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
-                  <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)', opacity: 0.4, flexShrink: 0, marginTop: 2 }}>{qi + 1}</span>
-                  <div style={{ flex: 1 }}>
-                    {/* Badges */}
-                    <div style={{ display: 'flex', gap: 6, marginBottom: 6, flexWrap: 'wrap' }}>
-                      <span style={{ background: q.type === 'multi' ? 'var(--cat-lavanda)' : 'var(--liora-arena)', borderRadius: 999, padding: '2px 10px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 10, color: 'var(--liora-uva)', textTransform: 'uppercase' }}>
-                        {q.type === 'multi' ? 'Multi-respuesta' : 'Una respuesta'}
-                      </span>
-                      {q.conditions?.if_any_slug && (
-                        <span style={{ background: 'var(--cat-coral)', borderRadius: 999, padding: '2px 10px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 10, color: 'var(--liora-uva)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                          <Funnel size={9} weight="bold" />
-                          Solo aparece si eligió: {q.conditions.if_any_slug.join(', ')}
-                        </span>
-                      )}
-                    </div>
-                    {/* Question text */}
-                    <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 17, color: 'var(--liora-uva)', marginBottom: 4 }}>
-                      <InlineEdit value={q.text} onSave={v => onPatch(`/api/admin/quiz/questions/${q.id}`, { text: v })} style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 17 }} />
-                    </div>
-                    {/* Subtext */}
-                    <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-uva)', opacity: 0.6 }}>
-                      <InlineEdit value={q.subtext ?? ''} placeholder="Sin descripción — click para agregar" onSave={v => onPatch(`/api/admin/quiz/questions/${q.id}`, { subtext: v || null })} style={{ fontFamily: 'var(--font-body)', fontSize: 13 }} />
-                    </div>
-                    {/* Options grid */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 6, marginTop: 10 }}>
-                      {q.quiz_question_options.sort((a, b) => a.sort_order - b.sort_order).map(opt => (
-                        <div key={opt.id} style={{ background: 'var(--liora-crema)', border: '1.5px solid var(--liora-arena)', borderRadius: 10, padding: '8px 12px' }}>
-                          <div style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13, color: 'var(--liora-uva)', marginBottom: 3 }}>
-                            <InlineEdit value={opt.text} onSave={v => onPatch(`/api/admin/quiz/options/${opt.id}`, { text: v })} style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13 }} />
-                          </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 6 }}>
-                            <span style={{ fontFamily: 'var(--font-body)', fontSize: 9, opacity: 0.4 }}>slug:</span>
-                            <code style={{ fontFamily: 'monospace', fontSize: 9, background: 'var(--liora-arena)', borderRadius: 4, padding: '1px 5px', color: 'var(--liora-uva)' }}>
-                              <InlineEdit value={opt.slug} onSave={v => onPatch(`/api/admin/quiz/options/${opt.id}`, { slug: v })} style={{ fontFamily: 'monospace', fontSize: 9 }} />
-                            </code>
-                          </div>
-                          {/* Tag picker */}
-                          {tags.length > 0 && (
-                            <TagPicker
-                              optionId={opt.id}
-                              selectedIds={opt.tag_ids ?? []}
-                              tags={tags}
-                              onSave={ids => onPatch(`/api/admin/quiz/options/${opt.id}`, { tag_ids: ids })}
-                            />
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+            {/* Questions — grouped by branch if it's the branch group */}
+            <div style={{ padding: 16 }}>
+              {isBranchGroup ? (
+                <>
+                  {/* Group by branch */}
+                  {BRANCHES.map(branch => {
+                    const branchQs = group.quiz_questions.filter(q =>
+                      q.conditions?.if_any_slug?.includes(branch.slug)
+                    )
+                    if (branchQs.length === 0) return null
+                    return (
+                      <BranchSection key={branch.slug} branch={branch} questions={branchQs} groupId={group.id}
+                        onPatch={onPatch} onDelete={onDeleteQuestion} onAddQuestion={onAddQuestion}
+                        onAddOption={onAddOption} onDeleteOption={onDeleteOption} tags={tags} />
+                    )
+                  })}
+                  {/* Questions without branch condition (universal in this group) */}
+                  {(() => {
+                    const universalQs = group.quiz_questions.filter(q =>
+                      !q.conditions?.if_any_slug?.some(s => s.startsWith('obj-'))
+                    )
+                    if (universalQs.length === 0) return null
+                    return (
+                      <BranchSection branch={null} questions={universalQs} groupId={group.id}
+                        onPatch={onPatch} onDelete={onDeleteQuestion} onAddQuestion={onAddQuestion}
+                        onAddOption={onAddOption} onDeleteOption={onDeleteOption} tags={tags} />
+                    )
+                  })()}
+                </>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {group.quiz_questions.sort((a, b) => a.sort_order - b.sort_order).map((q, qi) => (
+                    <QuestionCard key={q.id} q={q} qi={qi} groupId={group.id}
+                      onPatch={onPatch} onDelete={onDeleteQuestion} onAddOption={onAddOption} onDeleteOption={onDeleteOption} tags={tags} />
+                  ))}
+                  <button onClick={() => onAddQuestion(group.id, null)}
+                    style={{ background: 'transparent', border: '1.5px dashed var(--liora-arena)', borderRadius: 12, padding: '10px 16px', cursor: 'pointer', color: 'var(--liora-uva)', opacity: 0.7, display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600 }}>
+                    <Plus size={14} weight="bold" /> Agregar pregunta
+                  </button>
                 </div>
-              </div>
-            ))}
+              )}
+            </div>
           </div>
         )
       })}
@@ -260,6 +482,39 @@ export function CuestionarioClient({ groups, miniKits, leads, totalProfiles, top
     router.refresh()
   }
 
+  const deleteQuestion = async (questionId: string) => {
+    await fetch(`/api/admin/quiz/questions/${questionId}`, { method: 'DELETE' })
+    router.refresh()
+  }
+
+  const addQuestion = async (groupId: string, conditionSlug: string | null) => {
+    const maxOrder = groups.flatMap(g => g.quiz_questions).reduce((m, q) => Math.max(m, q.sort_order), 0)
+    const conditions = conditionSlug ? { if_any_slug: [conditionSlug] } : null
+    await fetch('/api/admin/quiz/questions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ group_id: groupId, text: 'Nueva pregunta', type: 'single', sort_order: maxOrder + 1, conditions }),
+    })
+    router.refresh()
+  }
+
+  const addOption = async (questionId: string) => {
+    const allGroups = [...groups, ...miniKits.flatMap(k => k.groups)]
+    const question = allGroups.flatMap(g => g.quiz_questions).find(q => q.id === questionId)
+    const maxOrder = question?.quiz_question_options.reduce((m, o) => Math.max(m, o.sort_order), 0) ?? 0
+    await fetch('/api/admin/quiz/options', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question_id: questionId, text: 'Nueva opción', slug: `opcion-${Date.now()}`, sort_order: maxOrder + 1 }),
+    })
+    router.refresh()
+  }
+
+  const deleteOption = async (optionId: string) => {
+    await fetch(`/api/admin/quiz/options/${optionId}`, { method: 'DELETE' })
+    router.refresh()
+  }
+
   const filteredLeads = leadSearch
     ? leads.filter(l => l.email.toLowerCase().includes(leadSearch.toLowerCase()) || (l.phone ?? '').includes(leadSearch))
     : leads
@@ -276,7 +531,7 @@ export function CuestionarioClient({ groups, miniKits, leads, totalProfiles, top
 
   return (
     <div>
-      {/* Page header */}
+      {/* Header */}
       <div style={{ marginBottom: 28 }}>
         <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)', opacity: 0.6, textTransform: 'uppercase', letterSpacing: '0.14em', marginBottom: 10 }}>Marketing</div>
         <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 42, lineHeight: 1.02, letterSpacing: '-0.02em', color: 'var(--liora-uva)', margin: 0, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>Cuestionario</h1>
@@ -285,109 +540,110 @@ export function CuestionarioClient({ groups, miniKits, leads, totalProfiles, top
         </p>
       </div>
 
-      {/* Top-level nav */}
+      {/* Nav tabs */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 28 }}>
-        {/* Main quiz */}
-        <button onClick={() => setView('main')}
-          style={{ background: view === 'main' ? 'var(--liora-uva)' : 'var(--liora-blanco)', color: view === 'main' ? 'var(--liora-crema)' : 'var(--liora-uva)', border: '1.5px solid ' + (view === 'main' ? 'var(--liora-uva)' : 'var(--liora-arena)'), borderRadius: 18, padding: '18px 20px', cursor: 'pointer', textAlign: 'left' }}>
-          <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.7, marginBottom: 6 }}>Cuestionario principal</div>
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 18, lineHeight: 1.1, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>8 preguntas para todas</div>
-          <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, opacity: 0.65, marginTop: 6, lineHeight: 1.4 }}>Las clientas lo responden al entrar a /cuestionario. Al final reciben un kit personalizado por IA.</div>
-        </button>
-
-        {/* Mini quizzes */}
-        <button onClick={() => setView('mini')}
-          style={{ background: view === 'mini' ? 'var(--liora-uva)' : 'var(--liora-blanco)', color: view === 'mini' ? 'var(--liora-crema)' : 'var(--liora-uva)', border: '1.5px solid ' + (view === 'mini' ? 'var(--liora-uva)' : 'var(--liora-arena)'), borderRadius: 18, padding: '18px 20px', cursor: 'pointer', textAlign: 'left' }}>
-          <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.7, marginBottom: 6 }}>Mini-cuestionarios</div>
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 18, lineHeight: 1.1, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>3 preguntas por kit</div>
-          <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, opacity: 0.65, marginTop: 6, lineHeight: 1.4 }}>Aparecen en la página de cada kit. Solo preguntas específicas para ese kit.</div>
-        </button>
-
-        {/* Leads */}
-        <button onClick={() => setView('leads')}
-          style={{ background: view === 'leads' ? 'var(--liora-uva)' : 'var(--liora-blanco)', color: view === 'leads' ? 'var(--liora-crema)' : 'var(--liora-uva)', border: '1.5px solid ' + (view === 'leads' ? 'var(--liora-uva)' : 'var(--liora-arena)'), borderRadius: 18, padding: '18px 20px', cursor: 'pointer', textAlign: 'left' }}>
-          <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.7, marginBottom: 6 }}>Leads</div>
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 18, lineHeight: 1.1, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>{leads.length} emails</div>
-          <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, opacity: 0.65, marginTop: 6, lineHeight: 1.4 }}>Clientas que dejaron email al terminar el cuestionario. Exportable a CSV.</div>
-        </button>
-
-        {/* Analytics */}
-        <button onClick={() => setView('analytics')}
-          style={{ background: view === 'analytics' ? 'var(--liora-uva)' : 'var(--liora-blanco)', color: view === 'analytics' ? 'var(--liora-crema)' : 'var(--liora-uva)', border: '1.5px solid ' + (view === 'analytics' ? 'var(--liora-uva)' : 'var(--liora-arena)'), borderRadius: 18, padding: '18px 20px', cursor: 'pointer', textAlign: 'left' }}>
-          <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.7, marginBottom: 6 }}>Analytics</div>
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 18, lineHeight: 1.1, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>{totalProfiles} perfiles</div>
-          <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, opacity: 0.65, marginTop: 6, lineHeight: 1.4 }}>Qué están respondiendo las clientas. Qué opciones ganan más.</div>
-        </button>
+        {[
+          { key: 'main', title: 'Principal', sub: 'Branching por 6 objetivos · IA recomienda al final' },
+          { key: 'mini', title: 'Mini-quizzes', sub: 'Por kit específico · 3 preguntas rápidas' },
+          { key: 'leads', title: `${leads.length} Leads`, sub: 'Emails capturados · Exportar CSV' },
+          { key: 'analytics', title: `${totalProfiles} Perfiles`, sub: 'Qué están eligiendo · Análisis' },
+        ].map(({ key, title, sub }) => (
+          <button key={key} onClick={() => setView(key as typeof view)}
+            style={{
+              background: view === key ? 'var(--liora-uva)' : 'var(--liora-blanco)',
+              color: view === key ? 'var(--liora-crema)' : 'var(--liora-uva)',
+              border: '1.5px solid ' + (view === key ? 'var(--liora-uva)' : 'var(--liora-arena)'),
+              borderRadius: 18, padding: '16px 18px', cursor: 'pointer', textAlign: 'left',
+            }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 17, lineHeight: 1.1, marginBottom: 4, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>{title}</div>
+            <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, opacity: 0.65, lineHeight: 1.4 }}>{sub}</div>
+          </button>
+        ))}
       </div>
 
       {/* ── MAIN QUIZ VIEW ─────────────────────────────────────────── */}
       {view === 'main' && (
         <div>
-          {/* Context banner */}
-          <div style={{ background: 'var(--cat-menta)', borderRadius: 16, padding: '16px 20px', marginBottom: 20, display: 'flex', gap: 14, alignItems: 'flex-start' }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: 'var(--liora-uva)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <span style={{ color: 'var(--liora-crema)', fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 18 }}>8</span>
+          {/* Flujo del cuestionario */}
+          <div style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 16, padding: '14px 18px', marginBottom: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <GitBranch size={13} weight="bold" style={{ opacity: 0.4, flexShrink: 0 }} />
+              <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)', opacity: 0.5, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Flujo:</span>
+              {[
+                { label: 'Sección 1 · ¿Qué buscas?', note: 'Objetivo del usuario' },
+                { label: 'Sección 2 · Cuéntanos más', note: 'Preguntas por objetivo + para todos' },
+                { label: 'Sección 3 · Para terminar', note: 'Alergias, género, presupuesto' },
+              ].map((step, i) => (
+                <div key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                  {i > 0 && <ArrowRight size={11} weight="bold" style={{ opacity: 0.35 }} />}
+                  <div style={{ background: 'var(--liora-crema)', borderRadius: 8, padding: '4px 10px' }}>
+                    <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)' }}>{step.label}</div>
+                    <div style={{ fontFamily: 'var(--font-body)', fontSize: 10, color: 'var(--liora-uva)', opacity: 0.5 }}>{step.note}</div>
+                  </div>
+                </div>
+              ))}
+              <a href="/cuestionario" target="_blank" style={{ marginLeft: 'auto', background: 'var(--liora-uva)', color: 'var(--liora-crema)', borderRadius: 999, padding: '6px 14px', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 11, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                <ArrowSquareOut size={11} weight="bold" /> Ver en vivo
+              </a>
             </div>
-            <div>
-              <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 14, color: 'var(--liora-uva)' }}>Cuestionario principal — todas las clientas lo responden</div>
-              <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-uva)', opacity: 0.75, marginTop: 3, lineHeight: 1.5 }}>
-                Este cuestionario está en <strong>/cuestionario</strong>. Las clientas responden 8 preguntas (o menos si algunas son condicionales) y al final reciben una recomendación de kit personalizada por IA. Puedes editar cualquier texto haciendo click en él.
-              </div>
-            </div>
-            <a href="/cuestionario" target="_blank" style={{ marginLeft: 'auto', background: 'var(--liora-uva)', color: 'var(--liora-crema)', borderRadius: 999, padding: '8px 14px', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 12, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-              <ArrowSquareOut size={12} weight="bold" /> Ver en vivo
-            </a>
           </div>
-          <QuestionTree groups={groups} onPatch={patch} tags={tags} />
+
+          {/* Leyenda de ramas */}
+          <div style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 16, padding: '12px 18px', marginBottom: 20, display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+            <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)', opacity: 0.5, textTransform: 'uppercase', letterSpacing: '0.1em', marginRight: 4 }}>Ramas por objetivo:</span>
+            {BRANCHES.map(b => (
+              <span key={b.slug} style={{ background: b.color, borderRadius: 999, padding: '3px 12px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)' }}>{b.emoji} {b.label}</span>
+            ))}
+            <span style={{ background: 'var(--liora-lima)', borderRadius: 999, padding: '3px 12px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+              <Users size={10} weight="bold" /> Para todos
+            </span>
+          </div>
+
+          <QuizEditor
+            groups={groups}
+            onPatch={patch}
+            onDeleteQuestion={deleteQuestion}
+            onAddQuestion={addQuestion}
+            onAddOption={(qId) => addOption(qId)}
+            onDeleteOption={deleteOption}
+            tags={tags}
+          />
         </div>
       )}
 
       {/* ── MINI QUIZZES VIEW ──────────────────────────────────────── */}
       {view === 'mini' && (
         <div>
-          {/* Context banner */}
-          <div style={{ background: 'var(--cat-lavanda)', borderRadius: 16, padding: '16px 20px', marginBottom: 20, display: 'flex', gap: 14, alignItems: 'flex-start' }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: 'var(--liora-uva)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <span style={{ color: 'var(--liora-crema)', fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 16 }}>3</span>
-            </div>
-            <div>
-              <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 14, color: 'var(--liora-uva)' }}>Mini-cuestionarios — uno por cada kit, solo en su página</div>
-              <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-uva)', opacity: 0.75, marginTop: 3, lineHeight: 1.5 }}>
-                Cada kit tiene 3 preguntas muy específicas que aparecen en <strong>/tienda/kit/[nombre-kit]</strong>. Solo las ve quien ya está interesada en ese kit. Son mucho más directas que el cuestionario general.
-              </div>
+          <div style={{ background: 'var(--cat-lavanda)', borderRadius: 16, padding: '14px 18px', marginBottom: 20 }}>
+            <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 13, color: 'var(--liora-uva)' }}>Mini-cuestionarios por kit</div>
+            <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--liora-uva)', opacity: 0.75, marginTop: 4 }}>
+              Aparecen en la página de cada kit. Preguntas específicas para ese kit — 3 máximo para no cansar.
             </div>
           </div>
-
-          {/* Kit selector */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 24 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 20 }}>
             {miniKits.map(k => {
-              const bg = kitColor(k.kitSlug)
               const isActive = (selectedMiniKit ?? miniKits[0]?.kitId) === k.kitId
               return (
                 <button key={k.kitId} onClick={() => setSelectedMiniKit(k.kitId)}
-                  style={{ background: isActive ? bg : 'var(--liora-blanco)', border: isActive ? '2px solid var(--liora-uva)' : '1.5px solid var(--liora-arena)', borderRadius: 16, padding: '16px 18px', cursor: 'pointer', textAlign: 'left', transition: 'all 150ms ease' }}>
-                  <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.6, marginBottom: 4 }}>Mini-quiz</div>
-                  <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 15, color: 'var(--liora-uva)', lineHeight: 1.2, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>{k.kitName}</div>
-                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--liora-uva)', opacity: 0.55, marginTop: 4 }}>
+                  style={{ background: isActive ? 'var(--liora-uva)' : 'var(--liora-blanco)', color: isActive ? 'var(--liora-crema)' : 'var(--liora-uva)', border: '1.5px solid ' + (isActive ? 'var(--liora-uva)' : 'var(--liora-arena)'), borderRadius: 14, padding: '12px 14px', cursor: 'pointer', textAlign: 'left' }}>
+                  <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 13, lineHeight: 1.2, marginBottom: 3, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>{k.kitName}</div>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 10, opacity: 0.55 }}>
                     {k.groups.reduce((n, g) => n + g.quiz_questions.length, 0)} preguntas
                   </div>
                 </button>
               )
             })}
           </div>
-
-          {/* Selected kit questions */}
           {activeMiniKit && (
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-                <div style={{ width: 12, height: 12, borderRadius: 999, background: kitColor(activeMiniKit.kitSlug) }} />
-                <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 14, color: 'var(--liora-uva)' }}>Preguntas del {activeMiniKit.kitName}</span>
-                <a href={`/tienda/kit/${activeMiniKit.kitSlug}`} target="_blank" style={{ marginLeft: 'auto', color: 'var(--liora-uva)', fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 600, textDecoration: 'none', opacity: 0.6, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                  <ArrowSquareOut size={12} weight="bold" /> Ver página del kit
-                </a>
-              </div>
-              <QuestionTree groups={activeMiniKit.groups} onPatch={patch} tags={tags} />
-            </div>
+            <QuizEditor
+              groups={activeMiniKit.groups}
+              onPatch={patch}
+              onDeleteQuestion={deleteQuestion}
+              onAddQuestion={addQuestion}
+              onAddOption={(qId) => addOption(qId)}
+              onDeleteOption={deleteOption}
+              tags={tags}
+            />
           )}
         </div>
       )}
@@ -402,11 +658,10 @@ export function CuestionarioClient({ groups, miniKits, leads, totalProfiles, top
               <Export size={14} weight="bold" /> Exportar CSV
             </button>
           </div>
-
           {leads.length === 0 ? (
             <div style={{ padding: '64px 24px', textAlign: 'center', background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 16 }}>
               <Users size={32} style={{ opacity: 0.3, marginBottom: 12 }} />
-              <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--liora-uva)', opacity: 0.5 }}>Aún no hay leads. Cuando una clienta complete el cuestionario y deje su email, aparecerá aquí.</div>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--liora-uva)', opacity: 0.5 }}>Aún no hay leads. Cuando alguien complete el cuestionario y deje su email, aparecerá aquí.</div>
             </div>
           ) : (
             <div style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 16, overflow: 'hidden' }}>
@@ -442,10 +697,9 @@ export function CuestionarioClient({ groups, miniKits, leads, totalProfiles, top
               </div>
             ))}
           </div>
-
           {topOptions.length > 0 ? (
             <div style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 16, padding: '20px 24px' }}>
-              <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 16, opacity: 0.7 }}>Qué están eligiendo las clientas</div>
+              <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 16, opacity: 0.7 }}>Qué están eligiendo</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {topOptions.map((opt, i) => {
                   const maxCount = topOptions[0]?.count ?? 1
@@ -466,7 +720,7 @@ export function CuestionarioClient({ groups, miniKits, leads, totalProfiles, top
           ) : (
             <div style={{ padding: '64px 24px', textAlign: 'center', background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 16 }}>
               <ChartBar size={32} style={{ opacity: 0.3, marginBottom: 12 }} />
-              <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--liora-uva)', opacity: 0.5 }}>Los datos aparecerán aquí cuando haya clientas que completen el cuestionario.</div>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--liora-uva)', opacity: 0.5 }}>Los datos aparecerán cuando haya respuestas completadas.</div>
             </div>
           )}
         </div>

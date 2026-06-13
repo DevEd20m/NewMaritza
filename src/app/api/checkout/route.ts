@@ -162,7 +162,7 @@ export async function POST(request: NextRequest) {
       ])
     }
 
-    const idempotencyKey = `order_${order.id}_${Date.now()}`
+    const idempotencyKey = `order_${order.id}`
     await admin.from('payments').insert({
       order_id: order.id,
       provider: 'stripe',

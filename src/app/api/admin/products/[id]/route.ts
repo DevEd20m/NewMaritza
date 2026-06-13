@@ -17,6 +17,10 @@ const schema = z.object({
   price_cents: z.number().int().positive(),
   compare_at_cents: z.number().int().positive().nullable().optional(),
   tag_ids: z.array(z.string().uuid()).optional(),
+  usage_instructions: z.string().optional(),
+  indications: z.string().optional(),
+  contraindications: z.string().optional(),
+  gallery_urls: z.array(z.string().url()).optional(),
 })
 
 export async function PUT(
@@ -36,7 +40,7 @@ export async function PUT(
       return NextResponse.json({ error: msg || 'Datos inválidos' }, { status: 400 })
     }
 
-    const { name, description, brand, category_id, cover_image_url, is_active, stock_quantity, variant_id, variant_name, sku, price_cents, compare_at_cents, tag_ids } = parsed.data
+    const { name, description, brand, category_id, cover_image_url, is_active, stock_quantity, variant_id, variant_name, sku, price_cents, compare_at_cents, tag_ids, usage_instructions, indications, contraindications, gallery_urls } = parsed.data
     const admin = createAdminClient()
 
     await (admin as any).from('products').update({
@@ -44,6 +48,10 @@ export async function PUT(
       category_id: category_id ?? null,
       cover_image_url: cover_image_url ?? null,
       is_active, stock_quantity,
+      usage_instructions: usage_instructions ?? null,
+      indications: indications ?? null,
+      contraindications: contraindications ?? null,
+      gallery_urls: gallery_urls ?? [],
     }).eq('id', id)
 
     if (variant_id) {

@@ -9,6 +9,20 @@ const schema = z.object({
   tag_ids: z.array(z.string().uuid()).optional(),
 })
 
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const guard = await requireAdmin()
+    if (!guard.ok) return guard.response
+    const { id } = await params
+    const admin = createAdminClient()
+    await admin.from('quiz_question_options').delete().eq('id', id)
+    return NextResponse.json({ ok: true })
+  } catch (err) {
+    console.error('[admin/quiz/options DELETE]', err)
+    return NextResponse.json({ error: 'Error interno' }, { status: 500 })
+  }
+}
+
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const guard = await requireAdmin()

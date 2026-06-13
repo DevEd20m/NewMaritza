@@ -1,7 +1,9 @@
 'use client'
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, X, PencilSimple, FloppyDisk, Trash, Check, Package } from '@phosphor-icons/react'
+import { Plus, X, PencilSimple, FloppyDisk, Trash, Check, UploadSimple, Spinner } from '@phosphor-icons/react'
+import { createClient } from '@/lib/supabase/client'
+import { BENEFIT_ICONS, type KitBenefit } from '@/lib/kit-benefits'
 
 const KIT_COLORS = [
   { label: 'Mostaza',  value: 'var(--cat-mostaza)' },
@@ -13,12 +15,22 @@ const KIT_COLORS = [
 ]
 
 const SLUG_COLOR_MAP: Record<string, string> = {
-  energia:      'var(--cat-mostaza)',
-  piel:         'var(--cat-coral)',
-  'post-entreno': 'var(--cat-durazno)',
-  gym:          'var(--cat-durazno)',
-  reset:        'var(--cat-menta)',
-  detox:        'var(--cat-menta)',
+  piel:      'var(--cat-coral)',
+  solar:     'var(--cat-mostaza)',
+  calma:     'var(--cat-lavanda)',
+  descanso:  'var(--cat-lavanda)',
+  bienestar: 'var(--cat-lavanda)',
+  gym:       'var(--cat-durazno)',
+  dolor:     'var(--cat-durazno)',
+  viaje:     'var(--cat-cielo)',
+  playa:     'var(--cat-cielo)',
+  digestivo: 'var(--cat-menta)',
+  hogar:     'var(--cat-rosa)',
+  auxilios:  'var(--cat-rosa)',
+  botiquin:  'var(--cat-rosa)',
+  pies:      'var(--cat-mostaza)',
+  cuerpo:    'var(--cat-durazno)',
+  pantallas: 'var(--cat-lavanda)',
 }
 
 function inferKitColor(slug: string) {
@@ -51,6 +63,10 @@ export interface AdminKitData {
   description: string | null
   is_active: boolean
   type: string
+  cover_image_url: string | null
+  show_in_home: boolean
+  home_sort_order: number
+  benefits: KitBenefit[]
   kitProducts: AdminKitProduct[]
   totalCents: number
 }
@@ -61,6 +77,10 @@ interface KitForm {
   variantIds: string[]
   is_active: boolean
   bg: string
+  cover_image_url: string
+  show_in_home: boolean
+  home_sort_order: number
+  benefits: KitBenefit[]
 }
 
 const EMPTY_FORM: KitForm = {
@@ -69,6 +89,10 @@ const EMPTY_FORM: KitForm = {
   variantIds: [],
   is_active: true,
   bg: 'var(--cat-mostaza)',
+  cover_image_url: '',
+  show_in_home: false,
+  home_sort_order: 0,
+  benefits: [],
 }
 
 function KitDrawer({
@@ -88,6 +112,9 @@ function KitDrawer({
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (!editing) return
@@ -101,6 +128,10 @@ function KitDrawer({
         variantIds: k.kitProducts.map(kp => kp.variantId),
         is_active: k.is_active,
         bg: inferKitColor(k.slug),
+        cover_image_url: k.cover_image_url ?? '',
+        show_in_home: k.show_in_home,
+        home_sort_order: k.home_sort_order,
+        benefits: k.benefits ?? [],
       })
     }
     setVariantSearch('')
@@ -122,6 +153,29 @@ function KitDrawer({
 
   const set = <K extends keyof KitForm>(k: K, v: KitForm[K]) => setForm(prev => ({ ...prev, [k]: v }))
 
+  const handleImageUpload = async (file: File) => {
+    if (!file.type.startsWith('image/')) { setUploadError('Solo se aceptan imágenes'); return }
+    if (file.size > 5 * 1024 * 1024) { setUploadError('La imagen no puede superar 5 MB'); return }
+
+    setUploading(true)
+    setUploadError(null)
+    try {
+      const supabase = createClient()
+      const ext = file.name.split('.').pop() ?? 'png'
+      // derive slug from form name if creating new, otherwise use existing kit slug
+      const slug = editing !== 'new' ? (editing as AdminKitData).slug : form.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'kit'
+      const path = `kits/${slug}/cover.${ext}`
+      const { error: upErr } = await supabase.storage
+        .from('product-images')
+        .upload(path, file, { upsert: true, contentType: file.type })
+      if (upErr) { setUploadError('Error al subir: ' + upErr.message); return }
+      const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(path)
+      set('cover_image_url', publicUrl)
+    } finally {
+      setUploading(false)
+    }
+  }
+
   const toggleVariant = (vid: string) => {
     set('variantIds', form.variantIds.includes(vid)
       ? form.variantIds.filter(x => x !== vid)
@@ -137,9 +191,17 @@ function KitDrawer({
     setError(null)
     try {
       const method = isNew ? 'POST' : 'PUT'
-      const body = isNew
-        ? { name: form.name, description: form.description || undefined, is_active: form.is_active, variantIds: form.variantIds }
-        : { id: (editing as AdminKitData).id, name: form.name, description: form.description || undefined, is_active: form.is_active, variantIds: form.variantIds }
+      const commonFields = {
+        name: form.name,
+        description: form.description || undefined,
+        is_active: form.is_active,
+        variantIds: form.variantIds,
+        cover_image_url: form.cover_image_url || null,
+        show_in_home: form.show_in_home,
+        home_sort_order: form.home_sort_order,
+        benefits: form.benefits.filter(b => b.title.trim()),
+      }
+      const body = isNew ? commonFields : { id: (editing as AdminKitData).id, ...commonFields }
       const res = await fetch('/api/admin/kits', { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
       if (!res.ok) { setError('Error al guardar el kit'); return }
       onSaved()
@@ -241,6 +303,91 @@ function KitDrawer({
             </div>
           </div>
 
+          {/* Benefits editor */}
+          <div style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 18, padding: 18, display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+                Beneficios del kit <span style={{ opacity: 0.5, fontWeight: 400, fontSize: 10 }}>(máx. 3)</span>
+              </div>
+              {form.benefits.length < 3 && (
+                <button
+                  onClick={() => set('benefits', [...form.benefits, { icon: 'bienestar', title: '', desc: '' }])}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'var(--liora-crema)', border: '1.5px solid var(--liora-arena)', borderRadius: 999, padding: '5px 12px', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 12, color: 'var(--liora-uva)', cursor: 'pointer' }}
+                >
+                  <Plus size={12} weight="bold" /> Agregar
+                </button>
+              )}
+            </div>
+
+            {form.benefits.length === 0 && (
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-uva)', opacity: 0.45, margin: 0 }}>
+                Sin beneficios. Se muestran en el card del kit en la tienda.
+              </p>
+            )}
+
+            {form.benefits.map((b, i) => (
+              <div key={i} style={{ border: '1.5px solid var(--liora-arena)', borderRadius: 14, padding: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {/* Icon picker */}
+                <div>
+                  <div style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 11, color: 'var(--liora-uva)', marginBottom: 6, opacity: 0.7 }}>Icono</div>
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    {Object.entries(BENEFIT_ICONS).map(([key, { icon: IconComp, label }]) => {
+                      const selected = b.icon === key
+                      return (
+                        <button
+                          key={key}
+                          title={label}
+                          onClick={() => {
+                            const next = [...form.benefits]
+                            next[i] = { ...next[i], icon: key }
+                            set('benefits', next)
+                          }}
+                          style={{
+                            width: 36, height: 36, borderRadius: 10,
+                            border: selected ? '2px solid var(--liora-uva)' : '1.5px solid var(--liora-arena)',
+                            background: selected ? 'var(--liora-uva)' : 'var(--liora-crema)',
+                            color: selected ? 'var(--liora-lima)' : 'var(--liora-uva)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                          }}
+                        >
+                          <IconComp size={18} weight="bold" />
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                  <div>
+                    <label style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 11, color: 'var(--liora-uva)', opacity: 0.7, display: 'block', marginBottom: 4 }}>Título</label>
+                    <input
+                      value={b.title}
+                      onChange={e => { const next = [...form.benefits]; next[i] = { ...next[i], title: e.target.value }; set('benefits', next) }}
+                      placeholder="Más energía"
+                      style={{ width: '100%', padding: '8px 11px', border: '1.5px solid var(--liora-arena)', borderRadius: 10, background: 'var(--liora-crema)', fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--liora-uva)', outline: 'none', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 11, color: 'var(--liora-uva)', opacity: 0.7, display: 'block', marginBottom: 4 }}>Descripción</label>
+                    <input
+                      value={b.desc}
+                      onChange={e => { const next = [...form.benefits]; next[i] = { ...next[i], desc: e.target.value }; set('benefits', next) }}
+                      placeholder="Breve descripción…"
+                      style={{ width: '100%', padding: '8px 11px', border: '1.5px solid var(--liora-arena)', borderRadius: 10, background: 'var(--liora-crema)', fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--liora-uva)', outline: 'none', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => set('benefits', form.benefits.filter((_, j) => j !== i))}
+                  style={{ alignSelf: 'flex-end', background: 'transparent', border: 'none', color: 'var(--liora-uva)', opacity: 0.4, cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: 11, display: 'inline-flex', alignItems: 'center', gap: 4, padding: 0 }}
+                >
+                  <X size={12} weight="bold" /> Quitar
+                </button>
+              </div>
+            ))}
+          </div>
+
           {/* Product picker */}
           <div style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 18, padding: 18 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
@@ -286,6 +433,108 @@ function KitDrawer({
                 <div style={{ padding: 20, textAlign: 'center', fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-uva)', opacity: 0.55 }}>Sin resultados</div>
               )}
             </div>
+          </div>
+
+          {/* Image upload */}
+          <div style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 18, padding: 18, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>Imagen del kit</div>
+
+            {/* Drop zone / upload button */}
+            <div
+              onDragOver={e => { e.preventDefault(); e.currentTarget.style.borderColor = 'var(--liora-uva)' }}
+              onDragLeave={e => { e.currentTarget.style.borderColor = 'var(--liora-arena)' }}
+              onDrop={e => {
+                e.preventDefault()
+                e.currentTarget.style.borderColor = 'var(--liora-arena)'
+                const file = e.dataTransfer.files[0]
+                if (file) handleImageUpload(file)
+              }}
+              style={{ border: '2px dashed var(--liora-arena)', borderRadius: 14, padding: '18px 14px', textAlign: 'center', cursor: 'pointer', transition: 'border-color 0.15s' }}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); e.target.value = '' }}
+              />
+              {uploading ? (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-uva)', opacity: 0.7 }}>
+                  <Spinner size={18} style={{ animation: 'spin 0.8s linear infinite' }} /> Subiendo…
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                  <UploadSimple size={24} style={{ color: 'var(--liora-uva)', opacity: 0.4 }} />
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--liora-uva)', opacity: 0.6 }}>
+                    Arrastra aquí o <strong style={{ opacity: 1 }}>haz clic para subir</strong>
+                  </span>
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--liora-uva)', opacity: 0.4 }}>PNG recomendado · máx. 5 MB</span>
+                </div>
+              )}
+            </div>
+
+            {uploadError && (
+              <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--cat-coral)' }}>{uploadError}</span>
+            )}
+
+            {/* URL fallback */}
+            <div>
+              <label style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 12, color: 'var(--liora-uva)', display: 'block', marginBottom: 6 }}>
+                O pega una URL directamente
+              </label>
+              <input
+                value={form.cover_image_url}
+                onChange={e => set('cover_image_url', e.target.value)}
+                placeholder="https://...supabase.co/storage/v1/object/public/..."
+                style={{ width: '100%', padding: '10px 14px', border: '1.5px solid var(--liora-arena)', borderRadius: 12, background: 'var(--liora-crema)', fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--liora-uva)', outline: 'none', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            {/* Preview */}
+            {form.cover_image_url && (
+              <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={form.cover_image_url}
+                  alt="preview"
+                  style={{ height: 88, width: 88, objectFit: 'contain', background: form.bg, borderRadius: 14, border: '1.5px solid var(--liora-arena)' }}
+                  onError={e => { (e.target as HTMLImageElement).style.opacity = '0.3' }}
+                />
+                <div style={{ flex: 1 }}>
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--liora-uva)', opacity: 0.55, display: 'block', marginBottom: 6 }}>Vista previa sobre el color del kit</span>
+                  <button
+                    onClick={() => { set('cover_image_url', ''); setUploadError(null) }}
+                    style={{ background: 'transparent', border: '1.5px solid var(--cat-coral)', color: 'var(--cat-coral)', borderRadius: 999, padding: '4px 12px', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 11, cursor: 'pointer' }}
+                  >
+                    Quitar imagen
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Show in home */}
+          <div style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 18, padding: 18 }}>
+            <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12 }}>Home</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+              <div>
+                <div style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13, color: 'var(--liora-uva)' }}>Mostrar en página principal</div>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--liora-uva)', opacity: 0.55, marginTop: 2 }}>Aparece en la sección "Kits más pedidos" del home</div>
+              </div>
+              <button
+                onClick={() => set('show_in_home', !form.show_in_home)}
+                style={{ width: 48, height: 26, borderRadius: 999, border: 'none', cursor: 'pointer', background: form.show_in_home ? 'var(--liora-uva)' : 'var(--liora-arena)', position: 'relative', transition: 'background 0.2s', flexShrink: 0 }}>
+                <span style={{ position: 'absolute', top: 4, left: form.show_in_home ? 25 : 4, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+              </button>
+            </div>
+            {form.show_in_home && (
+              <div style={{ marginTop: 12 }}>
+                <label style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 12, color: 'var(--liora-uva)', display: 'block', marginBottom: 6 }}>Orden en el home <span style={{ opacity: 0.5 }}>(1 = primero)</span></label>
+                <input type="number" min={1} value={form.home_sort_order} onChange={e => set('home_sort_order', Number(e.target.value))}
+                  style={{ width: 80, padding: '8px 12px', border: '1.5px solid var(--liora-arena)', borderRadius: 10, background: 'var(--liora-crema)', fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-uva)', outline: 'none' }} />
+              </div>
+            )}
           </div>
 
           {/* Color picker */}
@@ -359,25 +608,44 @@ function KitDrawer({
   )
 }
 
-function KitCard({ kit, onEdit }: { kit: AdminKitData; onEdit: () => void }) {
+function KitCard({ kit, onEdit, onToggleHome }: { kit: AdminKitData; onEdit: () => void; onToggleHome: () => void }) {
   const bg = inferKitColor(kit.slug)
   return (
     <article
       onClick={onEdit}
-      style={{ background: bg, borderRadius: 24, overflow: 'hidden', display: 'flex', flexDirection: 'column', border: '1.5px solid rgba(61,26,58,0.08)', cursor: 'pointer' }}
+      style={{ background: bg, borderRadius: 24, overflow: 'hidden', display: 'flex', flexDirection: 'column', border: '1.5px solid rgba(61,26,58,0.08)', cursor: 'pointer', transition: 'transform 200ms ease' }}
       onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-3px)')}
       onMouseLeave={e => (e.currentTarget.style.transform = 'translateY(0)')}
     >
       <div style={{ padding: '16px 20px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
-        <span style={{ background: kit.is_active ? 'rgba(255,255,255,0.5)' : 'var(--liora-uva)', color: kit.is_active ? 'var(--liora-uva)' : 'var(--liora-crema)', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 10, padding: '3px 10px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-          {kit.is_active ? 'Activo' : 'Borrador'}
-        </span>
-        <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)', opacity: 0.7 }}>
-          {kit.kitProducts.length} productos
-        </span>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <span style={{ background: kit.is_active ? 'rgba(255,255,255,0.5)' : 'var(--liora-uva)', color: kit.is_active ? 'var(--liora-uva)' : 'var(--liora-crema)', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 10, padding: '3px 10px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+            {kit.is_active ? 'Activo' : 'Borrador'}
+          </span>
+          {kit.show_in_home && (
+            <span style={{ background: 'var(--liora-lima)', color: 'var(--liora-uva)', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 10, padding: '3px 8px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              🏠 Home
+            </span>
+          )}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)', opacity: 0.7 }}>
+            {kit.kitProducts.length} productos
+          </span>
+          <button
+            onClick={e => { e.stopPropagation(); onToggleHome() }}
+            title={kit.show_in_home ? 'Quitar del home' : 'Mostrar en home'}
+            style={{ width: 38, height: 22, borderRadius: 999, border: 'none', cursor: 'pointer', background: kit.show_in_home ? 'var(--liora-uva)' : 'rgba(255,255,255,0.4)', position: 'relative', transition: 'background 0.2s', flexShrink: 0 }}
+          >
+            <span style={{ position: 'absolute', top: 3, left: kit.show_in_home ? 19 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+          </button>
+        </div>
       </div>
 
       <div style={{ padding: '14px 20px 8px' }}>
+        <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 10, color: 'var(--liora-uva)', opacity: 0.4, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>
+          KIT-{kit.slug.toUpperCase()}
+        </div>
         <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 26, color: 'var(--liora-uva)', margin: '0 0 6px', lineHeight: 1.05, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>{kit.name}</h3>
         {kit.description && (
           <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, lineHeight: 1.4, color: 'var(--liora-uva)', opacity: 0.85, margin: 0 }}>{kit.description}</p>
@@ -418,13 +686,23 @@ export function KitsClient({
   allVariants: AdminVariantOption[]
 }) {
   const router = useRouter()
+  const [kits, setKits] = useState(initialKits)
   const [editing, setEditing] = useState<'new' | AdminKitData | null>(null)
 
-  const handleSaved = () => {
-    router.refresh()
+  const handleSaved = () => { router.refresh() }
+
+  const toggleHome = async (kit: AdminKitData) => {
+    const next = !kit.show_in_home
+    setKits(prev => prev.map(k => k.id === kit.id ? { ...k, show_in_home: next } : k))
+    await fetch('/api/admin/kits', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: kit.id, show_in_home: next }),
+    })
   }
 
-  const activeCount = initialKits.filter(k => k.is_active).length
+  const activeCount = kits.filter(k => k.is_active).length
+  const homeCount = kits.filter(k => k.show_in_home).length
 
   return (
     <div>
@@ -434,7 +712,7 @@ export function KitsClient({
           <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)', opacity: 0.6, textTransform: 'uppercase', letterSpacing: '0.14em', marginBottom: 10 }}>Catálogo</div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 42, lineHeight: 1.02, letterSpacing: '-0.02em', color: 'var(--liora-uva)', margin: 0, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>Kits</h1>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--liora-uva)', opacity: 0.7, marginTop: 8, marginBottom: 0 }}>
-            {initialKits.length} kits configurados · {activeCount} activos en tienda
+            {kits.length} kits · {activeCount} activos · <strong>{homeCount}</strong> en el home
           </p>
         </div>
         <button
@@ -447,8 +725,8 @@ export function KitsClient({
 
       {/* Kit cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: 16 }}>
-        {initialKits.map(k => (
-          <KitCard key={k.id} kit={k} onEdit={() => setEditing(k)} />
+        {kits.map(k => (
+          <KitCard key={k.id} kit={k} onEdit={() => setEditing(k)} onToggleHome={() => toggleHome(k)} />
         ))}
 
         {/* Ghost "create" card */}

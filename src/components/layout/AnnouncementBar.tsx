@@ -17,7 +17,7 @@ export function AnnouncementBar({ thresholdCents, deliveryMessage }: Announcemen
         fontWeight: 500,
       }}
     >
-      Envío gratis en pedidos +S/{thresholdSoles} · {deliveryMessage} ·{' '}
+      Envío gratis en compras desde S/{thresholdSoles} · {deliveryMessage} ·{' '}
       <a
         href="/cuestionario"
         style={{ color: 'var(--liora-lima)', textDecoration: 'underline', textUnderlineOffset: 3 }}

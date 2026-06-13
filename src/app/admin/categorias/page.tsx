@@ -6,9 +6,9 @@ export const metadata: Metadata = { title: 'Categorías — Admin LIORA' }
 
 async function getCategories(): Promise<AdminCategory[]> {
   const admin = createAdminClient()
-  const { data: categories } = await admin
+  const { data: categories } = await (admin as any)
     .from('categories')
-    .select('id, name, slug, parent_id, sort_order, created_at')
+    .select('id, name, slug, parent_id, sort_order, created_at, show_in_hero, hero_sort_order, hero_tagline, color, image_url')
     .order('sort_order')
     .order('name')
 

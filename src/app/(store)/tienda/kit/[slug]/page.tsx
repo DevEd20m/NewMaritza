@@ -49,17 +49,22 @@ async function getMiniQuizTemplate(kitId: string) {
 }
 
 const KIT_COLORS: Record<string, string> = {
-  energia: 'var(--cat-mostaza)',
-  piel: 'var(--cat-coral)',
-  colageno: 'var(--cat-coral)',
-  capilar: 'var(--cat-coral)',
-  'post-entreno': 'var(--cat-durazno)',
-  gym: 'var(--cat-durazno)',
-  reset: 'var(--cat-menta)',
-  detox: 'var(--cat-menta)',
-  andino: 'var(--cat-menta)',
-  bienestar: 'var(--cat-menta)',
-  articulaciones: 'var(--cat-mostaza)',
+  piel:      'var(--cat-coral)',
+  solar:     'var(--cat-mostaza)',
+  calma:     'var(--cat-lavanda)',
+  descanso:  'var(--cat-lavanda)',
+  bienestar: 'var(--cat-lavanda)',
+  gym:       'var(--cat-durazno)',
+  dolor:     'var(--cat-durazno)',
+  viaje:     'var(--cat-cielo)',
+  playa:     'var(--cat-cielo)',
+  digestivo: 'var(--cat-menta)',
+  hogar:     'var(--cat-rosa)',
+  auxilios:  'var(--cat-rosa)',
+  botiquin:  'var(--cat-rosa)',
+  pies:      'var(--cat-mostaza)',
+  cuerpo:    'var(--cat-durazno)',
+  pantallas: 'var(--cat-lavanda)',
 }
 function kitColor(slug: string) {
   for (const [k, v] of Object.entries(KIT_COLORS)) if (slug.includes(k)) return v

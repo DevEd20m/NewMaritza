@@ -129,9 +129,30 @@ function OrderRow({ order }: { order: AccountOrder }) {
 
 // ── Tabs ──────────────────────────────────────────────────────────────────
 
-function ResumenTab({ data, onReorder }: { data: AccountData; onReorder: () => void }) {
+function ResumenTab({
+  data,
+  onReorder,
+  copiedId,
+  onCopy,
+}: {
+  data: AccountData
+  onReorder: () => void
+  copiedId: string | null
+  onCopy: (code: string, id: string) => void
+}) {
   const activeOrder = data.orders.find((o) => ['paid', 'processing', 'shipped'].includes(o.status))
   const latestCoupon = data.coupons[0]
+  const hasKit = data.kitItems.length > 0
+  const hasOrders = data.orders.length > 0
+
+  const tileStyle = {
+    borderRadius: 24, padding: 24, border: 'none', textAlign: 'left' as const,
+    cursor: 'pointer', display: 'flex', flexDirection: 'column' as const, gap: 14,
+    width: '100%', textDecoration: 'none',
+  }
+  const tileLabel = { fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)', textTransform: 'uppercase' as const, letterSpacing: '0.1em' }
+  const tileTitle = { fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20, color: 'var(--liora-uva)', lineHeight: 1.15 }
+  const tileCta   = { fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13, color: 'var(--liora-uva)', marginTop: 'auto' as const }
 
   return (
     <div>
@@ -147,7 +168,6 @@ function ResumenTab({ data, onReorder }: { data: AccountData; onReorder: () => v
             <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 26, color: 'var(--liora-crema)', lineHeight: 1.1, marginBottom: 20 }}>
               {activeOrder.status === 'shipped' ? 'Tu pedido está en camino' : 'Tu pedido está siendo preparado'}
             </div>
-            {/* Progress tracker */}
             <div style={{ display: 'flex', alignItems: 'center', maxWidth: 480 }}>
               {PROGRESS_STEPS.map((step, i) => {
                 const currentStep = STATUS_TO_STEP[activeOrder.status] ?? 0
@@ -161,7 +181,7 @@ function ResumenTab({ data, onReorder }: { data: AccountData; onReorder: () => v
                       <span style={{ fontFamily: 'var(--font-body)', fontSize: 10, opacity: 0.85, whiteSpace: 'nowrap' as const, color: 'var(--liora-crema)' }}>{step}</span>
                     </div>
                     {i < PROGRESS_STEPS.length - 1 && (
-                      <div style={{ flex: 1, height: 2, background: i < currentStep ? 'var(--liora-lima)' : 'rgba(251,241,226,0.15)', marginBottom: 22, marginLeft: 0, marginRight: 0 }} />
+                      <div style={{ flex: 1, height: 2, background: i < currentStep ? 'var(--liora-lima)' : 'rgba(251,241,226,0.15)', marginBottom: 22 }} />
                     )}
                   </div>
                 )
@@ -176,29 +196,57 @@ function ResumenTab({ data, onReorder }: { data: AccountData; onReorder: () => v
 
       {/* Kit + Coupon tiles */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 40 }}>
-        <button onClick={onReorder} style={{ background: 'var(--cat-mostaza)', borderRadius: 24, padding: 24, border: 'none', textAlign: 'left' as const, cursor: 'pointer', display: 'flex', flexDirection: 'column' as const, gap: 14 }}>
-          <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)', textTransform: 'uppercase' as const, letterSpacing: '0.1em' }}>Mi kit</div>
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20, color: 'var(--liora-uva)', lineHeight: 1.15 }}>
-            {data.kitTitle || 'Ver mi kit →'}
-          </div>
-          <div style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13, color: 'var(--liora-uva)', marginTop: 'auto' }}>Repedir →</div>
-        </button>
+
+        {/* Kit tile — state-aware */}
+        {!hasKit && !hasOrders && (
+          <a href="/cuestionario" style={{ ...tileStyle, background: 'var(--cat-mostaza)' }}>
+            <div style={tileLabel}>Tu próximo paso</div>
+            <div style={tileTitle}>Empieza con el cuestionario</div>
+            <div style={tileCta}>Encontrar mi kit →</div>
+          </a>
+        )}
+        {hasKit && !hasOrders && (
+          <button onClick={onReorder} style={{ ...tileStyle, background: 'var(--cat-mostaza)' }}>
+            <div style={tileLabel}>Tu recomendación</div>
+            <div style={tileTitle}>{data.kitTitle || 'Kit recomendado'}</div>
+            <div style={tileCta}>Ver mi kit →</div>
+          </button>
+        )}
+        {hasOrders && (
+          <button onClick={onReorder} style={{ ...tileStyle, background: 'var(--cat-mostaza)' }}>
+            <div style={tileLabel}>Mi kit</div>
+            <div style={tileTitle}>{data.kitTitle || 'Ver mi kit →'}</div>
+            <div style={tileCta}>Repedir →</div>
+          </button>
+        )}
+
+        {/* Coupon tile */}
         <div style={{ background: 'var(--cat-lavanda)', borderRadius: 24, padding: 24, display: 'flex', flexDirection: 'column' as const, gap: 14 }}>
           <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)', textTransform: 'uppercase' as const, letterSpacing: '0.1em' }}>Cupón disponible</div>
-          {latestCoupon
-            ? <>
-                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20, color: 'var(--liora-uva)', lineHeight: 1.15 }}>
-                  {latestCoupon.code} · {latestCoupon.value}{latestCoupon.type === 'percentage' ? '% off' : ' PEN'}
-                </div>
-                <div style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13, color: 'var(--liora-uva)', marginTop: 'auto' }}>Aplicar →</div>
-              </>
-            : <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, color: 'var(--liora-uva)', opacity: 0.6 }}>Sin cupones activos</div>
-          }
+          {latestCoupon ? (
+            <>
+              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20, color: 'var(--liora-uva)', lineHeight: 1.15 }}>
+                {latestCoupon.code}
+              </div>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-uva)', opacity: 0.7 }}>
+                {latestCoupon.value}{latestCoupon.type === 'percentage' ? '% off' : ' PEN off'}
+                {latestCoupon.expires_at && ` · Vence ${new Date(latestCoupon.expires_at).toLocaleDateString('es-PE', { day: '2-digit', month: 'short' })}`}
+              </div>
+              <button
+                onClick={() => onCopy(latestCoupon.code, latestCoupon.id)}
+                style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--liora-uva)', marginTop: 'auto', padding: 0, textAlign: 'left' as const }}
+              >
+                {copiedId === latestCoupon.id ? '¡Copiado! ✓' : 'Copiar código →'}
+              </button>
+            </>
+          ) : (
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, color: 'var(--liora-uva)', opacity: 0.6 }}>Sin cupones activos</div>
+          )}
         </div>
       </div>
 
       {/* Recent orders */}
-      {data.orders.length > 0 && (
+      {hasOrders && (
         <div>
           <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 22, color: 'var(--liora-uva)', margin: '0 0 16px' }}>Pedidos recientes</h3>
           <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 10 }}>
@@ -207,10 +255,22 @@ function ResumenTab({ data, onReorder }: { data: AccountData; onReorder: () => v
         </div>
       )}
 
-      {!data.orders.length && !activeOrder && (
+      {/* Empty orders state with CTA */}
+      {!hasOrders && !activeOrder && (
         <div style={{ background: 'var(--liora-blanco)', borderRadius: 24, border: '1.5px solid var(--liora-arena)', padding: 40, textAlign: 'center' as const }}>
-          <Package size={48} style={{ color: 'var(--liora-arena)', marginBottom: 16, display: 'block', margin: '0 auto 16px' }} />
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: 15, color: 'var(--liora-uva)', opacity: 0.7, margin: 0 }}>Aún no tienes pedidos.</p>
+          <Package size={48} style={{ color: 'var(--liora-arena)', display: 'block', margin: '0 auto 16px' }} />
+          <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20, color: 'var(--liora-uva)', margin: 0 }}>Aún no tienes pedidos.</p>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--liora-uva)', opacity: 0.65, margin: '8px 0 0', lineHeight: 1.5 }}>
+            Empieza con un cuestionario rápido y LIORA te sugerirá un kit<br />según tu rutina, preferencias y necesidades.
+          </p>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 24, flexWrap: 'wrap' as const }}>
+            <a href="/cuestionario" style={{ background: 'var(--liora-uva)', color: 'var(--liora-crema)', borderRadius: 999, padding: '12px 20px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
+              Encontrar mi kit
+            </a>
+            <a href="/tienda?modo=kits" style={{ background: 'transparent', color: 'var(--liora-uva)', border: '1.5px solid var(--liora-arena)', borderRadius: 999, padding: '12px 20px', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>
+              Explorar kits
+            </a>
+          </div>
         </div>
       )}
     </div>
@@ -250,7 +310,6 @@ function MiKitTab({ data, onReorder }: { data: AccountData; onReorder: () => voi
         </div>
       ) : (
         <>
-          {/* Perfil de bienestar */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, flexWrap: 'wrap' as const }}>
             <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)', opacity: 0.55, textTransform: 'uppercase' as const, letterSpacing: '0.1em' }}>Perfil:</span>
             {categories.map(cat => (
@@ -263,40 +322,26 @@ function MiKitTab({ data, onReorder }: { data: AccountData; onReorder: () => voi
             </a>
           </div>
 
-          {/* Kit card — single card */}
           <div style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 28, overflow: 'hidden' }}>
-            {/* Product list */}
             <div style={{ padding: '8px 0' }}>
               {data.kitItems.map((item, idx) => (
-                <div
-                  key={item.variantId}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 16,
-                    padding: '16px 24px',
-                    borderBottom: idx < data.kitItems.length - 1 ? '1px solid var(--liora-arena)' : 'none',
-                  }}
-                >
-                  {/* Color swatch / image */}
+                <div key={item.variantId} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px 24px', borderBottom: idx < data.kitItems.length - 1 ? '1px solid var(--liora-arena)' : 'none' }}>
                   <div style={{ width: 52, height: 52, borderRadius: 14, background: item.categoryColor, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                     {item.imageUrl
                       ? <img src={item.imageUrl} alt={item.name} style={{ width: '85%', height: '85%', objectFit: 'contain' }} />
                       : <Package size={22} style={{ color: 'var(--liora-uva)', opacity: 0.5 }} />
                     }
                   </div>
-                  {/* Info */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: 'var(--liora-uva)', lineHeight: 1.2 }}>{item.name}</div>
                     <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--liora-uva)', opacity: 0.6, marginTop: 2 }}>{item.variantName} · {item.categoryName}</div>
                   </div>
-                  {/* Price */}
                   <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: 'var(--liora-uva)', flexShrink: 0 }}>
                     {item.priceCents > 0 ? fmt(item.priceCents) : '—'}
                   </div>
                 </div>
               ))}
             </div>
-
-            {/* Footer */}
             <div style={{ background: 'var(--liora-uva)', padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
               <div>
                 <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-crema)', opacity: 0.6, textTransform: 'uppercase' as const, letterSpacing: '0.1em', marginBottom: 4 }}>
@@ -317,7 +362,7 @@ function MiKitTab({ data, onReorder }: { data: AccountData; onReorder: () => voi
   )
 }
 
-function CuponesTab({ coupons }: { coupons: AccountCoupon[] }) {
+function CuponesTab({ coupons, copiedId, onCopy }: { coupons: AccountCoupon[]; copiedId: string | null; onCopy: (code: string, id: string) => void }) {
   const COLORS = ['var(--liora-lima)', 'var(--cat-rosa)', 'var(--cat-coral)', 'var(--cat-cielo)', 'var(--cat-lavanda)', 'var(--cat-mostaza)']
   return (
     <div>
@@ -334,11 +379,19 @@ function CuponesTab({ coupons }: { coupons: AccountCoupon[] }) {
                 <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 52, color: 'var(--liora-uva)', lineHeight: 0.95, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>
                   {c.type === 'percentage' ? `${c.value}% off` : c.type === 'fixed_amount' ? `S/${c.value} off` : 'Envío gratis'}
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1.5px dashed rgba(61,26,58,0.25)', paddingTop: 14, marginTop: 4 }}>
-                  <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 14, color: 'var(--liora-uva)', letterSpacing: '0.08em' }}>{c.code}</span>
-                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--liora-uva)', opacity: 0.7 }}>
-                    {c.expires_at ? `Vence: ${new Date(c.expires_at).toLocaleDateString('es-PE', { day: '2-digit', month: 'short' })}` : 'Sin caducidad'}
-                  </span>
+                <div style={{ borderTop: '1.5px dashed rgba(61,26,58,0.25)', paddingTop: 14, marginTop: 4 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 14, color: 'var(--liora-uva)', letterSpacing: '0.08em' }}>{c.code}</span>
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--liora-uva)', opacity: 0.7 }}>
+                      {c.expires_at ? `Vence: ${new Date(c.expires_at).toLocaleDateString('es-PE', { day: '2-digit', month: 'short' })}` : 'Sin caducidad'}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => onCopy(c.code, c.id)}
+                    style={{ marginTop: 10, fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13, background: 'rgba(61,26,58,0.1)', border: 'none', cursor: 'pointer', color: 'var(--liora-uva)', borderRadius: 999, padding: '6px 14px' }}
+                  >
+                    {copiedId === c.id ? '✓ Copiado' : 'Copiar código'}
+                  </button>
                 </div>
               </article>
             ))}
@@ -480,6 +533,7 @@ function DatosTab({ data, onSaved }: { data: AccountData; onSaved: () => void })
 export function AccountClient({ data }: { data: AccountData }) {
   const router = useRouter()
   const [tab, setTab] = useState<Tab>('Resumen')
+  const [copiedId, setCopiedId] = useState<string | null>(null)
 
   const handleSaved = () => router.refresh()
 
@@ -494,6 +548,13 @@ export function AccountClient({ data }: { data: AccountData }) {
     } else {
       router.push('/cuestionario')
     }
+  }
+
+  const handleCopy = (code: string, id: string) => {
+    navigator.clipboard.writeText(code).then(() => {
+      setCopiedId(id)
+      setTimeout(() => setCopiedId(null), 2000)
+    })
   }
 
   return (
@@ -531,10 +592,10 @@ export function AccountClient({ data }: { data: AccountData }) {
 
         {/* Content */}
         <div>
-          {tab === 'Resumen'  && <ResumenTab  data={data} onReorder={handleReorder} />}
+          {tab === 'Resumen'  && <ResumenTab  data={data} onReorder={handleReorder} copiedId={copiedId} onCopy={handleCopy} />}
           {tab === 'Pedidos'  && <PedidosTab  orders={data.orders} />}
           {tab === 'Mi kit'   && <MiKitTab    data={data} onReorder={handleReorder} />}
-          {tab === 'Cupones'  && <CuponesTab  coupons={data.coupons} />}
+          {tab === 'Cupones'  && <CuponesTab  coupons={data.coupons} copiedId={copiedId} onCopy={handleCopy} />}
           {tab === 'Datos'    && <DatosTab    data={data} onSaved={handleSaved} />}
         </div>
       </div>

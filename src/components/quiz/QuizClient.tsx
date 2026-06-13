@@ -1,7 +1,12 @@
 'use client'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef, useLayoutEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, ArrowRight, Sparkle, ShieldCheck, EnvelopeSimple, XCircle, Check } from '@phosphor-icons/react'
+import {
+  ArrowLeft, ArrowRight, Sparkle, ShieldCheck, EnvelopeSimple, XCircle, Check,
+  Lightning, Drop, Moon, Leaf, Heart, Star, Barbell, Brain,
+  Sun, Suitcase, FirstAid, Sneaker, Compass, Pill,
+} from '@phosphor-icons/react'
+import type { Icon } from '@phosphor-icons/react'
 import { useQuizStore } from '@/lib/store/quiz'
 import { createClient as createBrowserClient } from '@/lib/supabase/client'
 
@@ -17,15 +22,50 @@ interface Props {
   templateId: string
   groups: QuizGroup[]
   isLoggedIn?: boolean
+  userName?: string
+  userEmail?: string
 }
 
 const OPTION_COLORS = ['var(--cat-mostaza)', 'var(--cat-coral)', 'var(--cat-lavanda)', 'var(--cat-menta)', 'var(--cat-cielo)', 'var(--cat-rosa)']
 
-export function QuizClient({ templateId, groups, isLoggedIn = false }: Props) {
+const SLUG_ICONS: Record<string, Icon> = {
+  // Q01 objectives
+  'obj-rendimiento':  Barbell,
+  'obj-belleza':      Drop,
+  'obj-bienestar':    Moon,
+  'obj-digestivo':    Leaf,
+  'obj-nutricion':    Pill,
+  'obj-solar':        Sun,
+  'obj-viaje':        Suitcase,
+  'obj-hogar':        FirstAid,
+  'obj-pies-cuerpo':  Sneaker,
+  'obj-guia':         Compass,
+  // Legacy slugs
+  'obj-piel':         Drop,
+  'obj-cabello':      Star,
+  // Sub-branches
+  'foco-sueno':       Moon,
+  'foco-estres':      Brain,
+  'foco-energia':     Lightning,
+  'foco-pantallas':   Brain,
+  'guia-piel':        Drop,
+  'guia-bienestar':   Moon,
+  'guia-gym':         Barbell,
+  'guia-digestivo':   Leaf,
+  'guia-viaje':       Suitcase,
+  'guia-hogar':       FirstAid,
+  'bienestar-sueno':  Moon,
+  'bienestar-estres': Brain,
+  'entreno-fuerza':   Barbell,
+  'entreno-cardio':   Heart,
+  'nutricion-energia':        Lightning,
+  'nutricion-superalimentos': Leaf,
+}
+
+export function QuizClient({ templateId, groups, isLoggedIn = false, userName, userEmail }: Props) {
   const router = useRouter()
   const { addAnswer, setTemplateId, setProfileId, complete } = useQuizStore()
 
-  // Build option ID → slug lookup (stable across renders)
   const optionSlugMap = useMemo(() => {
     const map: Record<string, string> = {}
     groups.forEach(g => g.quiz_questions.forEach(q =>
@@ -34,7 +74,14 @@ export function QuizClient({ templateId, groups, isLoggedIn = false }: Props) {
     return map
   }, [groups])
 
-  // All possible steps in sorted order (questions + interstitials)
+  const optionTextMap = useMemo(() => {
+    const map: Record<string, string> = {}
+    groups.forEach(g => g.quiz_questions.forEach(q =>
+      q.quiz_question_options.forEach(o => { map[o.id] = o.text })
+    ))
+    return map
+  }, [groups])
+
   type Step = { kind: 'question'; group: QuizGroup; question: QuizQuestion } | { kind: 'insight'; group: QuizGroup }
   const allPossibleSteps = useMemo<Step[]>(() => {
     const steps: Step[] = []
@@ -56,15 +103,22 @@ export function QuizClient({ templateId, groups, isLoggedIn = false }: Props) {
   const [leadPhone, setLeadPhone] = useState('')
   const [whatsappConsent, setWhatsappConsent] = useState(true)
   const [leadStep, setLeadStep] = useState(false)
+  const [fading, setFading] = useState(false)
   const validEmail = /\S+@\S+\.\S+/.test(leadEmail)
 
-  // All slugs selected so far — used for conditional question logic
+  const quizTopRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => { if (userEmail) setLeadEmail(userEmail) }, [userEmail])
+
+  useLayoutEffect(() => {
+    quizTopRef.current?.scrollIntoView({ block: 'start', behavior: 'auto' })
+  }, [stepIdx])
+
   const selectedSlugs = useMemo(
     () => Object.values(answers).flat().map(id => optionSlugMap[id]).filter(Boolean),
     [answers, optionSlugMap]
   )
 
-  // Filter steps based on conditions using current answers
   const visibleSteps = useMemo(
     () => allPossibleSteps.filter(step => {
       if (step.kind !== 'question') return true
@@ -81,18 +135,52 @@ export function QuizClient({ templateId, groups, isLoggedIn = false }: Props) {
   const questionCount = visibleSteps.filter(s => s.kind === 'question').length
   const currentQuestionNum = visibleSteps.filter((s, i) => s.kind === 'question' && i <= stepIdx).length
 
+  const isFirstStep   = stepIdx === 0
+  const manyOptions   = step?.kind === 'question' && step.question.quiz_question_options.length > 6
+  const compactCards  = step?.kind === 'question' && step.question.quiz_question_options.length >= 5
+  const sortedOpts    = step?.kind === 'question'
+    ? [...step.question.quiz_question_options].sort((a, b) => a.sort_order - b.sort_order)
+    : []
+  const lastOpt  = (manyOptions && step?.kind === 'question' && step.question.type === 'single')
+    ? (sortedOpts[sortedOpts.length - 1] ?? null)
+    : null
+  const mainOpts = lastOpt ? sortedOpts.slice(0, -1) : sortedOpts
+  const LastOptIcon = lastOpt ? (SLUG_ICONS[lastOpt.slug] ?? null) : null
+
+  // Gender-aware copy
+  const genderSlug = selectedSlugs.find(s => s.startsWith('genero-'))
+  const isMale = genderSlug === 'genero-masculino'
+  const greetVerb = isMale ? 'listo' : 'lista'
+
+  // Summary answers for interstitial (top 2 single-choice answers already given)
+  const summaryAnswers = useMemo(() => {
+    const result: string[] = []
+    for (const g of groups) {
+      for (const q of g.quiz_questions) {
+        if (q.type !== 'single') continue
+        const ids = answers[q.id] ?? []
+        if (ids.length === 1) {
+          const text = optionTextMap[ids[0]]
+          if (text && !text.toLowerCase().includes('ninguna')) result.push(text)
+        }
+        if (result.length >= 2) break
+      }
+      if (result.length >= 2) break
+    }
+    return result
+  }, [answers, groups, optionTextMap])
+
   const handleSelect = (optId: string) => {
     if (step?.kind !== 'question') return
     const q = step.question
     if (q.type === 'multi') {
       const slug = optionSlugMap[optId]
-      const ningunaId = q.quiz_question_options.find(o => o.slug === 'sin-restriccion')?.id
-      if (slug === 'sin-restriccion') {
-        // "Ninguna" clears everything else
+      const ningunaId = q.quiz_question_options.find(o => o.slug.startsWith('sin-'))?.id
+      if (ningunaId && slug?.startsWith('sin-')) {
         setSelected([optId])
       } else {
         setSelected(prev => {
-          const withoutNinguna = prev.filter(id => id !== ningunaId)
+          const withoutNinguna = ningunaId ? prev.filter(id => id !== ningunaId) : prev
           return withoutNinguna.includes(optId)
             ? withoutNinguna.filter(x => x !== optId)
             : [...withoutNinguna, optId]
@@ -103,28 +191,55 @@ export function QuizClient({ templateId, groups, isLoggedIn = false }: Props) {
     }
   }
 
+  const advanceStep = (newAnswers: Record<string, string[]>, nextIdx: number) => {
+    setFading(true)
+    setTimeout(() => {
+      setAnswers(newAnswers)
+      setSelected([])
+      setStepIdx(nextIdx)
+      setFading(false)
+    }, 150)
+  }
+
   const next = async () => {
     if (step?.kind === 'question') {
       const newAnswers = { ...answers, [step.question.id]: selected }
-      setAnswers(newAnswers)
       addAnswer({ questionId: step.question.id, optionIds: selected })
+      if (isLast) {
+        setAnswers(newAnswers)
+        setSelected([])
+        if (isLoggedIn) { submitLead(newAnswers); return }
+        setLeadStep(true)
+        return
+      }
+      advanceStep(newAnswers, stepIdx + 1)
+    } else {
+      if (isLast) {
+        if (isLoggedIn) { submitLead(answers); return }
+        setLeadStep(true)
+        return
+      }
+      setFading(true)
+      setTimeout(() => { setStepIdx(stepIdx + 1); setFading(false) }, 150)
     }
-    setSelected([])
-
-    if (isLast) {
-      if (isLoggedIn) { submitLead(); return }
-      setLeadStep(true)
-      return
-    }
-    setStepIdx(stepIdx + 1)
   }
 
-  const submitLead = async () => {
+  const goBack = () => {
+    if (stepIdx > 0) {
+      setFading(true)
+      setTimeout(() => { setStepIdx(stepIdx - 1); setFading(false) }, 150)
+    } else {
+      router.back()
+    }
+  }
+
+  const submitLead = async (finalAnswers?: Record<string, string[]>) => {
     setLoading(true)
     setSubmitError(null)
     setTemplateId(templateId)
+    const answersToSend = finalAnswers ?? answers
     try {
-      const payload: Record<string, unknown> = { templateId, answers }
+      const payload: Record<string, unknown> = { templateId, answers: answersToSend }
       if (leadEmail) payload.email = leadEmail
       if (leadPhone) payload.phone = leadPhone
       const res = await fetch('/api/quiz/submit', {
@@ -133,19 +248,14 @@ export function QuizClient({ templateId, groups, isLoggedIn = false }: Props) {
         body: JSON.stringify(payload),
       })
       const data = await res.json()
-      if (!res.ok) { setSubmitError('Hubo un error al procesar tu solicitud. Intenta de nuevo.'); return }
+      if (!res.ok) { setSubmitError('Hubo un error. Intenta de nuevo.'); return }
       if (data.profileId) {
         setProfileId(data.profileId)
         complete()
-
-        // Save session token to cookie so the recommend route can verify ownership
         if (data.sessionToken) {
           document.cookie = `liora_session=${data.sessionToken}; path=/; max-age=2592000; SameSite=Lax`
         }
-
-        // Send magic link so the lead can create / log into their account
-        // Non-blocking: user goes to kit immediately, email arrives in background
-        if (leadEmail) {
+        if (leadEmail && !isLoggedIn) {
           const supa = createBrowserClient()
           const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(`/carrito?profileId=${data.profileId}`)}`
           supa.auth.signInWithOtp({
@@ -153,7 +263,6 @@ export function QuizClient({ templateId, groups, isLoggedIn = false }: Props) {
             options: { shouldCreateUser: true, emailRedirectTo: redirectTo },
           }).catch(() => {})
         }
-
         router.push(`/carrito?profileId=${data.profileId}`)
       }
     } catch {
@@ -173,9 +282,10 @@ export function QuizClient({ templateId, groups, isLoggedIn = false }: Props) {
       <section className="liora-cart-outer" style={{ background: 'var(--liora-crema)', minHeight: '78vh', padding: '32px 48px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ maxWidth: 1080, width: '100%' }}>
           <button onClick={() => setLeadStep(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--liora-uva)', fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, marginBottom: 32, opacity: 0.7, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-            <ArrowLeft size={16} weight="bold" /> Volver al cuestionario
+            <ArrowLeft size={16} weight="bold" /> Volver
           </button>
           <div className="liora-quiz-lead-grid" style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: 0, background: 'var(--liora-blanco)', borderRadius: 32, border: '1.5px solid var(--liora-arena)', overflow: 'hidden', boxShadow: 'var(--shadow-2)' }}>
+            {/* Left panel */}
             <div style={{ background: 'var(--cat-mostaza)', padding: 48, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 32, minHeight: 540 }}>
               <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, color: 'var(--liora-uva)', textTransform: 'uppercase', letterSpacing: '0.12em', display: 'inline-flex', alignItems: 'center', gap: 10 }}>
                 <span style={{ width: 28, height: 28, borderRadius: 999, background: 'var(--liora-uva)', color: 'var(--liora-lima)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -184,7 +294,7 @@ export function QuizClient({ templateId, groups, isLoggedIn = false }: Props) {
                 Cuestionario completo · 100%
               </div>
               <div>
-                <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 56, lineHeight: 1.05, letterSpacing: '-0.025em', color: 'var(--liora-uva)', margin: 0, paddingBottom: 8, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>Tu kit ya está listo.</h1>
+                <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 56, lineHeight: 1.05, letterSpacing: '-0.025em', color: 'var(--liora-uva)', margin: 0, paddingBottom: 8, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>Tu kit ya está {greetVerb}.</h1>
                 <p style={{ fontFamily: 'var(--font-script)', fontWeight: 600, fontSize: 36, lineHeight: 1.15, color: 'var(--liora-uva)', margin: 0, paddingBottom: 8 }}>¿a dónde te lo enviamos?</p>
                 <p style={{ fontFamily: 'var(--font-body)', fontSize: 16, lineHeight: 1.5, color: 'var(--liora-uva)', opacity: 0.85, marginTop: 20, maxWidth: 380, marginBottom: 0 }}>
                   Te mandamos tu diagnóstico + kit personalizado. Sin spam — palabra de LIORA.
@@ -198,20 +308,37 @@ export function QuizClient({ templateId, groups, isLoggedIn = false }: Props) {
                 ))}
               </div>
             </div>
+
+            {/* Right panel */}
             <div style={{ padding: 48, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-              <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 10, opacity: 0.7 }}>1 paso · 20 segundos</div>
-              <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 32, lineHeight: 1.1, color: 'var(--liora-uva)', margin: 0 }}>Cuéntanos cómo te ubicamos.</h2>
-              <label style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 28 }}>
-                <span style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 12, color: 'var(--liora-uva)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Email <span style={{ color: '#C2433A' }}>·</span></span>
-                <input type="email" value={leadEmail} onChange={e => setLeadEmail(e.target.value)} placeholder="cami@email.com" style={{ background: 'var(--liora-crema)', border: '1.5px solid var(--liora-arena)', borderRadius: 14, padding: '14px 18px', fontFamily: 'var(--font-body)', fontSize: 16, color: 'var(--liora-uva)', outline: 'none' }} />
-              </label>
-              <label style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 16 }}>
+              {isLoggedIn && userEmail ? (
+                <>
+                  <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 28, lineHeight: 1.1, color: 'var(--liora-uva)', margin: '0 0 8px' }}>
+                    {userName ? `Todo listo, ${userName}.` : 'Todo listo.'}
+                  </h2>
+                  <p style={{ fontFamily: 'var(--font-body)', fontSize: 15, color: 'var(--liora-uva)', opacity: 0.75, margin: '0 0 28px', lineHeight: 1.5 }}>
+                    Tu kit se enviará a <strong>{userEmail}</strong>
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 10, opacity: 0.7 }}>1 paso · 20 segundos</div>
+                  <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 32, lineHeight: 1.1, color: 'var(--liora-uva)', margin: 0 }}>Cuéntanos cómo te ubicamos.</h2>
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 28 }}>
+                    <span style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 12, color: 'var(--liora-uva)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Email <span style={{ color: '#C2433A' }}>·</span></span>
+                    <input type="email" value={leadEmail} onChange={e => setLeadEmail(e.target.value)} placeholder="cami@email.com" style={{ background: 'var(--liora-crema)', border: '1.5px solid var(--liora-arena)', borderRadius: 14, padding: '14px 18px', fontFamily: 'var(--font-body)', fontSize: 16, color: 'var(--liora-uva)', outline: 'none' }} />
+                  </label>
+                </>
+              )}
+
+              <label style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: isLoggedIn ? 0 : 16 }}>
                 <span style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 12, color: 'var(--liora-uva)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>WhatsApp <span style={{ opacity: 0.5 }}>(opcional)</span></span>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <div style={{ background: 'var(--liora-crema)', border: '1.5px solid var(--liora-arena)', borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'var(--font-body)', fontSize: 15, color: 'var(--liora-uva)', flexShrink: 0 }}>🇵🇪 +51</div>
                   <input type="tel" value={leadPhone} onChange={e => setLeadPhone(e.target.value)} placeholder="987 654 321" style={{ flex: 1, background: 'var(--liora-crema)', border: '1.5px solid var(--liora-arena)', borderRadius: 14, padding: '14px 18px', fontFamily: 'var(--font-body)', fontSize: 16, color: 'var(--liora-uva)', outline: 'none' }} />
                 </div>
               </label>
+
               <label style={{ display: 'flex', gap: 10, alignItems: 'center', marginTop: 16, cursor: 'pointer', userSelect: 'none' }}>
                 <input type="checkbox" checked={whatsappConsent} onChange={e => setWhatsappConsent(e.target.checked)} style={{ display: 'none' }} />
                 <span style={{ width: 22, height: 22, borderRadius: 6, background: whatsappConsent ? 'var(--liora-uva)' : 'transparent', border: '1.5px solid var(--liora-uva)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--liora-crema)', flexShrink: 0 }}>
@@ -219,11 +346,24 @@ export function QuizClient({ templateId, groups, isLoggedIn = false }: Props) {
                 </span>
                 <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-uva)', lineHeight: 1.4 }}>Quiero recibir mi tracking + tips por WhatsApp</span>
               </label>
+
               {submitError && <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: '#C2433A', marginTop: 16, marginBottom: 0 }}>{submitError}</p>}
-              <button onClick={() => validEmail && !loading && submitLead()} disabled={!validEmail || loading}
-                style={{ background: validEmail ? 'var(--liora-uva)' : 'var(--liora-arena)', color: validEmail ? 'var(--liora-crema)' : 'var(--liora-uva)', opacity: validEmail ? 1 : 0.6, border: 'none', borderRadius: 999, padding: '17px 24px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 16, cursor: validEmail && !loading ? 'pointer' : 'not-allowed', marginTop: 28, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+
+              <button
+                onClick={() => (isLoggedIn || validEmail) && !loading && submitLead()}
+                disabled={(!isLoggedIn && !validEmail) || loading}
+                style={{
+                  background: (isLoggedIn || validEmail) ? 'var(--liora-uva)' : 'var(--liora-arena)',
+                  color: (isLoggedIn || validEmail) ? 'var(--liora-crema)' : 'var(--liora-uva)',
+                  opacity: (isLoggedIn || validEmail) ? 1 : 0.6,
+                  border: 'none', borderRadius: 999, padding: '17px 24px',
+                  fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 16,
+                  cursor: (isLoggedIn || validEmail) && !loading ? 'pointer' : 'not-allowed',
+                  marginTop: 28, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                }}>
                 {loading ? 'Armando tu kit…' : 'Ver mi kit personalizado'}{!loading && <ArrowRight size={18} weight="bold" />}
               </button>
+
               <p style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--liora-uva)', opacity: 0.6, marginTop: 16, marginBottom: 0 }}>
                 Al continuar aceptas que te enviemos tu diagnóstico. Tus datos se guardan según nuestra{' '}
                 <a href="/privacidad" style={{ textDecoration: 'underline', color: 'inherit' }}>política de privacidad</a>.
@@ -238,90 +378,174 @@ export function QuizClient({ templateId, groups, isLoggedIn = false }: Props) {
   if (!step) return null
 
   return (
-    <section className="liora-cart-outer" style={{ background: 'var(--liora-crema)', minHeight: '80vh', padding: '32px 48px 120px' }}>
+    <section className="liora-cart-outer" style={{ background: 'var(--liora-crema)', minHeight: '80vh', padding: '32px 48px 96px' }}>
+      <div ref={quizTopRef} style={{ scrollMarginTop: 120 }} />
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: 900, margin: '0 auto 32px' }}>
-        <button onClick={() => stepIdx > 0 ? setStepIdx(stepIdx - 1) : router.back()} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--liora-uva)', fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-          <ArrowLeft size={18} weight="bold" /> Salir del cuestionario
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: 900, margin: '0 auto 16px' }}>
+        <button onClick={goBack} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--liora-uva)', fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+          <ArrowLeft size={18} weight="bold" />
+          {stepIdx > 0 ? 'Anterior' : 'Salir'}
         </button>
         <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-uva)', opacity: 0.7 }}>
-          Paso {stepIdx + 1} / {visibleSteps.length}
+          {userName ? `Hola, ${userName} · ` : ''}{step.kind === 'question' ? (currentQuestionNum === 1 ? 'Pregunta 1' : `Pregunta ${currentQuestionNum} / ${questionCount}`) : ''}
         </span>
       </div>
 
       {/* Progress bar */}
-      <div style={{ maxWidth: 900, margin: '0 auto 56px', height: 8, background: 'var(--liora-arena)', borderRadius: 999, overflow: 'hidden' }}>
-        <div style={{ width: `${progress}%`, height: '100%', background: 'var(--liora-uva)', borderRadius: 999, transition: 'width 400ms cubic-bezier(0.22,1,0.36,1)' }} />
+      <div style={{ maxWidth: 900, margin: '0 auto 24px', position: 'relative' }}>
+        <div style={{ height: 8, background: 'var(--liora-arena)', borderRadius: 999, overflow: 'hidden' }}>
+          <div style={{ width: `${progress}%`, height: '100%', background: 'var(--liora-uva)', borderRadius: 999, transition: 'width 400ms cubic-bezier(0.22,1,0.36,1)' }} />
+        </div>
       </div>
 
-      {step.kind === 'question' ? (
-        <div style={{ maxWidth: 760, margin: '0 auto' }}>
-          <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 16, display: 'flex', gap: 12, alignItems: 'center' }}>
-            <span>Pregunta {currentQuestionNum} de {questionCount}</span>
+      {/* Step content — animated */}
+      <div style={{
+        opacity: fading ? 0 : 1,
+        transform: fading ? 'translateY(-8px)' : 'translateY(0)',
+        transition: 'opacity 150ms ease, transform 150ms ease',
+      }}>
+        {step.kind === 'question' ? (
+          <div className="liora-quiz-content" style={{ maxWidth: 760, margin: '0 auto' }}>
             {step.question.type === 'multi' && (
-              <span style={{ background: 'var(--liora-lima)', color: 'var(--liora-uva)', borderRadius: 999, padding: '2px 10px', fontSize: 10 }}>Puedes elegir varias</span>
+              <div style={{ marginBottom: 16 }}>
+                <span style={{ background: 'var(--liora-lima)', color: 'var(--liora-uva)', borderRadius: 999, padding: '3px 12px', fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-body)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Puedes elegir varias</span>
+              </div>
             )}
-          </div>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 52, lineHeight: 1, letterSpacing: '-0.025em', color: 'var(--liora-uva)', margin: 0, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>
-            {step.question.text}
-          </h2>
-          {step.question.subtext && (
-            <p style={{ fontFamily: 'var(--font-body)', fontSize: 16, color: 'var(--liora-uva)', opacity: 0.75, marginTop: 16, marginBottom: 40 }}>{step.question.subtext}</p>
-          )}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16, marginTop: 40 }}>
-            {step.question.quiz_question_options.sort((a, b) => a.sort_order - b.sort_order).map((opt, i) => {
-              const isSelected = selected.includes(opt.id)
-              return (
-                <button key={opt.id} onClick={() => handleSelect(opt.id)} style={{
-                  background: isSelected ? OPTION_COLORS[i % OPTION_COLORS.length] : 'var(--liora-blanco)',
-                  border: isSelected ? '2.5px solid var(--liora-uva)' : '1.5px solid var(--liora-arena)',
-                  borderRadius: 24, padding: '22px 26px', cursor: 'pointer',
+            <h2 className="liora-quiz-title" style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: isFirstStep ? 52 : 44, lineHeight: 1, letterSpacing: '-0.025em', color: 'var(--liora-uva)', margin: 0, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>
+              {step.question.text}
+            </h2>
+            {step.question.subtext && (
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: 16, color: 'var(--liora-uva)', opacity: 0.75, marginTop: 16, marginBottom: 0 }}>{step.question.subtext}</p>
+            )}
+            {manyOptions && (
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-uva)', opacity: 0.55, marginTop: 8, marginBottom: 0 }}>
+                Elige una de {step.question.quiz_question_options.length} opciones
+              </p>
+            )}
+            <div className={`liora-quiz-options-grid${manyOptions ? ' liora-quiz-options-grid-many' : ''}`} style={{ display: 'grid', gridTemplateColumns: manyOptions ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)', gap: manyOptions ? 12 : 16, marginTop: manyOptions ? 20 : 28, paddingBottom: 8 }}>
+              {mainOpts.map((opt, i) => {
+                const isSelected = selected.includes(opt.id)
+                const PhosphorIcon = SLUG_ICONS[opt.slug]
+                const iconSize = compactCards ? 40 : 52
+                return (
+                  <button key={opt.id} onClick={() => handleSelect(opt.id)}
+                    className="liora-quiz-option"
+                    style={{
+                      background: isSelected ? OPTION_COLORS[i % OPTION_COLORS.length] : 'var(--liora-blanco)',
+                      border: isSelected ? '2px solid #4A173F' : '1.5px solid var(--liora-arena)',
+                      borderRadius: 24, padding: compactCards ? '14px 18px' : '22px 26px', cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', gap: 16, textAlign: 'left',
+                      outline: 'none', userSelect: 'none',
+                      transition: 'all 220ms cubic-bezier(0.22,1,0.36,1)',
+                      transform: isSelected ? 'scale(1.02)' : 'scale(1)',
+                      boxShadow: isSelected ? '0 10px 30px rgba(61,26,58,0.14)' : 'none',
+                    }}>
+                    <div style={{
+                      width: iconSize, height: iconSize, borderRadius: 16,
+                      background: isSelected ? 'var(--liora-uva)' : OPTION_COLORS[i % OPTION_COLORS.length],
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      flexShrink: 0, color: isSelected ? 'var(--liora-crema)' : 'var(--liora-uva)',
+                    }}>
+                      {opt.icon_url
+                        ? <img src={opt.icon_url} alt="" style={{ width: compactCards ? 22 : 28, height: compactCards ? 22 : 28 }} />
+                        : isSelected
+                          ? <Check size={compactCards ? 18 : 22} weight="bold" />
+                          : PhosphorIcon
+                            ? <PhosphorIcon size={compactCards ? 20 : 24} weight="bold" />
+                            : <Sparkle size={compactCards ? 18 : 22} weight="fill" />
+                      }
+                    </div>
+                    <span className="liora-quiz-option-text" style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: compactCards ? 16 : 20, color: 'var(--liora-uva)', lineHeight: 1.1 }}>{opt.text}</span>
+                  </button>
+                )
+              })}
+            </div>
+            {lastOpt && (
+              <button
+                onClick={() => handleSelect(lastOpt.id)}
+                className="liora-quiz-option liora-quiz-option-guide"
+                style={{
+                  width: '100%', marginTop: 12,
+                  background: selected.includes(lastOpt.id) ? 'var(--cat-lavanda)' : 'var(--liora-blanco)',
+                  border: selected.includes(lastOpt.id) ? '2px solid #4A173F' : '1.5px solid var(--liora-arena)',
+                  borderRadius: 20, padding: '16px 24px',
                   display: 'flex', alignItems: 'center', gap: 16, textAlign: 'left',
+                  cursor: 'pointer', outline: 'none', userSelect: 'none',
+                  boxShadow: selected.includes(lastOpt.id) ? '0 10px 30px rgba(61,26,58,0.14)' : 'none',
                   transition: 'all 220ms cubic-bezier(0.22,1,0.36,1)',
-                  transform: isSelected ? 'scale(1.02)' : 'scale(1)',
                 }}>
-                  <div style={{ width: 52, height: 52, borderRadius: 16, background: isSelected ? 'var(--liora-uva)' : OPTION_COLORS[i % OPTION_COLORS.length], display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 28, color: isSelected ? 'var(--liora-crema)' : 'var(--liora-uva)' }}>
-                    {opt.icon_url ? <img src={opt.icon_url} alt="" style={{ width: 28, height: 28 }} /> : (isSelected ? <Check size={22} weight="bold" /> : '✦')}
-                  </div>
-                  <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20, color: 'var(--liora-uva)', lineHeight: 1.1 }}>{opt.text}</span>
-                </button>
-              )
-            })}
+                <div style={{
+                  width: 36, height: 36, borderRadius: 12,
+                  background: selected.includes(lastOpt.id) ? 'var(--liora-uva)' : 'var(--cat-lavanda)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  flexShrink: 0, color: selected.includes(lastOpt.id) ? 'var(--liora-crema)' : 'var(--liora-uva)',
+                }}>
+                  {selected.includes(lastOpt.id)
+                    ? <Check size={16} weight="bold" />
+                    : LastOptIcon ? <LastOptIcon size={18} weight="bold" /> : <Sparkle size={18} weight="fill" />}
+                </div>
+                <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: 'var(--liora-uva)', lineHeight: 1.2 }}>{lastOpt.text}</span>
+              </button>
+            )}
+            <div className="liora-quiz-actions" style={{ marginTop: 28, display: 'flex', justifyContent: 'center' }}>
+              <button
+                onClick={next}
+                disabled={selected.length === 0}
+                style={{
+                  background: selected.length === 0 ? 'transparent' : 'var(--liora-uva)',
+                  color: selected.length === 0 ? 'rgba(61,26,58,0.4)' : 'var(--liora-crema)',
+                  border: selected.length === 0 ? '2px solid rgba(61,26,58,0.25)' : 'none',
+                  borderRadius: 999, padding: '18px 40px',
+                  fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 17,
+                  cursor: selected.length === 0 ? 'not-allowed' : 'pointer',
+                  display: 'inline-flex', alignItems: 'center', gap: 10,
+                  boxShadow: selected.length === 0 ? 'none' : 'var(--shadow-3)',
+                  outline: 'none', userSelect: 'none',
+                }}>
+                {isLast ? 'Ver mi kit' : 'Siguiente'}
+                <ArrowRight size={18} weight="bold" />
+              </button>
+            </div>
           </div>
-        </div>
-      ) : (
-        <div style={{ maxWidth: 900, margin: '0 auto' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 16 }}>
-            <span style={{ width: 28, height: 28, borderRadius: 999, background: 'var(--liora-lima)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Sparkle size={16} weight="fill" style={{ color: 'var(--liora-uva)' }} />
-            </span>
-            Mitad del camino · Te tenemos
+        ) : (
+          <div className="liora-quiz-content" style={{ maxWidth: 900, margin: '0 auto' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 16 }}>
+              <span style={{ width: 28, height: 28, borderRadius: 999, background: 'var(--liora-lima)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Sparkle size={16} weight="fill" style={{ color: 'var(--liora-uva)' }} />
+              </span>
+              Ya casi {greetVerb} · Te tenemos
+            </div>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 52, lineHeight: 1, color: 'var(--liora-uva)', margin: '0 0 24px', fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>
+              Buenas noticias antes de seguir.
+            </h2>
+            {summaryAnswers.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 28 }}>
+                {summaryAnswers.map(a => (
+                  <span key={a} style={{ background: 'rgba(61,26,58,0.08)', borderRadius: 999, padding: '6px 16px', fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, color: 'var(--liora-uva)' }}>
+                    {a}
+                  </span>
+                ))}
+              </div>
+            )}
+            <p style={{ fontFamily: 'var(--font-script)', fontSize: 28, color: 'var(--liora-uva)', margin: '0 0 40px' }}>
+              {step.group.interstitial_text}
+            </p>
+            <div className="liora-quiz-actions" style={{ display: 'flex', justifyContent: 'center' }}>
+              <button
+                onClick={next}
+                style={{
+                  background: 'var(--liora-uva)', color: 'var(--liora-crema)',
+                  border: 'none', borderRadius: 999, padding: '18px 40px',
+                  fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 17,
+                  cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 10,
+                  boxShadow: 'var(--shadow-3)',
+                }}>
+                Continuar
+                <ArrowRight size={18} weight="bold" />
+              </button>
+            </div>
           </div>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 52, lineHeight: 1, color: 'var(--liora-uva)', margin: '0 0 40px', fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>
-            Buenas noticias antes de seguir.
-          </h2>
-          <p style={{ fontFamily: 'var(--font-script)', fontSize: 28, color: 'var(--liora-uva)', margin: '24px 0 0' }}>
-            {step.group.interstitial_text}
-          </p>
-        </div>
-      )}
-
-      {/* Fixed next button */}
-      <div style={{ position: 'fixed', bottom: 40, left: '50%', transform: 'translateX(-50%)', zIndex: 10 }}>
-        <button onClick={next} disabled={step.kind === 'question' && selected.length === 0}
-          style={{
-            background: step.kind === 'question' && selected.length === 0 ? 'var(--liora-arena)' : 'var(--liora-uva)',
-            color: 'var(--liora-crema)',
-            opacity: step.kind === 'question' && selected.length === 0 ? 0.6 : 1,
-            border: 'none', borderRadius: 999, padding: '18px 40px',
-            fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 17,
-            cursor: step.kind === 'question' && selected.length === 0 ? 'not-allowed' : 'pointer',
-            display: 'inline-flex', alignItems: 'center', gap: 10,
-            boxShadow: 'var(--shadow-3)',
-          }}>
-          {step.kind === 'insight' ? 'Continuar' : (isLast ? 'Ver mi kit' : 'Siguiente')}
-          <ArrowRight size={18} weight="bold" />
-        </button>
+        )}
       </div>
     </section>
   )

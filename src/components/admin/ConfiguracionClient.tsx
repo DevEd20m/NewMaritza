@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { CheckCircle, WarningCircle } from '@phosphor-icons/react'
+import { CheckCircle, WarningCircle, Image as ImageIcon } from '@phosphor-icons/react'
 import type { StoreSettings } from '@/lib/settings'
 
 export function ConfiguracionClient({ initial }: { initial: StoreSettings }) {
@@ -8,6 +8,10 @@ export function ConfiguracionClient({ initial }: { initial: StoreSettings }) {
   const [shippingCost, setShippingCost] = useState(String(initial.shipping_cost_cents / 100))
   const [deliveryMessage, setDeliveryMessage] = useState(initial.delivery_message)
   const [whatsappNumber, setWhatsappNumber] = useState(initial.whatsapp_number)
+  const [heroImageUrl, setHeroImageUrl] = useState(initial.hero_image_url ?? '')
+  const [instagramUrl, setInstagramUrl] = useState(initial.instagram_url ?? '')
+  const [tiktokUrl, setTiktokUrl]       = useState(initial.tiktok_url    ?? '')
+  const [emailContact, setEmailContact] = useState(initial.email_contact ?? '')
 
   const [saving, setSaving] = useState(false)
   const [status, setStatus] = useState<'idle' | 'ok' | 'error'>('idle')
@@ -24,6 +28,10 @@ export function ConfiguracionClient({ initial }: { initial: StoreSettings }) {
           shipping_cost_cents: Math.round(Number(shippingCost) * 100),
           delivery_message: deliveryMessage.trim(),
           whatsapp_number: whatsappNumber.trim().replace(/\D/g, ''),
+          hero_image_url: heroImageUrl.trim(),
+          instagram_url: instagramUrl.trim(),
+          tiktok_url: tiktokUrl.trim(),
+          email_contact: emailContact.trim(),
         }),
       })
       const data = await res.json()
@@ -74,6 +82,20 @@ export function ConfiguracionClient({ initial }: { initial: StoreSettings }) {
 
         <div style={{ height: 1, background: 'var(--liora-arena)' }} />
 
+        <Section title="Redes Sociales">
+          <Field label="Instagram" hint="URL completa. Ej: https://instagram.com/liora.pe">
+            <TextInput value={instagramUrl} onChange={setInstagramUrl} placeholder="https://instagram.com/liora.pe" />
+          </Field>
+          <Field label="TikTok" hint="URL completa. Ej: https://tiktok.com/@liora.pe">
+            <TextInput value={tiktokUrl} onChange={setTiktokUrl} placeholder="https://tiktok.com/@liora.pe" />
+          </Field>
+          <Field label="Email de contacto" hint="Solo la dirección, sin mailto:. Ej: hola@liora.pe">
+            <TextInput value={emailContact} onChange={setEmailContact} placeholder="hola@liora.pe" />
+          </Field>
+        </Section>
+
+        <div style={{ height: 1, background: 'var(--liora-arena)' }} />
+
         <Section title="Tiempos de entrega">
           <Field
             label="Mensaje de entrega"
@@ -86,6 +108,41 @@ export function ConfiguracionClient({ initial }: { initial: StoreSettings }) {
             />
           </Field>
           <Preview text={`Envío gratis en pedidos +S/${Math.round(Number(threshold) || 0)} · ${deliveryMessage || '…'} · Haz tu cuestionario`} />
+        </Section>
+
+        <div style={{ height: 1, background: 'var(--liora-arena)' }} />
+
+        <Section title="Imagen del Hero">
+          <Field
+            label="URL de la imagen"
+            hint="Pega la URL de Supabase Storage u otro host. Recomendado: PNG o JPG, mínimo 800×600px. Aparece en el lado derecho del hero de la página principal."
+          >
+            <TextInput
+              value={heroImageUrl}
+              onChange={setHeroImageUrl}
+              placeholder="https://...supabase.co/storage/v1/object/public/..."
+            />
+          </Field>
+
+          {heroImageUrl ? (
+            <div>
+              <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--liora-uva)', opacity: 0.45, marginBottom: 8 }}>
+                Vista previa
+              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={heroImageUrl}
+                alt="Hero preview"
+                style={{ width: '100%', maxHeight: 220, objectFit: 'contain', borderRadius: 12, border: '1.5px solid var(--liora-arena)', background: 'var(--liora-crema)' }}
+                onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+              />
+            </div>
+          ) : (
+            <div style={{ width: '100%', height: 140, borderRadius: 12, border: '1.5px dashed var(--liora-arena)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <ImageIcon size={28} color="var(--liora-uva)" style={{ opacity: 0.3 }} />
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-uva)', opacity: 0.4 }}>Sin imagen configurada</div>
+            </div>
+          )}
         </Section>
 
         <div style={{ paddingTop: 8, display: 'flex', alignItems: 'center', gap: 16 }}>

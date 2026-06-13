@@ -10,7 +10,7 @@ export default async function AdminCuponesPage() {
   const [{ data }, { data: catsData }] = await Promise.all([
     (admin as any)
       .from('coupons')
-      .select('id, code, description, type, value, is_active, is_public, new_customers_only, scope, scope_category_ids, min_purchase_cents, max_uses, max_uses_per_user, used_count, starts_at, expires_at, color, created_at')
+      .select('id, code, description, type, value, is_active, is_public, new_customers_only, scope, scope_category_ids, min_purchase_cents, max_uses, max_uses_per_user, used_count, starts_at, expires_at, color, created_at, audience, placements, promo_title, promo_subtitle, promo_cta')
       .order('created_at', { ascending: false }),
     admin.from('categories').select('id, name').order('sort_order'),
   ])
@@ -34,6 +34,11 @@ export default async function AdminCuponesPage() {
     expires_at: c.expires_at ?? null,
     color: c.color ?? 'var(--cat-lavanda)',
     created_at: c.created_at,
+    audience: c.audience ?? 'everyone',
+    placements: c.placements ?? ['exit_modal'],
+    promo_title: c.promo_title ?? null,
+    promo_subtitle: c.promo_subtitle ?? null,
+    promo_cta: c.promo_cta ?? null,
   }))
 
   const categories = ((catsData ?? []) as any[]).map(c => ({ id: c.id as string, name: c.name as string }))

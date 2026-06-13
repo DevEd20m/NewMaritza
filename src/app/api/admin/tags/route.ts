@@ -6,7 +6,7 @@ import { requireAdmin } from '@/lib/auth/guards'
 const schema = z.object({
   name: z.string().min(1).max(60),
   slug: z.string().min(1).max(60).regex(/^[a-z0-9-]+$/),
-  group: z.enum(['objetivo', 'actividad', 'piel']),
+  group: z.enum(['objetivo', 'uso', 'nivel', 'intensidad', 'piel', 'preferencia', 'momento', 'alerta']),
 })
 
 export async function GET() {

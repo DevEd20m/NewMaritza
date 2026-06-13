@@ -8,6 +8,10 @@ const schema = z.object({
   shipping_cost_cents: z.number().int().min(0),
   delivery_message: z.string().min(1).max(120),
   whatsapp_number: z.string().regex(/^\d{7,15}$/, 'Número inválido (solo dígitos, con código de país)'),
+  hero_image_url: z.string().url().or(z.literal('')).optional(),
+  instagram_url: z.string().url().or(z.literal('')).optional(),
+  tiktok_url: z.string().url().or(z.literal('')).optional(),
+  email_contact: z.string().email().or(z.literal('')).optional(),
 })
 
 async function requireAdmin() {
@@ -31,6 +35,11 @@ export async function GET() {
     free_shipping_threshold_cents: Number(map.free_shipping_threshold_cents ?? 15000),
     shipping_cost_cents: Number(map.shipping_cost_cents ?? 1500),
     delivery_message: map.delivery_message ?? 'Lima 36–48h · Provincias 3–5 días',
+    whatsapp_number: map.whatsapp_number ?? '51999999999',
+    hero_image_url: map.hero_image_url ?? null,
+    instagram_url: map.instagram_url ?? null,
+    tiktok_url: map.tiktok_url ?? null,
+    email_contact: map.email_contact ?? null,
   })
 }
 

@@ -23,8 +23,14 @@ const STATUS_LABELS: Record<string, string> = {
 }
 
 const CAT_COLORS: Record<string, string> = {
-  gym: 'var(--cat-durazno)', 'skin-care': 'var(--cat-coral)',
-  vitaminas: 'var(--cat-mostaza)', organicos: 'var(--cat-menta)',
+  piel:          'var(--cat-coral)',
+  solar:         'var(--cat-mostaza)',
+  bienestar:     'var(--cat-lavanda)',
+  gym:           'var(--cat-durazno)',
+  viaje:         'var(--cat-cielo)',
+  hogar:         'var(--cat-rosa)',
+  digestivo:     'var(--cat-menta)',
+  'pies-cuerpo': 'var(--cat-durazno)',
 }
 
 export default async function AdminDashboard() {

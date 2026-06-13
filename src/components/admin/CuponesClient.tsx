@@ -24,6 +24,11 @@ export interface AdminCoupon {
   expires_at: string | null
   color: string
   created_at: string
+  audience: 'everyone' | 'logged_out' | 'logged_in' | 'returning'
+  placements: string[]
+  promo_title: string | null
+  promo_subtitle: string | null
+  promo_cta: string | null
 }
 
 type CouponStatus = 'active' | 'scheduled' | 'paused' | 'expired' | 'depleted'
@@ -195,7 +200,17 @@ interface CouponForm {
   scope: 'all' | 'category'; scope_category_ids: string[]
   min_purchase: string; max_uses: string; max_uses_per_user: string
   starts_at: string; expires_at: string; color: string
+  audience: 'everyone' | 'logged_out' | 'logged_in' | 'returning'
+  placements: string[]
+  promo_title: string; promo_subtitle: string; promo_cta: string
 }
+
+const ALL_PLACEMENTS = [
+  { id: 'exit_modal',       label: 'Modal de salida' },
+  { id: 'announcement_bar', label: 'Barra de anuncio' },
+  { id: 'home_section',     label: 'Home (sección)' },
+  { id: 'cart_drawer',      label: 'Carrito' },
+]
 
 const EMPTY_FORM: CouponForm = {
   code: '', description: '', type: 'percentage', value: '',
@@ -203,6 +218,8 @@ const EMPTY_FORM: CouponForm = {
   scope: 'all', scope_category_ids: [],
   min_purchase: '', max_uses: '', max_uses_per_user: '1',
   starts_at: '', expires_at: '', color: 'var(--cat-lavanda)',
+  audience: 'everyone', placements: ['exit_modal'],
+  promo_title: '', promo_subtitle: '', promo_cta: '',
 }
 
 function formFromCoupon(c: AdminCoupon): CouponForm {
@@ -218,6 +235,9 @@ function formFromCoupon(c: AdminCoupon): CouponForm {
     starts_at: c.starts_at ? c.starts_at.slice(0, 10) : '',
     expires_at: c.expires_at ? c.expires_at.slice(0, 10) : '',
     color: c.color,
+    audience: c.audience ?? 'everyone',
+    placements: c.placements ?? ['exit_modal'],
+    promo_title: c.promo_title ?? '', promo_subtitle: c.promo_subtitle ?? '', promo_cta: c.promo_cta ?? '',
   }
 }
 
@@ -238,6 +258,11 @@ function formToPayload(f: CouponForm) {
     starts_at: f.starts_at ? new Date(f.starts_at).toISOString() : null,
     expires_at: f.expires_at ? new Date(f.expires_at).toISOString() : null,
     color: f.color,
+    audience: f.audience,
+    placements: f.placements,
+    promo_title: f.promo_title || null,
+    promo_subtitle: f.promo_subtitle || null,
+    promo_cta: f.promo_cta || null,
   }
 }
 
@@ -281,6 +306,10 @@ function CouponDrawer({ editing, onClose, onSaved, categories }: {
     starts_at: form.starts_at ? new Date(form.starts_at).toISOString() : null,
     expires_at: form.expires_at ? new Date(form.expires_at).toISOString() : null,
     color: form.color, created_at: '',
+    audience: form.audience, placements: form.placements,
+    promo_title: form.promo_title || null,
+    promo_subtitle: form.promo_subtitle || null,
+    promo_cta: form.promo_cta || null,
   }
 
   const toggleCategory = (id: string) => {
@@ -453,6 +482,50 @@ function CouponDrawer({ editing, onClose, onSaved, categories }: {
                 <input type="date" value={form.expires_at} onChange={e => set('expires_at', e.target.value)} style={inputStyle} />
               </FormField>
             </div>
+          </FormSection>
+
+          <FormSection title="Presentación en tienda">
+            <FormField label="Audiencia objetivo" hint="A quién se muestra este cupón">
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {([
+                  { v: 'everyone',   l: 'Todos' },
+                  { v: 'logged_out', l: 'No logueados' },
+                  { v: 'logged_in',  l: 'Logueados' },
+                  { v: 'returning',  l: 'Ya compraron' },
+                ] as const).map(a => (
+                  <button key={a.v} onClick={() => set('audience', a.v)} style={{ flex: 1, minWidth: 100, background: form.audience === a.v ? 'var(--liora-uva)' : 'var(--liora-blanco)', color: form.audience === a.v ? 'var(--liora-crema)' : 'var(--liora-uva)', border: '1.5px solid ' + (form.audience === a.v ? 'var(--liora-uva)' : 'var(--liora-arena)'), borderRadius: 12, padding: '10px 0', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}>
+                    {a.l}
+                  </button>
+                ))}
+              </div>
+            </FormField>
+            <FormField label="Aparece en" hint="Dónde se muestra este cupón">
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {ALL_PLACEMENTS.map(p => {
+                  const active = form.placements.includes(p.id)
+                  const toggle = () => {
+                    const next = active
+                      ? form.placements.filter(x => x !== p.id)
+                      : [...form.placements, p.id]
+                    set('placements', next)
+                  }
+                  return (
+                    <button key={p.id} onClick={toggle} style={{ background: active ? 'var(--liora-uva)' : 'var(--liora-blanco)', color: active ? 'var(--liora-crema)' : 'var(--liora-uva)', border: '1.5px solid ' + (active ? 'var(--liora-uva)' : 'var(--liora-arena)'), borderRadius: 999, padding: '7px 14px', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 12, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                      {active ? '✓ ' : ''}{p.label}
+                    </button>
+                  )
+                })}
+              </div>
+            </FormField>
+            <FormField label="Título del popup" hint="Deja vacío para usar el texto por defecto. Usa {discount} para insertar el valor.">
+              <input value={form.promo_title} onChange={e => set('promo_title', e.target.value)} placeholder="Ej. Espera — tienes un regalo" style={inputStyle} />
+            </FormField>
+            <FormField label="Subtítulo" hint="Ej. Crea tu cuenta y obtén {discount} en tu primera compra">
+              <input value={form.promo_subtitle} onChange={e => set('promo_subtitle', e.target.value)} placeholder="Ej. Obtén {discount} en tu próxima compra" style={inputStyle} />
+            </FormField>
+            <FormField label="Texto del botón" hint="Ej. Obtener {discount} ahora →">
+              <input value={form.promo_cta} onChange={e => set('promo_cta', e.target.value)} placeholder="Ej. Obtener {discount} ahora →" style={inputStyle} />
+            </FormField>
           </FormSection>
 
           <FormSection title="Color del ticket">

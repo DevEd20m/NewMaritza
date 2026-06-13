@@ -1,15 +1,20 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Plus, X, FloppyDisk, Trash, Package, UploadSimple, ArrowSquareOut, Tag } from '@phosphor-icons/react'
 import type { AdminTag } from './TagsClient'
+import { generateSkuBase } from '@/lib/utils/generate-sku'
 
 const CAT_COLORS: Record<string, string> = {
-  gym:         'var(--cat-durazno)',
-  'skin-care': 'var(--cat-coral)',
-  vitaminas:   'var(--cat-mostaza)',
-  organicos:   'var(--cat-menta)',
+  piel:          'var(--cat-coral)',
+  solar:         'var(--cat-mostaza)',
+  bienestar:     'var(--cat-lavanda)',
+  gym:           'var(--cat-durazno)',
+  viaje:         'var(--cat-cielo)',
+  hogar:         'var(--cat-rosa)',
+  digestivo:     'var(--cat-menta)',
+  'pies-cuerpo': 'var(--cat-durazno)',
 }
 
 export interface AdminCategory {
@@ -28,6 +33,10 @@ export interface AdminProductData {
   cover_image_url: string | null
   is_active: boolean
   stock_quantity: number | null
+  usage_instructions: string | null
+  indications: string | null
+  contraindications: string | null
+  gallery_urls: string[]
   category: { name: string; slug: string } | null
   variant_id: string | null
   variant_name: string | null
@@ -50,12 +59,17 @@ interface ProductForm {
   price: string
   compare_at: string
   tag_ids: string[]
+  usage_instructions: string
+  indications: string
+  contraindications: string
+  gallery_urls: string[]
 }
 
 const EMPTY_FORM: ProductForm = {
   name: '', description: '', brand: '', category_id: '',
   cover_image_url: '', is_active: true, stock_quantity: null,
   variant_name: '', sku: '', price: '', compare_at: '', tag_ids: [],
+  usage_instructions: '', indications: '', contraindications: '', gallery_urls: [],
 }
 
 function Field({ label, hint, required, children }: { label: string; hint?: string; required?: boolean; children: React.ReactNode }) {
@@ -124,6 +138,10 @@ function ProductDrawer({
         price: p.price_cents ? String(Math.round(p.price_cents / 100)) : '',
         compare_at: p.compare_at_cents ? String(Math.round(p.compare_at_cents / 100)) : '',
         tag_ids: p.tag_ids ?? [],
+        usage_instructions: p.usage_instructions ?? '',
+        indications: p.indications ?? '',
+        contraindications: p.contraindications ?? '',
+        gallery_urls: p.gallery_urls ?? [],
       })
     }
     setError(null)
@@ -132,6 +150,10 @@ function ProductDrawer({
   if (!editing) return null
 
   const set = <K extends keyof ProductForm>(k: K, v: ProductForm[K]) => setForm(prev => ({ ...prev, [k]: v }))
+
+  const addGallery = () => setForm(prev => ({ ...prev, gallery_urls: [...prev.gallery_urls, ''] }))
+  const setGallery = (i: number, val: string) => setForm(prev => ({ ...prev, gallery_urls: prev.gallery_urls.map((u, idx) => idx === i ? val : u) }))
+  const removeGallery = (i: number) => setForm(prev => ({ ...prev, gallery_urls: prev.gallery_urls.filter((_, idx) => idx !== i) }))
 
   const canSave = form.name.length > 0 && form.variant_name.length > 0 && form.price.length > 0 && Number(form.price) > 0
 
@@ -159,6 +181,10 @@ function ProductDrawer({
             sku: form.sku || undefined,
             price_cents: priceCents,
             compare_at_cents: compareAtCents,
+            usage_instructions: form.usage_instructions || undefined,
+            indications: form.indications || undefined,
+            contraindications: form.contraindications || undefined,
+            gallery_urls: form.gallery_urls.filter(Boolean),
           }),
         })
         if (!res.ok) { const d = await res.json(); setError(d.error ?? 'Error al guardar'); return }
@@ -181,6 +207,10 @@ function ProductDrawer({
             price_cents: priceCents,
             compare_at_cents: compareAtCents,
             tag_ids: form.tag_ids,
+            usage_instructions: form.usage_instructions || undefined,
+            indications: form.indications || undefined,
+            contraindications: form.contraindications || undefined,
+            gallery_urls: form.gallery_urls.filter(Boolean),
           }),
         })
         if (!res.ok) { const d = await res.json(); setError(d.error ?? 'Error al guardar'); return }
@@ -208,6 +238,10 @@ function ProductDrawer({
 
   const catSlug = categories.find(c => c.id === form.category_id)?.slug ?? ''
   const previewBg = CAT_COLORS[catSlug] ?? 'var(--cat-lavanda)'
+  const previewSku = useMemo(() => {
+    if (form.sku || !form.name || !form.variant_name) return null
+    return generateSkuBase(catSlug || null, form.name, form.variant_name)
+  }, [form.sku, form.name, form.variant_name, catSlug])
   const priceSoles = Number(form.price) || 0
   const compareAtSoles = Number(form.compare_at) || 0
 
@@ -291,6 +325,34 @@ function ProductDrawer({
             <Field label="URL de imagen de portada" hint="Pega la URL de Supabase Storage o cualquier imagen pública">
               <input value={form.cover_image_url} onChange={e => set('cover_image_url', e.target.value)} placeholder="https://…" style={inputStyle} />
             </Field>
+            <Field label="Galería de imágenes" hint="URLs adicionales (máx 4). Aparecen como miniaturas en la ficha del producto.">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {form.gallery_urls.map((url, i) => (
+                  <div key={i} style={{ display: 'flex', gap: 6 }}>
+                    <input value={url} onChange={e => setGallery(i, e.target.value)} placeholder="https://…" style={{ ...inputStyle, flex: 1 }} />
+                    <button type="button" onClick={() => removeGallery(i)} style={{ background: 'transparent', border: '1.5px solid var(--liora-arena)', borderRadius: 10, padding: '0 10px', cursor: 'pointer', color: 'var(--liora-uva)', opacity: 0.6, fontFamily: 'var(--font-body)', fontSize: 14 }}>✕</button>
+                  </div>
+                ))}
+                {form.gallery_urls.length < 4 && (
+                  <button type="button" onClick={addGallery} style={{ background: 'transparent', border: '1.5px dashed var(--liora-arena)', borderRadius: 10, padding: '8px 14px', cursor: 'pointer', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 12, color: 'var(--liora-uva)', opacity: 0.7, textAlign: 'left' }}>
+                    + Agregar imagen
+                  </button>
+                )}
+              </div>
+            </Field>
+          </Section>
+
+          {/* Uso y contraindicaciones */}
+          <Section title="Uso y contraindicaciones">
+            <Field label="Indicado para" hint="¿Para quién es este producto? Ej: Personas con piel grasa, mayores de 12 años">
+              <textarea value={form.indications} onChange={e => set('indications', e.target.value)} rows={2} placeholder="Ej. Adultos que buscan mejorar su hidratación diaria…" style={{ ...inputStyle, resize: 'vertical' }} />
+            </Field>
+            <Field label="Modo de uso" hint="Cómo y cuándo tomarlo o aplicarlo">
+              <textarea value={form.usage_instructions} onChange={e => set('usage_instructions', e.target.value)} rows={3} placeholder="Ej. Tomar 1 cápsula en el desayuno con agua. No exceder la dosis recomendada…" style={{ ...inputStyle, resize: 'vertical' }} />
+            </Field>
+            <Field label="Contraindicaciones" hint="Quién NO debe usarlo. Ej: Embarazadas, menores de 12 años, personas con hipertensión">
+              <textarea value={form.contraindications} onChange={e => set('contraindications', e.target.value)} rows={2} placeholder="Ej. No recomendado para embarazadas ni durante la lactancia…" style={{ ...inputStyle, resize: 'vertical' }} />
+            </Field>
           </Section>
 
           {/* Tags */}
@@ -299,10 +361,14 @@ function ProductDrawer({
               <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--liora-uva)', opacity: 0.6, marginBottom: 4 }}>
                 Conecta este producto con las respuestas del cuestionario. Selecciona todos los que apliquen.
               </div>
-              {(['objetivo', 'actividad', 'piel'] as const).map(group => {
-                const groupTags = tags.filter(t => t.group === group)
+              {(['objetivo', 'uso', 'nivel', 'intensidad', 'piel', 'preferencia', 'momento'] as const).map(group => {
+                const groupTags = tags.filter(t => t.group === group && !t.is_internal)
                 if (!groupTags.length) return null
-                const groupLabel: Record<string, string> = { objetivo: 'Objetivo', actividad: 'Actividad', piel: 'Tipo de piel' }
+                const groupLabel: Record<string, string> = {
+                  objetivo: 'Objetivo', uso: 'Categoría de uso', nivel: 'Nivel',
+                  intensidad: 'Intensidad', piel: 'Tipo de piel',
+                  preferencia: 'Preferencias', momento: 'Momento de uso',
+                }
                 return (
                   <div key={group}>
                     <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 10, color: 'var(--liora-uva)', opacity: 0.5, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8 }}>{groupLabel[group]}</div>
@@ -333,6 +399,40 @@ function ProductDrawer({
                   </div>
                 )
               })}
+              {/* Alertas internas — para contexto de la IA */}
+              {(() => {
+                const alertTags = tags.filter(t => t.group === 'alerta')
+                if (!alertTags.length) return null
+                return (
+                  <div>
+                    <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 10, color: 'var(--cat-coral)', opacity: 0.8, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8 }}>Alertas internas (solo IA)</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                      {alertTags.map(tag => {
+                        const selected = form.tag_ids.includes(tag.id)
+                        return (
+                          <button
+                            key={tag.id}
+                            type="button"
+                            onClick={() => set('tag_ids', selected ? form.tag_ids.filter(id => id !== tag.id) : [...form.tag_ids, tag.id])}
+                            style={{
+                              background: selected ? 'var(--cat-coral)' : 'var(--liora-blanco)',
+                              color: selected ? 'var(--liora-blanco)' : 'var(--liora-uva)',
+                              border: `1.5px solid ${selected ? 'var(--cat-coral)' : 'var(--liora-arena)'}`,
+                              borderRadius: 999, padding: '5px 12px',
+                              fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 11,
+                              cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5,
+                              transition: 'all 120ms',
+                            }}
+                          >
+                            {selected && <Tag size={10} weight="bold" />}
+                            {tag.name}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )
+              })()}
               {form.tag_ids.length > 0 && (
                 <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--liora-uva)', opacity: 0.55 }}>
                   {form.tag_ids.length} tag{form.tag_ids.length !== 1 ? 's' : ''} seleccionado{form.tag_ids.length !== 1 ? 's' : ''}
@@ -348,7 +448,12 @@ function ProductDrawer({
                 <input value={form.variant_name} onChange={e => set('variant_name', e.target.value)} placeholder="500g" style={inputStyle} />
               </Field>
               <Field label="SKU">
-                <input value={form.sku} onChange={e => set('sku', e.target.value)} placeholder="Ej. GRA-AND-500" style={inputStyle} />
+                <input value={form.sku} onChange={e => set('sku', e.target.value)} placeholder="Ej. GRA-AND-500 (se genera automáticamente)" style={inputStyle} />
+                {previewSku && (
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--liora-uva)', opacity: 0.5, marginTop: 4 }}>
+                    Se creará: <code style={{ fontWeight: 700, opacity: 0.8 }}>{previewSku}</code>
+                  </div>
+                )}
               </Field>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>

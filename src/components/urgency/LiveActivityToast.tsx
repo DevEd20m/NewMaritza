@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 
 // Lista de actividad simulada — nombres peruanos + distritos de Lima
 const ACTIVITIES = [
@@ -27,6 +28,7 @@ function formatTime(minutes: number) {
 }
 
 export function LiveActivityToast() {
+  const pathname = usePathname()
   const [visible, setVisible]     = useState(false)
   const [animIn, setAnimIn]       = useState(false)
   const [currentIdx, setCurrentIdx] = useState(0)
@@ -67,6 +69,8 @@ export function LiveActivityToast() {
     return () => clearTimeout(firstTimer)
   }, [])
 
+  const HIDE_ON = ['/cuestionario', '/cuenta', '/pagar', '/login']
+  if (HIDE_ON.some(r => pathname?.startsWith(r))) return null
   if (!visible) return null
 
   const activity = ACTIVITIES[currentIdx]
