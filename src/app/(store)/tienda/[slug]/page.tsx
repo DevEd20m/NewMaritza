@@ -76,11 +76,20 @@ export default async function ProductDetailPage({ params }: Props) {
   const price = activeVariant?.product_prices?.find((p) => !p.effective_to)
   const catSlug = product.categories?.slug ?? ''
   const catColor = CATEGORY_COLORS[catSlug] ?? 'var(--cat-lavanda)'
-  const jsonLd = buildProductJsonLd(product as unknown as import('@/types/database').Product, price?.amount_cents)
   const publishedReviews = (product.reviews ?? []).filter((r) => r.is_published)
   const avgRating = publishedReviews.length
     ? (publishedReviews.reduce((s, r) => s + r.rating, 0) / publishedReviews.length).toFixed(1)
     : null
+  const jsonLd = buildProductJsonLd(
+    product as unknown as import('@/types/database').Product,
+    price?.amount_cents,
+    {
+      sku: activeVariant?.sku ?? null,
+      aggregateRating: publishedReviews.length > 0 && avgRating
+        ? { ratingValue: parseFloat(avgRating), reviewCount: publishedReviews.length }
+        : null,
+    },
+  )
 
   return (
     <>

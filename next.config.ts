@@ -1,3 +1,4 @@
+import path from "node:path";
 import type { NextConfig } from "next";
 
 const isDev = process.env.NODE_ENV === 'development'
@@ -29,6 +30,10 @@ const securityHeaders = [
 ]
 
 const nextConfig: NextConfig = {
+  turbopack: {
+    root: path.join(__dirname),
+  },
+
   async headers() {
     return [{ source: '/(.*)', headers: securityHeaders }]
   },

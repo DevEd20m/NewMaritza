@@ -42,7 +42,7 @@ export interface Database {
         Relationships: []
       }
       kits: {
-        Row: { id: string; name: string; slug: string; description: string | null; cover_image_url: string | null; type: 'static' | 'dynamic'; is_active: boolean; created_at: string }
+        Row: { id: string; name: string; slug: string; description: string | null; cover_image_url: string | null; type: 'static' | 'dynamic'; is_active: boolean; created_at: string; show_in_home: boolean; home_sort_order: number; benefits: Array<{ icon: string; title: string; desc: string }> }
         Insert: Omit<Database['public']['Tables']['kits']['Row'], 'id' | 'created_at'>
         Update: Partial<Database['public']['Tables']['kits']['Insert']>
         Relationships: []
@@ -209,7 +209,6 @@ export interface ProductWithDetails extends Product {
 }
 
 export interface KitWithProducts extends Kit {
-  benefits?: Array<{ icon: string; title: string; desc: string }>
   kit_products: (KitProduct & {
     variant: ProductVariant & {
       product: Product

@@ -152,7 +152,7 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
 
   const goCheckout = () => {
     trackBeginCheckout(total, items.map((i) => ({ variantId: i.variantId, name: i.name, priceCents: i.priceCents, quantity: i.quantity })))
-    router.push('/pagar')
+    router.push(profileId ? `/pagar?profileId=${encodeURIComponent(profileId)}` : '/pagar')
   }
 
   const addSuggestion = (item: KitItem) => {

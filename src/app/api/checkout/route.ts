@@ -12,6 +12,7 @@ export async function POST(request: NextRequest) {
 
     const { address, couponCode, notes } = parsed.data
     const saveToProfile = body.saveToProfile === true
+    const quizProfileId: string | null = typeof body.quizProfileId === 'string' ? body.quizProfileId : null
     const supabase = await createClient()
     const admin = createAdminClient()
 
@@ -116,6 +117,17 @@ export async function POST(request: NextRequest) {
       orderEmail = (address as any).email ?? null
     }
 
+    // Validate quizProfileId if provided
+    let validatedQuizProfileId: string | null = null
+    if (quizProfileId) {
+      const { data: qp } = await (admin as any)
+        .from('quiz_profiles')
+        .select('id')
+        .eq('id', quizProfileId)
+        .maybeSingle()
+      if (qp) validatedQuizProfileId = quizProfileId
+    }
+
     const { data: order, error: orderError } = await admin.from('orders').insert({
       user_id: user?.id ?? null,
       guest_email: orderEmail,
@@ -130,7 +142,8 @@ export async function POST(request: NextRequest) {
       coupon_id: couponId,
       notes: notes ?? null,
       status: 'pending_payment',
-    }).select('id, order_number').single()
+      quiz_profile_id: validatedQuizProfileId,
+    } as any).select('id, order_number').single()
 
     if (orderError || !order) {
       return NextResponse.json({ error: 'Error al crear el pedido' }, { status: 500 })

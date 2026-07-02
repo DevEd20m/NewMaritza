@@ -186,7 +186,7 @@ function KitDrawer({
   const subtotalCents = selectedVariants.reduce((s, v) => s + v.priceCents, 0)
 
   const handleSave = async () => {
-    if (!form.name || form.variantIds.length < 1) return
+    if (!form.name) return
     setSaving(true)
     setError(null)
     try {
@@ -196,7 +196,7 @@ function KitDrawer({
         description: form.description || undefined,
         is_active: form.is_active,
         variantIds: form.variantIds,
-        cover_image_url: form.cover_image_url || null,
+        cover_image_url: (() => { const v = form.cover_image_url.trim(); if (!v) return null; try { new URL(v); return v } catch { return null } })(),
         show_in_home: form.show_in_home,
         home_sort_order: form.home_sort_order,
         benefits: form.benefits.filter(b => b.title.trim()),
@@ -224,7 +224,7 @@ function KitDrawer({
     }
   }
 
-  const canSave = form.name.length > 0 && form.variantIds.length >= 1
+  const canSave = form.name.length > 0
 
   return (
     <>
@@ -433,6 +433,11 @@ function KitDrawer({
                 <div style={{ padding: 20, textAlign: 'center', fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-uva)', opacity: 0.55 }}>Sin resultados</div>
               )}
             </div>
+            {form.variantIds.length === 0 && (
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--liora-uva)', opacity: 0.55, margin: '8px 0 0', textAlign: 'center' }}>
+                Sin productos asignados — el kit no se mostrará en tienda hasta agregar al menos uno.
+              </p>
+            )}
           </div>
 
           {/* Image upload */}
@@ -688,6 +693,10 @@ export function KitsClient({
   const router = useRouter()
   const [kits, setKits] = useState(initialKits)
   const [editing, setEditing] = useState<'new' | AdminKitData | null>(null)
+
+  useEffect(() => {
+    setKits(initialKits)
+  }, [initialKits])
 
   const handleSaved = () => { router.refresh() }
 

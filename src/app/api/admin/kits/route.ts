@@ -8,8 +8,8 @@ const kitSchema = z.object({
   description: z.string().optional(),
   type: z.enum(['static', 'dynamic']).default('static'),
   is_active: z.boolean().default(true),
-  variantIds: z.array(z.string()).min(1),
-  cover_image_url: z.string().url().nullable().optional(),
+  variantIds: z.array(z.string()),
+  cover_image_url: z.union([z.string().url(), z.literal(''), z.null()]).optional(),
   show_in_home: z.boolean().optional(),
   home_sort_order: z.number().int().min(0).optional(),
   benefits: z.array(z.object({
@@ -55,15 +55,17 @@ export async function POST(request: NextRequest) {
 
     if (!kit) return NextResponse.json({ error: 'Error al crear kit' }, { status: 500 })
 
-    await (admin as any).from('kit_products').insert(
-      variantIds.map((vid: string, i: number) => ({
-        kit_id: kit.id,
-        variant_id: vid,
-        quantity: 1,
-        sort_order: i,
-        is_required: true,
-      }))
-    )
+    if (variantIds.length > 0) {
+      await (admin as any).from('kit_products').insert(
+        variantIds.map((vid: string, i: number) => ({
+          kit_id: kit.id,
+          variant_id: vid,
+          quantity: 1,
+          sort_order: i,
+          is_required: true,
+        }))
+      )
+    }
 
     return NextResponse.json({ kitId: kit.id })
   } catch (err) {
@@ -97,15 +99,17 @@ export async function PUT(request: NextRequest) {
     }).eq('id', id)
 
     await (admin as any).from('kit_products').delete().eq('kit_id', id)
-    await (admin as any).from('kit_products').insert(
-      variantIds.map((vid: string, i: number) => ({
-        kit_id: id,
-        variant_id: vid,
-        quantity: 1,
-        sort_order: i,
-        is_required: true,
-      }))
-    )
+    if (variantIds.length > 0) {
+      await (admin as any).from('kit_products').insert(
+        variantIds.map((vid: string, i: number) => ({
+          kit_id: id,
+          variant_id: vid,
+          quantity: 1,
+          sort_order: i,
+          is_required: true,
+        }))
+      )
+    }
 
     return NextResponse.json({ ok: true })
   } catch (err) {

@@ -17,6 +17,7 @@ export default async function AdminKitsPage() {
           product_variants(id, name, product_prices(amount_cents, effective_to))
         )
       `)
+      .order('is_active', { ascending: false })
       .order('created_at', { ascending: false }),
 
     (admin as any)

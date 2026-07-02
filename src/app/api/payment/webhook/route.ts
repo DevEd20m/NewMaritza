@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getPaymentProvider } from '@/lib/payment/provider'
+import { generateOrderGuideSnapshot } from '@/lib/guides/snapshot'
 
 export const dynamic = 'force-dynamic'
 
@@ -74,6 +75,11 @@ export async function POST(request: NextRequest) {
       // Increment coupon used_count on successful payment
       if (newStatus === 'paid' && (order as any).coupon_id) {
         await (admin as any).rpc('increment_coupon_used_count', { p_coupon_id: (order as any).coupon_id })
+      }
+
+      // Generar snapshot de guía inmutable para esta orden
+      if (newStatus === 'paid') {
+        generateOrderGuideSnapshot(webhookEvent.orderId).catch(() => {}) // fire and forget, no bloquea
       }
 
       // Enviar email de guía de uso (Day 0) — fire and forget

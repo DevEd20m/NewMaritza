@@ -147,6 +147,15 @@ function ProductDrawer({
     setError(null)
   }, [editing, isNew])
 
+  const catSlug = categories.find(c => c.id === form.category_id)?.slug ?? ''
+  const previewBg = CAT_COLORS[catSlug] ?? 'var(--cat-lavanda)'
+  const previewSku = useMemo(() => {
+    if (form.sku || !form.name || !form.variant_name) return null
+    return generateSkuBase(catSlug || null, form.name, form.variant_name)
+  }, [form.sku, form.name, form.variant_name, catSlug])
+  const priceSoles = Number(form.price) || 0
+  const compareAtSoles = Number(form.compare_at) || 0
+
   if (!editing) return null
 
   const set = <K extends keyof ProductForm>(k: K, v: ProductForm[K]) => setForm(prev => ({ ...prev, [k]: v }))
@@ -235,15 +244,6 @@ function ProductDrawer({
       setDeleting(false)
     }
   }
-
-  const catSlug = categories.find(c => c.id === form.category_id)?.slug ?? ''
-  const previewBg = CAT_COLORS[catSlug] ?? 'var(--cat-lavanda)'
-  const previewSku = useMemo(() => {
-    if (form.sku || !form.name || !form.variant_name) return null
-    return generateSkuBase(catSlug || null, form.name, form.variant_name)
-  }, [form.sku, form.name, form.variant_name, catSlug])
-  const priceSoles = Number(form.price) || 0
-  const compareAtSoles = Number(form.compare_at) || 0
 
   return (
     <>

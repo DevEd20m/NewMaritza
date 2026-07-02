@@ -21,7 +21,7 @@ export interface PrefillData {
 }
 
 
-export function CheckoutForm({ prefill, shippingCostCents = 1500, freeShippingThresholdCents = 15000 }: { prefill: PrefillData | null; shippingCostCents?: number; freeShippingThresholdCents?: number }) {
+export function CheckoutForm({ prefill, shippingCostCents = 1500, freeShippingThresholdCents = 15000, quizProfileId = null }: { prefill: PrefillData | null; shippingCostCents?: number; freeShippingThresholdCents?: number; quizProfileId?: string | null }) {
   const router = useRouter()
   const { items, subtotalCents, totalCents, discountCents, appliedCouponCode, sessionToken, clearCart } = useCartStore()
   const [loading, setLoading] = useState(false)
@@ -86,6 +86,7 @@ export function CheckoutForm({ prefill, shippingCostCents = 1500, freeShippingTh
             couponCode: appliedCouponCode ?? data.couponCode,
             notes: data.notes,
             saveToProfile: forSelf && saveToProfile && !!prefill?.isLoggedIn,
+            quizProfileId: quizProfileId ?? null,
             items: items.map((i) => ({
               variantId: i.variantId,
               name: i.name,

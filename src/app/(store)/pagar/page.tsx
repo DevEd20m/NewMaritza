@@ -5,8 +5,13 @@ import { CheckoutForm, type PrefillData } from '@/components/checkout/CheckoutFo
 
 export const metadata: Metadata = { title: 'Pago seguro', robots: { index: false, follow: false } }
 
-export default async function CheckoutPage() {
-  const [supabase, settings] = await Promise.all([createClient(), getStoreSettings()])
+export default async function CheckoutPage({ searchParams }: { searchParams?: Promise<{ profileId?: string }> }) {
+  const [supabase, settings, params] = await Promise.all([
+    createClient(),
+    getStoreSettings(),
+    Promise.resolve(searchParams).then(sp => sp ?? {}),
+  ])
+  const quizProfileId = (params as { profileId?: string }).profileId ?? null
   const { data: { user } } = await supabase.auth.getUser()
 
   let prefill: PrefillData | null = null
@@ -38,6 +43,7 @@ export default async function CheckoutPage() {
       prefill={prefill}
       shippingCostCents={settings.shipping_cost_cents}
       freeShippingThresholdCents={settings.free_shipping_threshold_cents}
+      quizProfileId={quizProfileId}
     />
   )
 }

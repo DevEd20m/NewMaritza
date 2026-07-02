@@ -49,7 +49,15 @@ export function buildCategoryMetadata(category: Category): Metadata {
   })
 }
 
-export function buildProductJsonLd(product: Product, priceCents?: number) {
+export function buildProductJsonLd(
+  product: Product,
+  priceCents?: number,
+  options?: {
+    sku?: string | null
+    aggregateRating?: { ratingValue: number; reviewCount: number } | null
+  },
+) {
+  const priceValidUntil = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
   return {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -57,12 +65,22 @@ export function buildProductJsonLd(product: Product, priceCents?: number) {
     description: product.description,
     image: product.cover_image_url,
     url: `${SITE_URL}/tienda/${product.slug}`,
+    ...(options?.sku ? { sku: options.sku } : {}),
+    itemCondition: 'https://schema.org/NewCondition',
     ...(product.brand ? { brand: { '@type': 'Brand', name: product.brand } } : {}),
+    ...(options?.aggregateRating?.reviewCount ? {
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: options.aggregateRating.ratingValue,
+        reviewCount: options.aggregateRating.reviewCount,
+      },
+    } : {}),
     ...(priceCents ? {
       offers: {
         '@type': 'Offer',
-        price: String(priceCents / 100),
+        price: (priceCents / 100).toFixed(2),
         priceCurrency: 'PEN',
+        priceValidUntil,
         availability: 'https://schema.org/InStock',
         url: `${SITE_URL}/tienda/${product.slug}`,
         seller: { '@type': 'Organization', name: SITE_NAME },

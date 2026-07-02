@@ -30,7 +30,7 @@ const AUTH_REQUIRED_PREFIXES = ['/cuenta']
 // ─── Rutas admin (redirect a / si no es admin → la API retorna 403 igualmente) ─
 const ADMIN_PREFIXES = ['/admin']
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown'
 
