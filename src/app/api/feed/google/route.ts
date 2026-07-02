@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import type { Database } from '@/types/database'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://liora.pe'
 
@@ -24,7 +23,8 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 export async function GET() {
-  const sb = createClient<Database>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sb = createClient<any>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
   )
