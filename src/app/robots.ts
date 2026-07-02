@@ -10,6 +10,12 @@ export default function robots(): MetadataRoute.Robots {
         allow: '/',
         disallow: ['/admin/', '/cuenta/', '/pagar/', '/confirmado/', '/api/'],
       },
+      // AI crawlers — acceso explícito al feed de productos
+      { userAgent: 'GPTBot',        allow: ['/api/feed/google', '/'] },
+      { userAgent: 'PerplexityBot', allow: '/' },
+      { userAgent: 'ClaudeBot',     allow: '/' },
+      { userAgent: 'Bingbot',       allow: '/' },
+      { userAgent: 'Googlebot',     allow: '/' },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,
   }

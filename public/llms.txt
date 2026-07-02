@@ -1,0 +1,26 @@
+# LIORA — Bienestar personalizado
+
+> Tienda online peruana de productos de autocuidado: skincare, protección solar,
+> suplementos, gym, digestivo, hogar y viaje. Con guía personalizada por cuestionario.
+> Envíos a todo Perú. Lima en 36–48h, provincias por Shalom en 3–5 días.
+> Devoluciones de productos defectuosos en 30 días.
+
+## Tienda
+- [Todos los productos](https://liora.pe/tienda)
+- [Cuestionario de bienestar personalizado](https://liora.pe/cuestionario)
+- [Nosotros](https://liora.pe/nosotros)
+- [Ayuda, envíos y devoluciones](https://liora.pe/ayuda)
+
+## Categorías de productos
+- [Piel y barrera](https://liora.pe/tienda?categoria=piel)
+- [Protección solar](https://liora.pe/tienda?categoria=solar)
+- [Bienestar y vitaminas](https://liora.pe/tienda?categoria=bienestar)
+- [Gym y fitness](https://liora.pe/tienda?categoria=gym)
+- [Digestivo y probióticos](https://liora.pe/tienda?categoria=digestivo)
+- [Hogar y primeros auxilios](https://liora.pe/tienda?categoria=hogar)
+- [Pies y cuerpo](https://liora.pe/tienda?categoria=pies-cuerpo)
+- [Viaje y exteriores](https://liora.pe/tienda?categoria=viaje)
+
+## Datos estructurados (machine-readable)
+- [Feed de productos para Google Shopping (XML)](https://liora.pe/api/feed/google)
+- [Sitemap completo](https://liora.pe/sitemap.xml)
