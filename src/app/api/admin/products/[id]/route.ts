@@ -8,9 +8,9 @@ const schema = z.object({
   description: z.string().optional(),
   brand: z.string().optional(),
   category_id: z.string().uuid().nullable().optional(),
-  cover_image_url: z.string().url().nullable().optional(),
+  cover_image_url: z.string().nullable().optional(),
   is_active: z.boolean(),
-  stock_quantity: z.number().int().min(0).nullable(),
+  stock_quantity: z.number().int().min(0).nullable().optional(),
   variant_id: z.string().uuid().nullable(),
   variant_name: z.string().min(1),
   sku: z.string().optional(),
@@ -20,7 +20,7 @@ const schema = z.object({
   usage_instructions: z.string().optional(),
   indications: z.string().optional(),
   contraindications: z.string().optional(),
-  gallery_urls: z.array(z.string().url()).optional(),
+  gallery_urls: z.array(z.string()).optional(),
 })
 
 export async function PUT(

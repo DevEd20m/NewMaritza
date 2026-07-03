@@ -485,7 +485,7 @@ function ProductDrawer({
                   ))}
                 </div>
                 {form.stock_quantity !== null && (
-                  <input type="number" min="0" value={form.stock_quantity} onChange={e => set('stock_quantity', Number(e.target.value))} placeholder="0" style={inputStyle} />
+                  <input type="number" min="0" value={form.stock_quantity} onChange={e => set('stock_quantity', parseInt(e.target.value, 10) || 0)} placeholder="0" style={inputStyle} />
                 )}
               </div>
               <div>
