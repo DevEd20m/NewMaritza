@@ -54,7 +54,7 @@ export default async function AdminDashboard() {
     admin.from('orders').select('id', { count: 'exact', head: true }),
     (admin as any).from('orders').select('id, total_cents, status').gte('created_at', startOfToday),
     (admin as any).from('orders').select('id, total_cents, status').gte('created_at', startOfMonth),
-    admin.from('products').select('id', { count: 'exact', head: true }).eq('is_active', true).lt('stock_quantity', 10),
+    (admin as any).from('product_variants').select('id, products!inner(id)', { count: 'exact', head: true }).eq('products.is_active', true).lt('stock_quantity', 10),
     (admin as any)
       .from('orders')
       .select('id, order_number, guest_name, guest_email, status, total_cents, created_at, order_items(quantity)')
@@ -62,9 +62,9 @@ export default async function AdminDashboard() {
       .order('created_at', { ascending: true })
       .limit(5),
     (admin as any)
-      .from('products')
-      .select('id, name, stock_quantity, categories(name, slug)')
-      .eq('is_active', true)
+      .from('product_variants')
+      .select('id, stock_quantity, products!inner(id, name, is_active, categories(name, slug))')
+      .eq('products.is_active', true)
       .lt('stock_quantity', 10)
       .order('stock_quantity', { ascending: true })
       .limit(6),
@@ -90,7 +90,12 @@ export default async function AdminDashboard() {
   const pendingCount = pendingOrders.length
 
   type CritProduct = { id: string; name: string; stock_quantity: number | null; categories: { name: string; slug: string } | null }
-  const criticalStock = (criticalStockRaw ?? []) as CritProduct[]
+  const criticalStock: CritProduct[] = ((criticalStockRaw ?? []) as any[]).map(v => ({
+    id: v.products?.id ?? v.id,
+    name: v.products?.name ?? '',
+    stock_quantity: v.stock_quantity ?? null,
+    categories: v.products?.categories ?? null,
+  }))
 
   type ActiveKit = { id: string; name: string; slug: string; is_active: boolean; kit_products: Array<{ variant_id: string; product_variants: { product_prices: Array<{ amount_cents: number; effective_to: string | null }> } | null }> }
   const activeKits = (activeKitsRaw ?? []) as ActiveKit[]
@@ -191,7 +196,7 @@ export default async function AdminDashboard() {
             <div style={{ padding: '32px 24px', textAlign: 'center', fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--liora-uva)', opacity: 0.55 }}>Sin productos con stock bajo.</div>
           ) : (
             criticalStock.map((p, i) => {
-              const out = p.stock_quantity === 0 || p.stock_quantity === null
+              const out = p.stock_quantity === 0
               const catSlug = (p.categories as any)?.slug ?? ''
               const bg = CAT_COLORS[catSlug] ?? 'var(--cat-lavanda)'
               return (

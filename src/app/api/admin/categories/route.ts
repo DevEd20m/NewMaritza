@@ -6,7 +6,7 @@ import { requireAdmin } from '@/lib/auth/guards'
 const schema = z.object({
   name: z.string().min(1).max(60),
   slug: z.string().min(1).max(60).regex(/^[a-z0-9-]+$/),
-  parent_id: z.string().uuid().nullable().optional(),
+  parent_id: z.guid().nullable().optional(),
   sort_order: z.number().int().min(0).optional(),
 })
 

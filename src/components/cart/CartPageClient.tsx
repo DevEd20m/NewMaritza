@@ -83,6 +83,11 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
         return data as KitData
       })
       .then((data) => {
+        // Si el motor no pudo resolver ningún producto, no vaciar el carrito ni
+        // mostrar un kit vacío: tratar como error con opción de reintentar.
+        if (!data.kit || data.kit.length === 0) {
+          throw new Error('empty-kit')
+        }
         setKitData(data)
         setSuggestions(data.suggestions ?? [])
         // Save to localStorage so home page can offer "resume" banner

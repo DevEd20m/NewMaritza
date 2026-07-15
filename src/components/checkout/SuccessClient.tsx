@@ -15,7 +15,7 @@ interface Order {
   user_id: string | null
   guest_email: string | null
   guest_name: string | null
-  order_items: { product_name_snapshot: string; variant_name_snapshot: string; quantity: number; unit_price_cents: number }[]
+  order_items: { variant_id: string | null; product_name_snapshot: string; variant_name_snapshot: string; quantity: number; unit_price_cents: number }[]
 }
 
 export function SuccessClient({ order, whatsappNumber, quizProfileId }: { order: Order; whatsappNumber?: string; quizProfileId?: string | null }) {
@@ -31,17 +31,23 @@ export function SuccessClient({ order, whatsappNumber, quizProfileId }: { order:
 
   useEffect(() => {
     clearCart()
-    trackPurchase({
-      orderNumber: order.order_number,
-      totalCents: order.total_cents,
-      currency: order.currency,
-      items: order.order_items.map((i) => ({
-        variantId: '',
-        name: i.product_name_snapshot,
-        priceCents: i.unit_price_cents,
-        quantity: i.quantity,
-      })),
-    })
+    // Evitar doble evento purchase al refrescar /confirmado (infla conversiones en
+    // pixeles reenviados por GTM que no deduplican por transaction_id).
+    const purchaseKey = `liora-purchase-tracked-${order.order_number}`
+    if (!sessionStorage.getItem(purchaseKey)) {
+      sessionStorage.setItem(purchaseKey, '1')
+      trackPurchase({
+        orderNumber: order.order_number,
+        totalCents: order.total_cents,
+        currency: order.currency,
+        items: order.order_items.map((i) => ({
+          variantId: i.variant_id ?? '',
+          name: i.product_name_snapshot,
+          priceCents: i.unit_price_cents,
+          quantity: i.quantity,
+        })),
+      })
+    }
     fetch('/api/guides/detect', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

@@ -36,13 +36,12 @@ function buildFaqs(waDisplay: string, deliveryTime: string, shippingCost: number
       { q: '¿Dónde veo mi código de seguimiento?',          a: 'Te lo enviamos por email y WhatsApp apenas tu pedido sale del taller. También está en Mi Cuenta → Pedidos.' },
       { q: '¿Mi pedido aparece como pendiente, qué significa?', a: 'El estado "pendiente" es normal mientras procesamos tu pago y preparamos tu kit. Si pasó más de 24 horas sin cambio, escríbenos.' },
       { q: '¿Qué hago si dice "Entregado" pero no llegó?',  a: 'Escríbenos en menos de 24h. Verificamos con el repartidor y, si fue extraviado, te enviamos un nuevo kit sin costo.' },
-      { q: '¿Puedo coordinar la entrega?',                  a: 'Sí, cuando el pedido esté en estado "En reparto" recibes un SMS para coordinar ventana de entrega con el repartidor.' },
+      { q: '¿Puedo coordinar la entrega?',                  a: 'Sí, cuando tu pedido esté "En camino" recibes un mensaje para coordinar la ventana de entrega con el repartidor.' },
     ],
     pagos: [
       { q: '¿Qué métodos de pago aceptan?',                                       a: 'Visa, Mastercard y AmEx. Todo procesado con encriptación SSL — no guardamos los datos de tu tarjeta.' },
       { q: '¿Es seguro pagar en LIORA?',                                          a: 'Sí. Usamos Stripe, un procesador de pagos con encriptación SSL de nivel bancario. No almacenamos datos de tu tarjeta.' },
       { q: 'Mi pago fue exitoso pero mi pedido aparece pendiente, ¿qué hago?',   a: 'Puede haber un pequeño retraso entre el banco y nuestro sistema. Espera 10–15 minutos y recarga la página. Si sigue pendiente, escríbenos con el número de tu operación.' },
-      { q: '¿Puedo pagar en cuotas?',                                            a: 'Sí, hasta 6 cuotas sin intereses con tarjetas Visa y Mastercard de bancos peruanos.' },
       { q: '¿Cómo aplico un cupón?',                                             a: 'En el resumen del carrito, ingresa el código y haz "Aplicar". Verás el descuento reflejado al instante.' },
     ],
     kits: [

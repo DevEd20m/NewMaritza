@@ -129,6 +129,42 @@ export function QuizClient({ templateId, groups, isLoggedIn = false, userName, u
     [allPossibleSteps, selectedSlugs]
   )
 
+  // Elimina de `answers` las respuestas de preguntas que ya no son visibles según las
+  // condiciones actuales (p. ej. tras cambiar una respuesta anterior a otra rama). Itera
+  // hasta estabilizar porque una rama puede depender de otra. Evita recomendaciones
+  // contaminadas y tags de ramas abandonadas.
+  const pruneAnswers = (ans: Record<string, string[]>): Record<string, string[]> => {
+    let current = ans
+    for (let pass = 0; pass < 5; pass++) {
+      const slugs = Object.values(current).flat().map(id => optionSlugMap[id]).filter(Boolean)
+      const visibleQIds = new Set(
+        allPossibleSteps
+          .filter(s => {
+            if (s.kind !== 'question') return false
+            const cond = s.question.conditions
+            if (!cond?.if_any_slug?.length) return true
+            return cond.if_any_slug.some(sl => slugs.includes(sl))
+          })
+          .map(s => (s as { question: QuizQuestion }).question.id)
+      )
+      const next: Record<string, string[]> = {}
+      for (const [qid, ids] of Object.entries(current)) {
+        if (visibleQIds.has(qid)) next[qid] = ids
+      }
+      if (Object.keys(next).length === Object.keys(current).length) return next
+      current = next
+    }
+    return current
+  }
+
+  // Si visibleSteps se encogió (menos ramas) y stepIdx quedó fuera de rango, reencuadrar
+  // para no renderizar una pantalla en blanco.
+  useEffect(() => {
+    if (stepIdx > 0 && stepIdx >= visibleSteps.length) {
+      setStepIdx(Math.max(0, visibleSteps.length - 1))
+    }
+  }, [stepIdx, visibleSteps.length])
+
   const step = visibleSteps[stepIdx]
   const progress = visibleSteps.length > 0 ? ((stepIdx + 1) / visibleSteps.length) * 100 : 0
   const isLast = stepIdx === visibleSteps.length - 1
@@ -203,7 +239,7 @@ export function QuizClient({ templateId, groups, isLoggedIn = false, userName, u
 
   const next = async () => {
     if (step?.kind === 'question') {
-      const newAnswers = { ...answers, [step.question.id]: selected }
+      const newAnswers = pruneAnswers({ ...answers, [step.question.id]: selected })
       addAnswer({ questionId: step.question.id, optionIds: selected })
       if (isLast) {
         setAnswers(newAnswers)
@@ -237,7 +273,7 @@ export function QuizClient({ templateId, groups, isLoggedIn = false, userName, u
     setLoading(true)
     setSubmitError(null)
     setTemplateId(templateId)
-    const answersToSend = finalAnswers ?? answers
+    const answersToSend = pruneAnswers(finalAnswers ?? answers)
     try {
       const payload: Record<string, unknown> = { templateId, answers: answersToSend }
       if (leadEmail) payload.email = leadEmail

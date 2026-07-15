@@ -17,13 +17,58 @@ export async function POST(request: NextRequest) {
     const admin = createAdminClient()
 
     const { data: { user } } = await supabase.auth.getUser()
+    const orderEmail: string | null = user ? (user.email ?? null) : address.email
 
-    // Validate and snapshot cart items
-    const cartItems = body.items as Array<{
-      variantId: string; name: string; variantName: string; priceCents: number; currency: string; quantity: number
-    }>
-    if (!cartItems?.length) {
+    // Validate cart items — NUNCA confiar en el precio enviado por el cliente
+    const rawItems = body.items as Array<{ variantId: string; quantity: number }>
+    if (!rawItems?.length) {
       return NextResponse.json({ error: 'Carrito vacío' }, { status: 400 })
+    }
+
+    const MAX_QTY_PER_LINE = 20
+    // Consolidar cantidades por variante y sanear
+    const qtyByVariant = new Map<string, number>()
+    for (const it of rawItems) {
+      if (typeof it?.variantId !== 'string') continue
+      const q = Math.floor(Number(it.quantity))
+      if (!Number.isFinite(q) || q <= 0) continue
+      qtyByVariant.set(it.variantId, (qtyByVariant.get(it.variantId) ?? 0) + q)
+    }
+    if (qtyByVariant.size === 0) {
+      return NextResponse.json({ error: 'Carrito inválido' }, { status: 400 })
+    }
+
+    // Traer variantes activas (de productos activos) con su precio vigente
+    const { data: dbVariants } = await (admin as any)
+      .from('product_variants')
+      .select('id, name, is_active, stock_quantity, products!inner(name, is_active), product_prices(amount_cents, currency, effective_to)')
+      .in('id', [...qtyByVariant.keys()])
+
+    const cartItems: Array<{
+      variantId: string; name: string; variantName: string; priceCents: number; currency: string; quantity: number
+    }> = []
+
+    for (const [variantId, requestedQty] of qtyByVariant) {
+      const v = (dbVariants ?? []).find((x: any) => x.id === variantId) as any
+      if (!v || !v.is_active || !v.products?.is_active) {
+        return NextResponse.json({ error: 'Uno de los productos ya no está disponible' }, { status: 400 })
+      }
+      const priceRow = (v.product_prices ?? []).find((p: any) => p.effective_to === null) ?? (v.product_prices ?? [])[0]
+      if (!priceRow) {
+        return NextResponse.json({ error: 'Uno de los productos no tiene precio disponible' }, { status: 400 })
+      }
+      const quantity = Math.min(requestedQty, MAX_QTY_PER_LINE)
+      if (v.stock_quantity !== null && v.stock_quantity < quantity) {
+        return NextResponse.json({ error: `Stock insuficiente para ${v.products.name}` }, { status: 400 })
+      }
+      cartItems.push({
+        variantId,
+        name: v.products.name,
+        variantName: v.name,
+        priceCents: priceRow.amount_cents,
+        currency: priceRow.currency,
+        quantity,
+      })
     }
 
     const subtotalCents = cartItems.reduce((s: number, i) => s + i.priceCents * i.quantity, 0)
@@ -36,7 +81,7 @@ export async function POST(request: NextRequest) {
     let couponFreeShipping = false
 
     if (couponCode) {
-      const { data: coupon } = await (admin as any)
+      const { data: coupon } = await admin
         .from('coupons')
         .select('*')
         .eq('code', couponCode.toUpperCase())
@@ -54,25 +99,30 @@ export async function POST(request: NextRequest) {
         if (basicValid) {
           couponId = coupon.id
 
-          // Solo primera compra
-          if (coupon.new_customers_only && user) {
-            const { count } = await admin
+          // Solo primera compra: para invitados se verifica por guest_email
+          if (coupon.new_customers_only) {
+            let query = admin
               .from('orders')
               .select('*', { count: 'exact', head: true })
-              .eq('user_id', user.id)
               .in('status', ['paid', 'processing', 'shipped', 'delivered'])
+            query = user ? query.eq('user_id', user.id) : query.eq('guest_email', orderEmail ?? '')
+            const { count } = await query
             if ((count ?? 0) > 0) couponId = null
           }
 
-          // Límite por cliente
-          if (couponId && user) {
+          // Límite por cliente (por user_id o guest_email): cuenta órdenes pagadas/en
+          // proceso y pending_payment solo de las últimas 24h (una orden abandonada
+          // no bloquea el cupón para siempre)
+          if (couponId) {
             const limit = coupon.max_uses_per_user ?? 1
-            const { count } = await (admin as any)
+            const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+            let query = admin
               .from('orders')
               .select('*', { count: 'exact', head: true })
-              .eq('user_id', user.id)
               .eq('coupon_id', coupon.id)
-              .not('status', 'eq', 'cancelled')
+              .or(`status.in.(paid,processing,shipped,delivered),and(status.eq.pending_payment,created_at.gt.${cutoff})`)
+            query = user ? query.eq('user_id', user.id) : query.eq('guest_email', orderEmail ?? '')
+            const { count } = await query
             if ((count ?? 0) >= limit) couponId = null
           }
 
@@ -110,13 +160,6 @@ export async function POST(request: NextRequest) {
     }).select('id').single()
     if (savedAddress) shippingAddressId = savedAddress.id
 
-    let orderEmail: string | null = null
-    if (user) {
-      orderEmail = user.email ?? null
-    } else {
-      orderEmail = (address as any).email ?? null
-    }
-
     // Validate quizProfileId if provided
     let validatedQuizProfileId: string | null = null
     if (quizProfileId) {
@@ -146,10 +189,11 @@ export async function POST(request: NextRequest) {
     } as any).select('id, order_number').single()
 
     if (orderError || !order) {
+      console.error('[checkout] error al insertar orden', orderError)
       return NextResponse.json({ error: 'Error al crear el pedido' }, { status: 500 })
     }
 
-    await admin.from('order_items').insert(
+    const { error: itemsError } = await admin.from('order_items').insert(
       cartItems.map((item) => ({
         order_id: order.id,
         variant_id: item.variantId,
@@ -160,6 +204,13 @@ export async function POST(request: NextRequest) {
         currency: item.currency,
       }))
     )
+
+    if (itemsError) {
+      // No dejar una orden cobrable sin líneas: revertir.
+      console.error('[checkout] error al insertar order_items', itemsError)
+      await admin.from('orders').delete().eq('id', order.id)
+      return NextResponse.json({ error: 'Error al crear el pedido' }, { status: 500 })
+    }
 
     if (saveToProfile && user) {
       await Promise.all([

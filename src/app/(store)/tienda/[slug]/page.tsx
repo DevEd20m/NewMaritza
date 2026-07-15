@@ -44,6 +44,7 @@ async function getProduct(slug: string): Promise<DetailProduct | null> {
       reviews ( rating, title, body, is_published, created_at )
     `)
     .eq('slug', slug)
+    .eq('is_active', true)
     .single()
   return data as DetailProduct | null
 }

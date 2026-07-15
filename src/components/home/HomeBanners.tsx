@@ -16,12 +16,13 @@ interface Props {
   orderNumber?: string | null
   kitTitle?: string | null
   kitProfileId?: string | null
+  freeShippingThresholdCents?: number
 }
 
 const STORAGE_KEY = 'liora-abandoned-kit'
 const MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
 
-export function HomeBanners({ isLoggedIn, userName, orderNumber, kitTitle, kitProfileId }: Props) {
+export function HomeBanners({ isLoggedIn, userName, orderNumber, kitTitle, kitProfileId, freeShippingThresholdCents = 15000 }: Props) {
   const router = useRouter()
   const [scenario, setScenario] = useState<'resume' | 'refill' | 'welcome' | null>(null)
   const [abandoned, setAbandoned] = useState<AbandonedKit | null>(null)
@@ -125,7 +126,7 @@ export function HomeBanners({ isLoggedIn, userName, orderNumber, kitTitle, kitPr
             <div className="ckb-strip-desc">Refill 1-clic · sin suscripción</div>
           </div>
           <div className="ckb-strip-helper">
-            <Truck size={14} /> Envío gratis desde S/200
+            <Truck size={14} /> Envío gratis desde S/{Math.round(freeShippingThresholdCents / 100)}
           </div>
           <div className="ckb-strip-actions">
             <button className="ckb-strip-cta" onClick={() => router.push(kitProfileId ? `/carrito?profileId=${kitProfileId}` : '/cuestionario')}>

@@ -4,9 +4,9 @@ import { getResend, FROM_EMAIL } from '@/lib/email/client'
 import { orderConfirmationEmail } from '@/lib/email/templates/order-confirmation'
 import { weekCheckinEmail } from '@/lib/email/templates/week-checkin'
 import { detectKitFromItemsDB } from '@/lib/guides/db'
+import { getStoreSettings } from '@/lib/settings'
 
 const SITE_URL  = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://liora.pe'
-const WA_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '51999999999'
 
 export const dynamic = 'force-dynamic'
 
@@ -45,10 +45,11 @@ export async function POST(req: NextRequest) {
   const productNames = ((order as any).order_items ?? []).map((i: any) => i.product_name_snapshot as string)
   const guide = await detectKitFromItemsDB(productNames)
 
+  const { whatsapp_number } = await getStoreSettings()
   const waMessage = guide
     ? `Hola, compré el ${guide.kitName} (pedido #${(order as any).order_number}) y tengo una pregunta`
     : `Hola, tengo una pregunta sobre mi pedido #${(order as any).order_number}`
-  const waUrl = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(waMessage)}`
+  const waUrl = `https://wa.me/${whatsapp_number}?text=${encodeURIComponent(waMessage)}`
 
   // Day 7 check-in — only send if we have a kit guide
   if (type === 'day7') {

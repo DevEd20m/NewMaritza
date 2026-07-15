@@ -8,7 +8,7 @@ const schema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
   brand: z.string().optional(),
-  category_id: z.string().uuid().nullable().optional(),
+  category_id: z.guid().nullable().optional(),
   cover_image_url: z.string().url().nullable().optional(),
   is_active: z.boolean().default(true),
   stock_quantity: z.number().int().min(0).nullable().default(null),
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     const { data: product, error: pErr } = await (admin as any).from('products').insert({
       name, slug, description: description ?? null, brand: brand ?? null,
       category_id: category_id ?? null, cover_image_url: cover_image_url ?? null,
-      is_active, stock_quantity,
+      is_active,
       usage_instructions: usage_instructions ?? null,
       indications: indications ?? null,
       contraindications: contraindications ?? null,
@@ -73,11 +73,13 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // El stock vive en la variante: es lo que el checkout valida y descuenta al vender
     const { data: variant, error: vErr } = await (admin as any).from('product_variants').insert({
       product_id: product.id,
       name: variant_name,
       sku: finalSku,
       is_active: true,
+      stock_quantity,
     }).select('id').single()
     if (vErr || !variant) return NextResponse.json({ error: vErr?.message ?? 'Error al crear variante' }, { status: 500 })
 

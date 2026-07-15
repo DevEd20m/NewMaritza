@@ -10,22 +10,27 @@ export async function GET(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser().catch(() => ({ data: { user: null } }))
 
-  const audienceFilter = user
+  const audienceFilter: Array<'everyone' | 'logged_in' | 'logged_out'> = user
     ? ['everyone', 'logged_in']
     : ['everyone', 'logged_out']
 
   const admin = createAdminClient()
-  const { data } = await (admin as any)
+  const { data: candidates } = await admin
     .from('coupons')
-    .select('code, type, value, description, new_customers_only, audience, promo_title, promo_subtitle, promo_cta')
+    .select('code, type, value, description, new_customers_only, audience, promo_title, promo_subtitle, promo_cta, max_uses, used_count')
     .eq('is_active', true)
     .eq('is_public', true)
     .or('expires_at.is.null,expires_at.gt.now()')
+    .or('starts_at.is.null,starts_at.lte.now()')
     .in('audience', audienceFilter)
     .contains('placements', [placement])
     .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
+    .limit(5)
+
+  // PostgREST no compara columnas entre sí: el agotamiento se filtra aquí
+  const data = (candidates ?? []).find(
+    (c) => c.max_uses === null || (c.used_count ?? 0) < c.max_uses
+  )
 
   if (!data) return NextResponse.json(null)
 

@@ -18,7 +18,7 @@ const schema = z.object({
   is_public: z.boolean(),
   new_customers_only: z.boolean(),
   scope: z.enum(['all', 'category']),
-  scope_category_ids: z.array(z.string().uuid()).nullable().optional(),
+  scope_category_ids: z.array(z.guid()).nullable().optional(),
   audience: z.enum(['everyone', 'logged_out', 'logged_in', 'returning']).default('everyone'),
   placements: z.array(z.string()).default(['exit_modal']),
   promo_title: z.string().nullable().optional(),
@@ -52,7 +52,7 @@ export async function PUT(
   }
 
   const admin = createAdminClient()
-  const { error } = await (admin as any).from('coupons').update({
+  const { error } = await admin.from('coupons').update({
     ...parsed.data,
     code: parsed.data.code.toUpperCase().replace(/\s+/g, ''),
   }).eq('id', id)

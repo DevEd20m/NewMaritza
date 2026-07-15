@@ -106,6 +106,7 @@ export default async function HomePage() {
         orderNumber={userData.isLoggedIn ? userData.orderNumber : null}
         kitTitle={userData.isLoggedIn ? userData.kitTitle : null}
         kitProfileId={userData.isLoggedIn ? userData.kitProfileId : null}
+        freeShippingThresholdCents={settings.free_shipping_threshold_cents}
       />
 
       {/* Hero */}

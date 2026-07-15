@@ -133,7 +133,7 @@ export async function FeaturedKits() {
                       alt={kit.name}
                       fill
                       sizes="320px"
-                      style={{ objectFit: 'contain', objectPosition: 'center center', padding: '28px 20px 20px' }}
+                      style={{ objectFit: 'cover', objectPosition: 'center center' }}
                     />
                   ) : (
                     <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 56, opacity: 0.25 }}>

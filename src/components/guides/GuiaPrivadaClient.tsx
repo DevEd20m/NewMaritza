@@ -140,7 +140,7 @@ function SafetySection({ flags }: { flags: SafetyFlag[] }) {
   )
 }
 
-export function GuiaPrivadaClient({ snapshot }: { snapshot: OrderGuideSnapshot }) {
+export function GuiaPrivadaClient({ snapshot, whatsappNumber }: { snapshot: OrderGuideSnapshot; whatsappNumber?: string }) {
   const guide = snapshot.guide_snapshot_json
   const products = snapshot.products_snapshot_json ?? []
   const safetyFlags = snapshot.safety_flags_snapshot_json ?? []
@@ -202,7 +202,7 @@ export function GuiaPrivadaClient({ snapshot }: { snapshot: OrderGuideSnapshot }
             Nuestro equipo puede orientarte. Sin costo, sin compromiso.
           </p>
           <a
-            href={`https://wa.me/${process.env.NEXT_PUBLIC_WA_URL ?? ''}`}
+            href={`https://wa.me/${whatsappNumber ?? ''}`}
             target="_blank"
             rel="noopener noreferrer"
             style={{ background: 'var(--liora-lima)', color: 'var(--liora-uva)', borderRadius: 999, padding: '14px 24px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 15, textDecoration: 'none' }}

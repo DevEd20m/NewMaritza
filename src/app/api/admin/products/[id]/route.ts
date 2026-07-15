@@ -7,16 +7,16 @@ const schema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
   brand: z.string().optional(),
-  category_id: z.string().uuid().nullable().optional(),
+  category_id: z.guid().nullable().optional(),
   cover_image_url: z.string().nullable().optional(),
   is_active: z.boolean(),
   stock_quantity: z.number().int().min(0).nullable().optional(),
-  variant_id: z.string().uuid().nullable(),
+  variant_id: z.guid().nullable(),
   variant_name: z.string().min(1),
   sku: z.string().optional(),
   price_cents: z.number().int().positive(),
   compare_at_cents: z.number().int().positive().nullable().optional(),
-  tag_ids: z.array(z.string().uuid()).optional(),
+  tag_ids: z.array(z.guid()).optional(),
   usage_instructions: z.string().optional(),
   indications: z.string().optional(),
   contraindications: z.string().optional(),
@@ -47,7 +47,7 @@ export async function PUT(
       name, description: description ?? null, brand: brand ?? null,
       category_id: category_id ?? null,
       cover_image_url: cover_image_url ?? null,
-      is_active, stock_quantity,
+      is_active,
       usage_instructions: usage_instructions ?? null,
       indications: indications ?? null,
       contraindications: contraindications ?? null,
@@ -55,9 +55,11 @@ export async function PUT(
     }).eq('id', id)
 
     if (variant_id) {
+      // El stock vive en la variante: es lo que el checkout valida y descuenta al vender
       await (admin as any).from('product_variants').update({
         name: variant_name,
         sku: sku || undefined,
+        stock_quantity: stock_quantity ?? null,
       }).eq('id', variant_id)
 
       // Update active price, or insert if none

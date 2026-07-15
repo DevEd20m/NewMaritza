@@ -1,9 +1,9 @@
 'use client'
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, X, PencilSimple, FloppyDisk, Trash, Check, UploadSimple, Spinner } from '@phosphor-icons/react'
-import { createClient } from '@/lib/supabase/client'
+import { Plus, X, PencilSimple, FloppyDisk, Trash, Check } from '@phosphor-icons/react'
 import { BENEFIT_ICONS, type KitBenefit } from '@/lib/kit-benefits'
+import { ImageUploadField } from './ImageUploadField'
 
 const KIT_COLORS = [
   { label: 'Mostaza',  value: 'var(--cat-mostaza)' },
@@ -112,9 +112,6 @@ function KitDrawer({
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [uploading, setUploading] = useState(false)
-  const [uploadError, setUploadError] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (!editing) return
@@ -153,28 +150,10 @@ function KitDrawer({
 
   const set = <K extends keyof KitForm>(k: K, v: KitForm[K]) => setForm(prev => ({ ...prev, [k]: v }))
 
-  const handleImageUpload = async (file: File) => {
-    if (!file.type.startsWith('image/')) { setUploadError('Solo se aceptan imágenes'); return }
-    if (file.size > 5 * 1024 * 1024) { setUploadError('La imagen no puede superar 5 MB'); return }
-
-    setUploading(true)
-    setUploadError(null)
-    try {
-      const supabase = createClient()
-      const ext = file.name.split('.').pop() ?? 'png'
-      // derive slug from form name if creating new, otherwise use existing kit slug
-      const slug = editing !== 'new' ? (editing as AdminKitData).slug : form.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'kit'
-      const path = `kits/${slug}/cover.${ext}`
-      const { error: upErr } = await supabase.storage
-        .from('product-images')
-        .upload(path, file, { upsert: true, contentType: file.type })
-      if (upErr) { setUploadError('Error al subir: ' + upErr.message); return }
-      const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(path)
-      set('cover_image_url', publicUrl)
-    } finally {
-      setUploading(false)
-    }
-  }
+  // derive slug from form name if creating new, otherwise use existing kit slug
+  const kitSlug = editing !== 'new'
+    ? (editing as AdminKitData).slug
+    : form.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'kit'
 
   const toggleVariant = (vid: string) => {
     set('variantIds', form.variantIds.includes(vid)
@@ -203,7 +182,12 @@ function KitDrawer({
       }
       const body = isNew ? commonFields : { id: (editing as AdminKitData).id, ...commonFields }
       const res = await fetch('/api/admin/kits', { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-      if (!res.ok) { setError('Error al guardar el kit'); return }
+      if (!res.ok) {
+        const d = await res.json().catch(() => null)
+        const msg = typeof d?.error === 'string' ? d.error : 'Error al guardar el kit'
+        setError(msg)
+        return
+      }
       onSaved()
       onClose()
     } finally {
@@ -443,80 +427,13 @@ function KitDrawer({
           {/* Image upload */}
           <div style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 18, padding: 18, display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>Imagen del kit</div>
-
-            {/* Drop zone / upload button */}
-            <div
-              onDragOver={e => { e.preventDefault(); e.currentTarget.style.borderColor = 'var(--liora-uva)' }}
-              onDragLeave={e => { e.currentTarget.style.borderColor = 'var(--liora-arena)' }}
-              onDrop={e => {
-                e.preventDefault()
-                e.currentTarget.style.borderColor = 'var(--liora-arena)'
-                const file = e.dataTransfer.files[0]
-                if (file) handleImageUpload(file)
-              }}
-              style={{ border: '2px dashed var(--liora-arena)', borderRadius: 14, padding: '18px 14px', textAlign: 'center', cursor: 'pointer', transition: 'border-color 0.15s' }}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                style={{ display: 'none' }}
-                onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); e.target.value = '' }}
-              />
-              {uploading ? (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-uva)', opacity: 0.7 }}>
-                  <Spinner size={18} style={{ animation: 'spin 0.8s linear infinite' }} /> Subiendo…
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-                  <UploadSimple size={24} style={{ color: 'var(--liora-uva)', opacity: 0.4 }} />
-                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--liora-uva)', opacity: 0.6 }}>
-                    Arrastra aquí o <strong style={{ opacity: 1 }}>haz clic para subir</strong>
-                  </span>
-                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--liora-uva)', opacity: 0.4 }}>PNG recomendado · máx. 5 MB</span>
-                </div>
-              )}
-            </div>
-
-            {uploadError && (
-              <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--cat-coral)' }}>{uploadError}</span>
-            )}
-
-            {/* URL fallback */}
-            <div>
-              <label style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 12, color: 'var(--liora-uva)', display: 'block', marginBottom: 6 }}>
-                O pega una URL directamente
-              </label>
-              <input
-                value={form.cover_image_url}
-                onChange={e => set('cover_image_url', e.target.value)}
-                placeholder="https://...supabase.co/storage/v1/object/public/..."
-                style={{ width: '100%', padding: '10px 14px', border: '1.5px solid var(--liora-arena)', borderRadius: 12, background: 'var(--liora-crema)', fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--liora-uva)', outline: 'none', boxSizing: 'border-box' }}
-              />
-            </div>
-
-            {/* Preview */}
-            {form.cover_image_url && (
-              <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={form.cover_image_url}
-                  alt="preview"
-                  style={{ height: 88, width: 88, objectFit: 'contain', background: form.bg, borderRadius: 14, border: '1.5px solid var(--liora-arena)' }}
-                  onError={e => { (e.target as HTMLImageElement).style.opacity = '0.3' }}
-                />
-                <div style={{ flex: 1 }}>
-                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--liora-uva)', opacity: 0.55, display: 'block', marginBottom: 6 }}>Vista previa sobre el color del kit</span>
-                  <button
-                    onClick={() => { set('cover_image_url', ''); setUploadError(null) }}
-                    style={{ background: 'transparent', border: '1.5px solid var(--cat-coral)', color: 'var(--cat-coral)', borderRadius: 999, padding: '4px 12px', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 11, cursor: 'pointer' }}
-                  >
-                    Quitar imagen
-                  </button>
-                </div>
-              </div>
-            )}
+            <ImageUploadField
+              value={form.cover_image_url}
+              onChange={url => set('cover_image_url', url)}
+              pathPrefix={`kits/${kitSlug}`}
+              previewBg={form.bg}
+              previewNote="Vista previa sobre el color del kit"
+            />
           </div>
 
           {/* Show in home */}

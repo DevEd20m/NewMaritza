@@ -145,7 +145,7 @@ export async function GET(request: NextRequest) {
   if (process.env.OPENAI_API_KEY) {
     try {
       const { default: OpenAI } = await import('openai')
-      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY, timeout: 25000, maxRetries: 1 })
 
       const catalogText = catalog
         .map((c) => `ID:${c.variantId} | ${c.name} (${c.variantName}) | ${c.categoryName} | S/${(c.priceCents / 100).toFixed(0)}`)
@@ -229,8 +229,20 @@ Reglas estrictas:
 
       const raw = completion.choices[0]?.message?.content ?? '{}'
       const parsed = JSON.parse(raw)
-      kitVariantIds = parsed.kit_variant_ids ?? []
-      suggestionVariantIds = parsed.suggestion_variant_ids ?? []
+      // Solo aceptar IDs que existan realmente en el catálogo (GPT puede alucinar IDs),
+      // sin duplicados y sin solaparse entre kit y sugerencias.
+      const validIds = new Set(catalog.map((c) => c.variantId))
+      const seen = new Set<string>()
+      const cleanKit: string[] = []
+      for (const id of (parsed.kit_variant_ids ?? []) as string[]) {
+        if (validIds.has(id) && !seen.has(id)) { seen.add(id); cleanKit.push(id) }
+      }
+      const cleanSugg: string[] = []
+      for (const id of (parsed.suggestion_variant_ids ?? []) as string[]) {
+        if (validIds.has(id) && !seen.has(id)) { seen.add(id); cleanSugg.push(id) }
+      }
+      kitVariantIds = cleanKit
+      suggestionVariantIds = cleanSugg
       diagnosis = parsed.diagnosis ?? ''
       tags = parsed.tags ?? []
     } catch (err) {
@@ -238,7 +250,7 @@ Reglas estrictas:
     }
   }
 
-  // Scoring fallback
+  // Scoring fallback: si la IA no dio IDs válidos, o quedó sin kit tras la limpieza
   if (kitVariantIds.length === 0) {
     const scores = calculateCategoryScores(allSlugs)
 

@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { requireAdmin } from '@/lib/auth/guards'
 
 const schema = z.object({
-  question_id: z.string().uuid(),
+  question_id: z.guid(),
   text: z.string().min(1),
   slug: z.string().min(1),
   sort_order: z.number().int(),

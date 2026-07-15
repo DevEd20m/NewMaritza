@@ -45,7 +45,7 @@ export default async function AccountPage() {
   const ordersData = (ordersRaw ?? []) as Array<{ id: string; order_number: string; total_cents: number; status: string; created_at: string; order_items: { id: string }[] }>
 
   // Active public coupons only
-  const { data: couponsRaw } = await (admin as any)
+  const { data: couponsRaw } = await admin
     .from('coupons')
     .select('id, code, type, value, expires_at')
     .eq('is_active', true)

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Plus, X, FloppyDisk, Trash, Package, UploadSimple, ArrowSquareOut, Tag } from '@phosphor-icons/react'
 import type { AdminTag } from './TagsClient'
 import { generateSkuBase } from '@/lib/utils/generate-sku'
+import { ImageUploadField, uploadAdminImage, fileExt } from './ImageUploadField'
 
 const CAT_COLORS: Record<string, string> = {
   piel:          'var(--cat-coral)',
@@ -118,6 +119,8 @@ function ProductDrawer({
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [galleryUploading, setGalleryUploading] = useState<number | null>(null)
+  const [galleryError, setGalleryError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!editing) return
@@ -164,6 +167,24 @@ function ProductDrawer({
   const setGallery = (i: number, val: string) => setForm(prev => ({ ...prev, gallery_urls: prev.gallery_urls.map((u, idx) => idx === i ? val : u) }))
   const removeGallery = (i: number) => setForm(prev => ({ ...prev, gallery_urls: prev.gallery_urls.filter((_, idx) => idx !== i) }))
 
+  // derive slug from form name if creating new, otherwise use existing product slug
+  const productSlug = isNew
+    ? form.name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'producto'
+    : (editing as AdminProductData).slug
+
+  const uploadGallery = async (i: number, file: File) => {
+    setGalleryUploading(i)
+    setGalleryError(null)
+    try {
+      const path = `products/${productSlug}/gallery-${Date.now()}.${fileExt(file)}`
+      const { url, error: upErr } = await uploadAdminImage(file, path)
+      if (upErr) { setGalleryError(upErr); return }
+      if (url) setGallery(i, url)
+    } finally {
+      setGalleryUploading(null)
+    }
+  }
+
   const canSave = form.name.length > 0 && form.variant_name.length > 0 && form.price.length > 0 && Number(form.price) > 0
 
   const handleSave = async () => {
@@ -172,7 +193,8 @@ function ProductDrawer({
     setError(null)
     try {
       const priceCents = Math.round(Number(form.price) * 100)
-      const compareAtCents = form.compare_at ? Math.round(Number(form.compare_at) * 100) : null
+      // 0 o vacío = sin precio tachado (la API exige > 0 si se envía)
+      const compareAtCents = Number(form.compare_at) > 0 ? Math.round(Number(form.compare_at) * 100) : null
 
       if (isNew) {
         const res = await fetch('/api/admin/products', {
@@ -322,17 +344,43 @@ function ProductDrawer({
             <Field label="Descripción">
               <textarea value={form.description} onChange={e => set('description', e.target.value)} rows={3} placeholder="Descripción del producto para la ficha de tienda…" style={{ ...inputStyle, resize: 'vertical' }} />
             </Field>
-            <Field label="URL de imagen de portada" hint="Pega la URL de Supabase Storage o cualquier imagen pública">
-              <input value={form.cover_image_url} onChange={e => set('cover_image_url', e.target.value)} placeholder="https://…" style={inputStyle} />
+            <Field label="Imagen de portada" hint="Sube un archivo o pega la URL de Supabase Storage o cualquier imagen pública">
+              <ImageUploadField
+                value={form.cover_image_url}
+                onChange={url => set('cover_image_url', url)}
+                pathPrefix={`products/${productSlug}`}
+                previewBg={previewBg}
+                previewNote="Vista previa sobre el color de la categoría"
+              />
             </Field>
-            <Field label="Galería de imágenes" hint="URLs adicionales (máx 4). Aparecen como miniaturas en la ficha del producto.">
+            <Field label="Galería de imágenes" hint="Imágenes adicionales (máx 4). Aparecen como miniaturas en la ficha del producto.">
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {form.gallery_urls.map((url, i) => (
-                  <div key={i} style={{ display: 'flex', gap: 6 }}>
+                  <div key={i} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                    {url && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={url} alt="" style={{ height: 38, width: 38, objectFit: 'cover', borderRadius: 8, border: '1.5px solid var(--liora-arena)', flexShrink: 0 }} onError={e => { (e.target as HTMLImageElement).style.opacity = '0.3' }} />
+                    )}
                     <input value={url} onChange={e => setGallery(i, e.target.value)} placeholder="https://…" style={{ ...inputStyle, flex: 1 }} />
-                    <button type="button" onClick={() => removeGallery(i)} style={{ background: 'transparent', border: '1.5px solid var(--liora-arena)', borderRadius: 10, padding: '0 10px', cursor: 'pointer', color: 'var(--liora-uva)', opacity: 0.6, fontFamily: 'var(--font-body)', fontSize: 14 }}>✕</button>
+                    <label style={{ background: 'transparent', border: '1.5px solid var(--liora-arena)', borderRadius: 10, padding: '9px 10px', cursor: galleryUploading !== null ? 'wait' : 'pointer', color: 'var(--liora-uva)', opacity: 0.7, display: 'flex', alignItems: 'center', flexShrink: 0 }} title="Subir imagen">
+                      <UploadSimple size={14} weight="bold" />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        style={{ display: 'none' }}
+                        disabled={galleryUploading !== null}
+                        onChange={e => { const f = e.target.files?.[0]; if (f) uploadGallery(i, f); e.target.value = '' }}
+                      />
+                    </label>
+                    <button type="button" onClick={() => removeGallery(i)} style={{ background: 'transparent', border: '1.5px solid var(--liora-arena)', borderRadius: 10, padding: '0 10px', alignSelf: 'stretch', cursor: 'pointer', color: 'var(--liora-uva)', opacity: 0.6, fontFamily: 'var(--font-body)', fontSize: 14 }}>✕</button>
                   </div>
                 ))}
+                {galleryUploading !== null && (
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--liora-uva)', opacity: 0.6 }}>Subiendo imagen…</span>
+                )}
+                {galleryError && (
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--cat-coral)' }}>{galleryError}</span>
+                )}
                 {form.gallery_urls.length < 4 && (
                   <button type="button" onClick={addGallery} style={{ background: 'transparent', border: '1.5px dashed var(--liora-arena)', borderRadius: 10, padding: '8px 14px', cursor: 'pointer', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 12, color: 'var(--liora-uva)', opacity: 0.7, textAlign: 'left' }}>
                     + Agregar imagen

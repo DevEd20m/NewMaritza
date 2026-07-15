@@ -26,6 +26,7 @@ export function MiniQuizInline({ templateId, groups, kitName }: Props) {
   const [answers, setAnswers] = useState<Record<string, string[]>>({})
   const [done, setDone] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   const q = questions[step]
   const isLast = step === questions.length - 1
@@ -47,6 +48,7 @@ export function MiniQuizInline({ templateId, groups, kitName }: Props) {
 
     // Submit and redirect to cart
     setLoading(true)
+    setErrorMsg(null)
     try {
       const res = await fetch('/api/quiz/submit', {
         method: 'POST',
@@ -54,11 +56,19 @@ export function MiniQuizInline({ templateId, groups, kitName }: Props) {
         body: JSON.stringify({ templateId, answers: newAnswers }),
       })
       const data = await res.json()
-      setDone(true)
-      if (data.profileId) {
-        setTimeout(() => router.push(`/carrito?profileId=${data.profileId}`), 1200)
+      if (!res.ok || !data.profileId) {
+        setErrorMsg('No pudimos armar tu kit. Intenta de nuevo.')
+        setLoading(false)
+        return
       }
+      // Guardar la cookie de sesión para que el carrito (invitado) pueda leer el perfil
+      if (data.sessionToken) {
+        document.cookie = `liora_session=${data.sessionToken}; path=/; max-age=2592000; SameSite=Lax`
+      }
+      setDone(true)
+      setTimeout(() => router.push(`/carrito?profileId=${data.profileId}`), 1200)
     } catch {
+      setErrorMsg('Error de conexión. Revisa tu internet e intenta de nuevo.')
       setLoading(false)
     }
   }
@@ -124,6 +134,9 @@ export function MiniQuizInline({ templateId, groups, kitName }: Props) {
         {loading ? 'Armando tu kit…' : isLast ? 'Ver mi kit personalizado' : 'Siguiente'}
         <ArrowRight size={16} weight="bold" />
       </button>
+      {errorMsg && (
+        <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-coral, #c0392b)', marginTop: 12 }}>{errorMsg}</p>
+      )}
     </div>
   )
 }

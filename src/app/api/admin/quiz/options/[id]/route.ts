@@ -6,7 +6,7 @@ import { requireAdmin } from '@/lib/auth/guards'
 const schema = z.object({
   text: z.string().min(1).optional(),
   slug: z.string().min(1).optional(),
-  tag_ids: z.array(z.string().uuid()).optional(),
+  tag_ids: z.array(z.guid()).optional(),
 })
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

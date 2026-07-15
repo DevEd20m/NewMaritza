@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, Trash, FolderSimple, X, Check, PencilSimple, House } from '@phosphor-icons/react'
+import { ImageUploadField } from './ImageUploadField'
 
 export interface AdminCategory {
   id: string
@@ -192,19 +193,13 @@ export function CategoriasClient({ initialCategories }: { initialCategories: Adm
 
                   <div>
                     <label style={labelStyle}>Imagen de la categoría <span style={{ opacity: 0.5 }}>(PNG con fondo transparente recomendado)</span></label>
-                    <input value={editForm.image_url} onChange={e => setEditForm(f => ({ ...f, image_url: e.target.value }))} placeholder="https://...supabase.co/storage/v1/object/public/..." style={{ ...inputStyle, padding: '7px 12px', fontSize: 13 }} />
-                    {editForm.image_url && (
-                      <div style={{ marginTop: 8, display: 'flex', gap: 10, alignItems: 'center' }}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={editForm.image_url}
-                          alt="preview"
-                          style={{ height: 64, width: 64, objectFit: 'contain', background: cat.color || 'var(--cat-lavanda)', borderRadius: 10 }}
-                          onError={e => { (e.target as HTMLImageElement).style.opacity = '0.3' }}
-                        />
-                        <span style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--liora-uva)', opacity: 0.5 }}>Vista previa sobre color de categoría</span>
-                      </div>
-                    )}
+                    <ImageUploadField
+                      value={editForm.image_url}
+                      onChange={url => setEditForm(f => ({ ...f, image_url: url }))}
+                      pathPrefix={`categories/${cat.slug}`}
+                      previewBg={editForm.color || 'var(--cat-lavanda)'}
+                      previewNote="Vista previa sobre color de categoría"
+                    />
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px', gap: 10 }}>
                     <div>

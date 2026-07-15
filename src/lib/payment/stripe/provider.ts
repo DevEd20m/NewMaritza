@@ -34,6 +34,10 @@ export const stripeProvider: PaymentProvider = {
         order_number: input.orderNumber,
         ...input.metadata,
       },
+    }, {
+      // Reintentos para la misma orden reutilizan la sesión en vez de crear una nueva
+      // (evita doble cobro por reintento/back-button mientras la orden sigue pendiente).
+      idempotencyKey: `session_${input.orderId}`,
     })
 
     return {

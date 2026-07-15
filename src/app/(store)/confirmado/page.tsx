@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getPaymentProvider } from '@/lib/payment/provider'
 import { getStoreSettings } from '@/lib/settings'
+import { markOrderPaid } from '@/lib/orders/mark-paid'
 import { SuccessClient } from '@/components/checkout/SuccessClient'
 
 export const metadata: Metadata = { title: 'Pedido confirmado', robots: { index: false, follow: false } }
@@ -31,7 +32,7 @@ async function confirmOrderFromSession(sessionId: string, orderNumber: string) {
     const admin = createAdminClient()
     const { data: order } = await admin
       .from('orders')
-      .select('id, status')
+      .select('id, status, total_cents')
       .eq('order_number', orderNumber)
       .single()
 
@@ -40,16 +41,18 @@ async function confirmOrderFromSession(sessionId: string, orderNumber: string) {
     const provider = getPaymentProvider('stripe')
     const result = await provider.confirmPayment(sessionId)
 
-    if (result.status === 'succeeded') {
-      await admin.from('orders').update({ status: 'paid' }).eq('id', order.id)
-      await admin.from('payments').update({ status: 'succeeded', provider_reference: sessionId }).eq('order_id', order.id)
-      await (admin as any).from('order_status_history').insert({
-        order_id: order.id,
-        status: 'paid',
-        note: 'Confirmado vía success_url de Stripe',
-        created_by: 'stripe_redirect',
-      })
-    }
+    if (result.status !== 'succeeded') return
+
+    // Verificar que la sesión de Stripe corresponde a ESTA orden y por el monto correcto,
+    // para que un session_id ajeno no pueda marcar pagada una orden distinta.
+    const session = (result.metadata?.session ?? {}) as { metadata?: { order_id?: string }; amount_total?: number | null }
+    const sessionOrderId = session.metadata?.order_id
+    const sessionAmount = session.amount_total
+    if (sessionOrderId !== order.id) return
+    if (typeof sessionAmount === 'number' && sessionAmount !== order.total_cents) return
+
+    await admin.from('payments').update({ provider_reference: sessionId }).eq('order_id', order.id)
+    await markOrderPaid(order.id, 'stripe_redirect')
   } catch {
     // Silently fail — webhook will catch it as backup
   }

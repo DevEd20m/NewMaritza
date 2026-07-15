@@ -59,6 +59,9 @@ export function KitCard({ kit }: KitCardProps) {
 
   const benefits = (((kit as unknown as { benefits?: KitBenefit[] }).benefits) ?? []).slice(0, 3)
 
+  // La foto propia del kit llena todo el bloque; el fallback (PNG recortado de
+  // un producto) se muestra contenido sobre el tinte.
+  const hasOwnCover = Boolean(kit.cover_image_url)
   const coverUrl = kit.cover_image_url
     ?? kit.kit_products.map(kp => kp.variant?.product?.cover_image_url).find(Boolean)
     ?? null
@@ -109,7 +112,13 @@ export function KitCard({ kit }: KitCardProps) {
             overflow: 'hidden',
           }}>
             {coverUrl ? (
-              <img src={coverUrl} alt={kit.name} style={{ width: '82%', height: '82%', objectFit: 'contain' }} />
+              <img
+                src={coverUrl}
+                alt={kit.name}
+                style={hasOwnCover
+                  ? { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }
+                  : { width: '82%', height: '82%', objectFit: 'contain' }}
+              />
             ) : (
               <span style={{ fontSize: 48, opacity: 0.3 }}>🌿</span>
             )}

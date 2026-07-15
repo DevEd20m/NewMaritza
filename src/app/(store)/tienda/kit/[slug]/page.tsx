@@ -157,8 +157,9 @@ export default async function KitPage({ params }: Props) {
       <div className="liora-cart-outer" style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 48px 96px' }}>
         <div className="liora-product-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 420px', gap: 40, alignItems: 'start' }}>
 
-          {/* Productos del kit */}
-          <div>
+          {/* Productos del kit — minWidth 0 para que la columna 1fr pueda encoger
+              y el ellipsis de los nombres largos funcione (si no, el grid desborda) */}
+          <div style={{ minWidth: 0 }}>
             <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--liora-uva)', opacity: 0.55, marginBottom: 18 }}>
               Qué incluye este kit base
             </div>
@@ -170,7 +171,7 @@ export default async function KitPage({ params }: Props) {
                 const cat = product?.categories
                 if (!product) return null
                 return (
-                  <div key={i} style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 20, padding: '16px 18px', display: 'flex', gap: 14, alignItems: 'center' }}>
+                  <Link key={i} href={`/tienda/${product.slug}`} style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 20, padding: '16px 18px', display: 'flex', gap: 14, alignItems: 'center', textDecoration: 'none' }}>
                     <div style={{ width: 68, height: 68, borderRadius: 14, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
                       {product.cover_image_url
                         ? <img src={product.cover_image_url} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
@@ -181,7 +182,7 @@ export default async function KitPage({ params }: Props) {
                       <div style={{ fontFamily: 'var(--font-body)', fontSize: 10, fontWeight: 700, color: 'var(--liora-uva)', opacity: 0.5, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
                         {cat?.name ?? ''}
                       </div>
-                      <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 17, color: 'var(--liora-uva)', margin: '2px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 17, color: 'var(--liora-uva)', margin: '2px 0', lineHeight: 1.25 }}>
                         {product.name}
                       </div>
                       <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--liora-uva)', opacity: 0.55 }}>
@@ -191,7 +192,7 @@ export default async function KitPage({ params }: Props) {
                     <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 15, color: 'var(--liora-uva)', flexShrink: 0 }}>
                       {price ? `S/${(price.amount_cents / 100).toFixed(0)}` : '—'}
                     </div>
-                  </div>
+                  </Link>
                 )
               })}
             </div>

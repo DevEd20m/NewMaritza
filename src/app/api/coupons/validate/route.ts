@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { couponValidateSchema } from '@/lib/validation/checkout'
+import { getStoreSettings } from '@/lib/settings'
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,7 +15,7 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    const { data: coupon } = await (admin as any)
+    const { data: coupon } = await admin
       .from('coupons')
       .select('*')
       .eq('code', code.toUpperCase())
@@ -50,22 +51,24 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Límite de usos por cliente
+    // Límite de usos por cliente: cuenta órdenes pagadas/en proceso y pending_payment
+    // solo de las últimas 24h (una orden abandonada no bloquea el cupón para siempre)
     if (user) {
       const limit = coupon.max_uses_per_user ?? 1
-      const { count } = await (admin as any)
+      const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+      const { count } = await admin
         .from('orders')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id)
         .eq('coupon_id', coupon.id)
-        .not('status', 'eq', 'cancelled')
+        .or(`status.in.(paid,processing,shipped,delivered),and(status.eq.pending_payment,created_at.gt.${cutoff})`)
       if ((count ?? 0) >= limit) {
         return NextResponse.json({ valid: false, message: 'Ya usaste este cupón.' })
       }
     }
 
     // Scope por categoría
-    if (coupon.scope === 'category' && coupon.scope_category_ids?.length > 0) {
+    if (coupon.scope === 'category' && coupon.scope_category_ids && coupon.scope_category_ids.length > 0) {
       const variantIds = cartVariantIds ?? []
       if (variantIds.length === 0) {
         return NextResponse.json({ valid: false, message: 'Este cupón aplica solo a categorías específicas.' })
@@ -94,7 +97,8 @@ export async function POST(request: NextRequest) {
     } else if (coupon.type === 'fixed_amount') {
       discountCents = Math.min(Math.round(Number(coupon.value) * 100), cartTotalCents)
     } else if (coupon.type === 'free_shipping') {
-      discountCents = 1500
+      const { free_shipping_threshold_cents, shipping_cost_cents } = await getStoreSettings()
+      discountCents = cartTotalCents >= free_shipping_threshold_cents ? 0 : shipping_cost_cents
     }
 
     return NextResponse.json({ valid: true, code: coupon.code, discountCents, type: coupon.type })

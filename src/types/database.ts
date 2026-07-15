@@ -108,8 +108,8 @@ export interface Database {
         Relationships: []
       }
       coupons: {
-        Row: { id: string; code: string; type: 'percentage' | 'fixed_amount' | 'free_shipping' | 'gift_product'; value: number; gift_variant_id: string | null; scope: string; scope_category_ids: string[] | null; scope_product_ids: string[] | null; min_purchase_cents: number | null; max_uses: number | null; max_uses_per_user: number; is_active: boolean; starts_at: string | null; expires_at: string | null; created_by: string | null; created_at: string }
-        Insert: Omit<Database['public']['Tables']['coupons']['Row'], 'id' | 'created_at'>
+        Row: { id: string; code: string; type: 'percentage' | 'fixed_amount' | 'free_shipping' | 'gift_product'; value: number; gift_variant_id: string | null; scope: string; scope_category_ids: string[] | null; scope_product_ids: string[] | null; min_purchase_cents: number | null; max_uses: number | null; max_uses_per_user: number; is_active: boolean; starts_at: string | null; expires_at: string | null; created_by: string | null; created_at: string; description: string | null; used_count: number; color: string; is_public: boolean; new_customers_only: boolean; audience: 'everyone' | 'logged_out' | 'logged_in' | 'returning'; placements: string[]; promo_title: string | null; promo_subtitle: string | null; promo_cta: string | null }
+        Insert: Pick<Database['public']['Tables']['coupons']['Row'], 'code' | 'type' | 'value'> & Partial<Omit<Database['public']['Tables']['coupons']['Row'], 'id' | 'created_at' | 'code' | 'type' | 'value'>>
         Update: Partial<Database['public']['Tables']['coupons']['Insert']>
         Relationships: []
       }

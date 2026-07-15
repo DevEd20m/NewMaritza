@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { requireAdmin } from '@/lib/auth/guards'
 
 const schema = z.object({
-  group_id: z.string().uuid(),
+  group_id: z.guid(),
   text: z.string().min(1),
   subtext: z.string().nullable().optional(),
   type: z.enum(['single', 'multi']),

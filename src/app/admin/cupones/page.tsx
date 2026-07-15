@@ -8,7 +8,7 @@ export default async function AdminCuponesPage() {
   const admin = createAdminClient()
 
   const [{ data }, { data: catsData }] = await Promise.all([
-    (admin as any)
+    admin
       .from('coupons')
       .select('id, code, description, type, value, is_active, is_public, new_customers_only, scope, scope_category_ids, min_purchase_cents, max_uses, max_uses_per_user, used_count, starts_at, expires_at, color, created_at, audience, placements, promo_title, promo_subtitle, promo_cta')
       .order('created_at', { ascending: false }),

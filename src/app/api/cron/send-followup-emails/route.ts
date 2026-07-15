@@ -7,9 +7,12 @@ import { createAdminClient } from '@/lib/supabase/admin'
 export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest) {
-  // Verificar secret para evitar llamadas no autorizadas
-  const secret = req.nextUrl.searchParams.get('secret')
-  if (secret !== process.env.CRON_SECRET) {
+  // Verificar secret. Vercel Cron envía `Authorization: Bearer <CRON_SECRET>`;
+  // también aceptamos `?secret=` para llamadas manuales.
+  const expected = process.env.CRON_SECRET
+  const bearer = req.headers.get('authorization')?.replace(/^Bearer\s+/i, '')
+  const querySecret = req.nextUrl.searchParams.get('secret')
+  if (!expected || (bearer !== expected && querySecret !== expected)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
