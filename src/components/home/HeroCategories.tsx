@@ -1,7 +1,8 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowRight } from '@phosphor-icons/react/dist/ssr'
+import { ArrowRight, Drop, Sun, MoonStars, Barbell, Suitcase, House, Leaf, Sneaker, Sparkle } from '@phosphor-icons/react/dist/ssr'
+import type { Icon } from '@phosphor-icons/react'
 
 interface HeroCat {
   id: string
@@ -69,15 +70,15 @@ const CARD_SLOTS: React.CSSProperties[] = [
   { bottom: 40, left: 0   },   // bottom left
 ]
 
-const CAT_EMOJI: Record<string, string> = {
-  piel:          '🧴',
-  solar:         '☀️',
-  bienestar:     '🌙',
-  gym:           '💪',
-  viaje:         '🧳',
-  hogar:         '🏠',
-  digestivo:     '🌿',
-  'pies-cuerpo': '👟',
+const CAT_ICON: Record<string, Icon> = {
+  piel:          Drop,
+  solar:         Sun,
+  bienestar:     MoonStars,
+  gym:           Barbell,
+  viaje:         Suitcase,
+  hogar:         House,
+  digestivo:     Leaf,
+  'pies-cuerpo': Sneaker,
 }
 
 export async function HeroCategories() {
@@ -146,9 +147,9 @@ export async function HeroCategories() {
                 width: 34, height: 34, borderRadius: 10,
                 background: cat.color, flexShrink: 0,
                 display: 'flex', alignItems: 'center',
-                justifyContent: 'center', fontSize: 16,
+                justifyContent: 'center',
               }}>
-                {CAT_EMOJI[cat.slug] ?? '✦'}
+                {(() => { const IconComp = CAT_ICON[cat.slug] ?? Sparkle; return <IconComp size={17} weight="bold" color="var(--liora-uva)" /> })()}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{

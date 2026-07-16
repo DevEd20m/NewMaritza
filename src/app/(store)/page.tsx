@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { ProductCard } from '@/components/products/ProductCard'
 import type { Metadata } from 'next'
 import { buildBaseMetadata } from '@/lib/seo/metadata'
-import { ArrowRight, Star, Play, Heart } from '@phosphor-icons/react/dist/ssr'
+import { ArrowRight, Star, Play, Heart, Sparkle, SealCheck, ChatCircleDots } from '@phosphor-icons/react/dist/ssr'
 import { HomeBanners } from '@/components/home/HomeBanners'
 import { FeaturedKits } from '@/components/home/FeaturedKits'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -130,12 +130,12 @@ export default async function HomePage() {
             {/* Trust signals */}
             <div style={{ display: 'flex', gap: 20, marginTop: 28, flexWrap: 'wrap' }}>
               {[
-                { icon: '🎯', label: '100% Personalizado' },
-                { icon: '✓',  label: 'Productos de calidad' },
-                { icon: '💬', label: 'Te acompañamos 24/7' },
+                { icon: Sparkle,        label: '100% Personalizado' },
+                { icon: SealCheck,      label: 'Productos de calidad' },
+                { icon: ChatCircleDots, label: 'Te acompañamos 24/7' },
               ].map(t => (
                 <div key={t.label} style={{ display: 'flex', alignItems: 'center', gap: 7, fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-uva)', opacity: 0.75, fontWeight: 600 }}>
-                  <span style={{ fontSize: 15 }}>{t.icon}</span>
+                  <t.icon size={15} weight="bold" />
                   {t.label}
                 </div>
               ))}
