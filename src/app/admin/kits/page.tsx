@@ -13,7 +13,7 @@ export default async function AdminKitsPage() {
       .select(`
         id, name, slug, description, is_active, type, cover_image_url, show_in_home, home_sort_order, benefits,
         kit_products(
-          variant_id, quantity, sort_order,
+          variant_id, quantity, sort_order, step_label, step_when, step_instruction,
           product_variants(id, name, product_prices(amount_cents, effective_to))
         )
       `)
@@ -32,6 +32,7 @@ export default async function AdminKitsPage() {
     cover_image_url: string | null; show_in_home: boolean; home_sort_order: number; benefits: unknown[]
     kit_products: Array<{
       variant_id: string; quantity: number; sort_order: number
+      step_label: string | null; step_when: string | null; step_instruction: string | null
       product_variants: { id: string; name: string; product_prices: Array<{ amount_cents: number; effective_to: string | null }> } | null
     }>
   }
@@ -56,6 +57,9 @@ export default async function AdminKitsPage() {
           variantName: variant?.name ?? '',
           productName: '', // We need to look up the product from allVariants
           priceCents: price?.amount_cents ?? 0,
+          stepLabel: kp.step_label ?? null,
+          stepWhen: kp.step_when ?? null,
+          stepInstruction: kp.step_instruction ?? null,
         }
       })
 

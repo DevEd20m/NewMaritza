@@ -48,7 +48,7 @@ export interface Database {
         Relationships: []
       }
       kit_products: {
-        Row: { kit_id: string; variant_id: string; quantity: number; sort_order: number; is_required: boolean }
+        Row: { kit_id: string; variant_id: string; quantity: number; sort_order: number; is_required: boolean; step_label: string | null; step_when: string | null; step_instruction: string | null }
         Insert: Database['public']['Tables']['kit_products']['Row']
         Update: Partial<Database['public']['Tables']['kit_products']['Row']>
         Relationships: []

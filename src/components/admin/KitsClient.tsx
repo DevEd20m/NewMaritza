@@ -1,7 +1,7 @@
 'use client'
 import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, X, PencilSimple, FloppyDisk, Trash, Check } from '@phosphor-icons/react'
+import { Plus, X, PencilSimple, FloppyDisk, Trash, Check, CaretUp, CaretDown } from '@phosphor-icons/react'
 import { BENEFIT_ICONS, type KitBenefit } from '@/lib/kit-benefits'
 import { ImageUploadField } from './ImageUploadField'
 
@@ -54,6 +54,15 @@ export interface AdminKitProduct {
   variantName: string
   productName: string
   priceCents: number
+  stepLabel: string | null
+  stepWhen: string | null
+  stepInstruction: string | null
+}
+
+export interface KitStepData {
+  label: string
+  when: string
+  instruction: string
 }
 
 export interface AdminKitData {
@@ -75,6 +84,7 @@ interface KitForm {
   name: string
   description: string
   variantIds: string[]
+  steps: Record<string, KitStepData>
   is_active: boolean
   bg: string
   cover_image_url: string
@@ -87,6 +97,7 @@ const EMPTY_FORM: KitForm = {
   name: '',
   description: '',
   variantIds: [],
+  steps: {},
   is_active: true,
   bg: 'var(--cat-mostaza)',
   cover_image_url: '',
@@ -119,10 +130,19 @@ function KitDrawer({
       setForm(EMPTY_FORM)
     } else {
       const k = editing as AdminKitData
+      const steps: Record<string, KitStepData> = {}
+      for (const kp of k.kitProducts) {
+        steps[kp.variantId] = {
+          label: kp.stepLabel ?? '',
+          when: kp.stepWhen ?? '',
+          instruction: kp.stepInstruction ?? '',
+        }
+      }
       setForm({
         name: k.name,
         description: k.description ?? '',
         variantIds: k.kitProducts.map(kp => kp.variantId),
+        steps,
         is_active: k.is_active,
         bg: inferKitColor(k.slug),
         cover_image_url: k.cover_image_url ?? '',
@@ -164,6 +184,21 @@ function KitDrawer({
   const selectedVariants = form.variantIds.map(vid => allVariants.find(v => v.variantId === vid)).filter(Boolean) as AdminVariantOption[]
   const subtotalCents = selectedVariants.reduce((s, v) => s + v.priceCents, 0)
 
+  const setStep = (vid: string, field: keyof KitStepData, value: string) => {
+    const current = form.steps[vid] ?? { label: '', when: '', instruction: '' }
+    set('steps', { ...form.steps, [vid]: { ...current, [field]: value } })
+  }
+
+  // El orden de variantIds define el nº de paso (sort_order en BD)
+  const moveVariant = (vid: string, dir: -1 | 1) => {
+    const idx = form.variantIds.indexOf(vid)
+    const next = idx + dir
+    if (idx < 0 || next < 0 || next >= form.variantIds.length) return
+    const ids = [...form.variantIds]
+    ;[ids[idx], ids[next]] = [ids[next], ids[idx]]
+    set('variantIds', ids)
+  }
+
   const handleSave = async () => {
     if (!form.name) return
     setSaving(true)
@@ -179,6 +214,7 @@ function KitDrawer({
         show_in_home: form.show_in_home,
         home_sort_order: form.home_sort_order,
         benefits: form.benefits.filter(b => b.title.trim()),
+        steps: Object.fromEntries(form.variantIds.map(vid => [vid, form.steps[vid] ?? { label: '', when: '', instruction: '' }])),
       }
       const body = isNew ? commonFields : { id: (editing as AdminKitData).id, ...commonFields }
       const res = await fetch('/api/admin/kits', { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
@@ -423,6 +459,70 @@ function KitDrawer({
               </p>
             )}
           </div>
+
+          {/* Ritual paso a paso */}
+          {selectedVariants.length > 0 && (
+            <div style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 18, padding: 18, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+                Ritual paso a paso <span style={{ opacity: 0.5, fontWeight: 400, fontSize: 10, textTransform: 'none', letterSpacing: 0 }}>(se muestra numerado en la ficha del kit)</span>
+              </div>
+              {selectedVariants.map((v, i) => {
+                const step = form.steps[v.variantId] ?? { label: '', when: '', instruction: '' }
+                return (
+                  <div key={v.variantId} style={{ border: '1.5px solid var(--liora-arena)', borderRadius: 14, padding: 14, display: 'flex', gap: 12 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                      <div style={{ width: 30, height: 30, borderRadius: 999, background: form.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 14, color: 'var(--liora-uva)' }}>
+                        {i + 1}
+                      </div>
+                      <button onClick={() => moveVariant(v.variantId, -1)} disabled={i === 0} title="Subir"
+                        style={{ background: 'transparent', border: 'none', cursor: i === 0 ? 'default' : 'pointer', color: 'var(--liora-uva)', opacity: i === 0 ? 0.2 : 0.6, padding: 2 }}>
+                        <CaretUp size={14} weight="bold" />
+                      </button>
+                      <button onClick={() => moveVariant(v.variantId, 1)} disabled={i === selectedVariants.length - 1} title="Bajar"
+                        style={{ background: 'transparent', border: 'none', cursor: i === selectedVariants.length - 1 ? 'default' : 'pointer', color: 'var(--liora-uva)', opacity: i === selectedVariants.length - 1 ? 0.2 : 0.6, padding: 2 }}>
+                        <CaretDown size={14} weight="bold" />
+                      </button>
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 14, color: 'var(--liora-uva)', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {v.productName}
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                        <div>
+                          <label style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 11, color: 'var(--liora-uva)', opacity: 0.7, display: 'block', marginBottom: 4 }}>Rol en la rutina</label>
+                          <input
+                            value={step.label}
+                            onChange={e => setStep(v.variantId, 'label', e.target.value)}
+                            placeholder="Ej. Limpieza purificante"
+                            style={{ width: '100%', padding: '8px 11px', border: '1.5px solid var(--liora-arena)', borderRadius: 10, background: 'var(--liora-crema)', fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--liora-uva)', outline: 'none', boxSizing: 'border-box' }}
+                          />
+                        </div>
+                        <div>
+                          <label style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 11, color: 'var(--liora-uva)', opacity: 0.7, display: 'block', marginBottom: 4 }}>Momento de uso</label>
+                          <input
+                            value={step.when}
+                            onChange={e => setStep(v.variantId, 'when', e.target.value)}
+                            placeholder="Ej. ☀️🌙 Mañana y noche"
+                            style={{ width: '100%', padding: '8px 11px', border: '1.5px solid var(--liora-arena)', borderRadius: 10, background: 'var(--liora-crema)', fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--liora-uva)', outline: 'none', boxSizing: 'border-box' }}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 11, color: 'var(--liora-uva)', opacity: 0.7, display: 'block', marginBottom: 4 }}>Instrucción</label>
+                        <textarea
+                          value={step.instruction}
+                          onChange={e => setStep(v.variantId, 'instruction', e.target.value)}
+                          rows={2}
+                          placeholder="Ej. Emulsiona con agua tibia en las manos, masajea el rostro por 30 segundos…"
+                          style={{ width: '100%', padding: '8px 11px', border: '1.5px solid var(--liora-arena)', borderRadius: 10, background: 'var(--liora-crema)', fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--liora-uva)', outline: 'none', resize: 'vertical', boxSizing: 'border-box' }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
 
           {/* Image upload */}
           <div style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 18, padding: 18, display: 'flex', flexDirection: 'column', gap: 12 }}>

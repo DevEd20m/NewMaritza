@@ -46,7 +46,9 @@ export function ImageUploadField({
     setUploading(true)
     setUploadError(null)
     try {
-      const path = `${pathPrefix}/${fileName}.${fileExt(file)}`
+      // Nombre único por subida: si se reutiliza el mismo path, el CDN y el navegador
+      // siguen sirviendo la imagen anterior cacheada aunque el archivo se reemplace.
+      const path = `${pathPrefix}/${fileName}-${Date.now()}.${fileExt(file)}`
       const { url, error } = await uploadAdminImage(file, path)
       if (error) { setUploadError(error); return }
       if (url) onChange(url)

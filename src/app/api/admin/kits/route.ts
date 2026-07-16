@@ -17,7 +17,26 @@ const kitSchema = z.object({
     title: z.string().min(1),
     desc: z.string(),
   })).max(3).optional(),
+  // Ritual paso a paso: datos por variante seleccionada, keyed por variantId
+  steps: z.record(z.string(), z.object({
+    label: z.string(),
+    when: z.string(),
+    instruction: z.string(),
+  })).optional(),
 })
+
+function kitProductRows(kitId: string, variantIds: string[], steps?: Record<string, { label: string; when: string; instruction: string }>) {
+  return variantIds.map((vid: string, i: number) => ({
+    kit_id: kitId,
+    variant_id: vid,
+    quantity: 1,
+    sort_order: i,
+    is_required: true,
+    step_label: steps?.[vid]?.label.trim() || null,
+    step_when: steps?.[vid]?.when.trim() || null,
+    step_instruction: steps?.[vid]?.instruction.trim() || null,
+  }))
+}
 
 function toSlug(name: string) {
   return name
@@ -56,15 +75,7 @@ export async function POST(request: NextRequest) {
     if (!kit) return NextResponse.json({ error: 'Error al crear kit' }, { status: 500 })
 
     if (variantIds.length > 0) {
-      await (admin as any).from('kit_products').insert(
-        variantIds.map((vid: string, i: number) => ({
-          kit_id: kit.id,
-          variant_id: vid,
-          quantity: 1,
-          sort_order: i,
-          is_required: true,
-        }))
-      )
+      await (admin as any).from('kit_products').insert(kitProductRows(kit.id, variantIds, parsed.data.steps))
     }
 
     return NextResponse.json({ kitId: kit.id })
@@ -100,15 +111,7 @@ export async function PUT(request: NextRequest) {
 
     await (admin as any).from('kit_products').delete().eq('kit_id', id)
     if (variantIds.length > 0) {
-      await (admin as any).from('kit_products').insert(
-        variantIds.map((vid: string, i: number) => ({
-          kit_id: id,
-          variant_id: vid,
-          quantity: 1,
-          sort_order: i,
-          is_required: true,
-        }))
-      )
+      await (admin as any).from('kit_products').insert(kitProductRows(id, variantIds, parsed.data.steps))
     }
 
     return NextResponse.json({ ok: true })

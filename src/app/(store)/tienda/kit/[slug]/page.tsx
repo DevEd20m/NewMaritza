@@ -16,7 +16,7 @@ async function getKit(slug: string) {
   const { data } = await (admin as any)
     .from('kits')
     .select(`id, name, slug, description, is_active,
-      kit_products(quantity, variant_id,
+      kit_products(quantity, variant_id, sort_order, step_label, step_when, step_instruction,
         product_variants!variant_id(id, name, sku,
           products!product_id(id, name, slug, cover_image_url, description,
             categories!category_id(name, slug)
@@ -90,7 +90,10 @@ export default async function KitPage({ params }: Props) {
 
   const bg = kitColor(slug)
   const guide = await getGuideBySlugDB(slug)
-  const items = (kit.kit_products ?? []) as any[]
+  const items = ((kit.kit_products ?? []) as any[])
+    .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+  // Si los productos del kit tienen instrucción de paso (manual v4), se muestra el ritual numerado
+  const hasSteps = items.some((kp: any) => kp.step_instruction)
   const totalCents = items.reduce((s: number, kp: any) => {
     const price = kp.product_variants?.product_prices?.find((p: any) => !p.effective_to)
       ?? kp.product_variants?.product_prices?.[0]
@@ -161,7 +164,7 @@ export default async function KitPage({ params }: Props) {
               y el ellipsis de los nombres largos funcione (si no, el grid desborda) */}
           <div style={{ minWidth: 0 }}>
             <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--liora-uva)', opacity: 0.55, marginBottom: 18 }}>
-              Qué incluye este kit base
+              {hasSteps ? 'Tu ritual paso a paso · en el orden exacto de uso' : 'Qué incluye este kit base'}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {items.map((kp: any, i: number) => {
@@ -170,6 +173,55 @@ export default async function KitPage({ params }: Props) {
                 const price = variant?.product_prices?.find((p: any) => !p.effective_to) ?? variant?.product_prices?.[0]
                 const cat = product?.categories
                 if (!product) return null
+
+                if (hasSteps) {
+                  return (
+                    <Link key={i} href={`/tienda/${product.slug}`} style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 20, padding: 18, display: 'flex', gap: 16, alignItems: 'stretch', textDecoration: 'none' }}>
+                      {/* Riel: número de paso + línea que conecta con el siguiente */}
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+                        <div style={{ width: 40, height: 40, borderRadius: 999, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 19, color: 'var(--liora-uva)', flexShrink: 0 }}>
+                          {i + 1}
+                        </div>
+                        {i < items.length - 1 && (
+                          <div style={{ width: 2, flex: 1, background: 'var(--liora-arena)', marginTop: 6, borderRadius: 2 }} />
+                        )}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontFamily: 'var(--font-body)', fontSize: 10, fontWeight: 700, color: 'var(--liora-uva)', opacity: 0.5, textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+                          {kp.step_label ?? cat?.name ?? ''}
+                        </div>
+                        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 17, color: 'var(--liora-uva)', margin: '3px 0 2px', lineHeight: 1.25 }}>
+                          {product.name}
+                        </div>
+                        <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--liora-uva)', opacity: 0.55, marginBottom: 8 }}>
+                          {variant?.name}
+                        </div>
+                        {kp.step_when && (
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'var(--liora-crema)', borderRadius: 999, padding: '3px 10px', fontFamily: 'var(--font-body)', fontSize: 11, fontWeight: 700, color: 'var(--liora-uva)', marginBottom: 7 }}>
+                            {kp.step_when}
+                          </div>
+                        )}
+                        {kp.step_instruction && (
+                          <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, lineHeight: 1.5, color: 'var(--liora-uva)', opacity: 0.8 }}>
+                            {kp.step_instruction}
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, flexShrink: 0 }}>
+                        <div style={{ width: 58, height: 58, borderRadius: 12, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                          {product.cover_image_url
+                            ? <img src={product.cover_image_url} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                            : <Package size={24} weight="bold" color="var(--liora-uva)" style={{ opacity: 0.4 }} />
+                          }
+                        </div>
+                        <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 15, color: 'var(--liora-uva)' }}>
+                          {price ? `S/${(price.amount_cents / 100).toFixed(0)}` : '—'}
+                        </div>
+                      </div>
+                    </Link>
+                  )
+                }
+
                 return (
                   <Link key={i} href={`/tienda/${product.slug}`} style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 20, padding: '16px 18px', display: 'flex', gap: 14, alignItems: 'center', textDecoration: 'none' }}>
                     <div style={{ width: 68, height: 68, borderRadius: 14, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
