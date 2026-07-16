@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { SLUG_WEIGHTS, ALLERGY_LABELS, SAFETY_FLAG_TEXTS } from '@/lib/recommendation/slug-weights'
-import { calculateCategoryScores } from '@/lib/recommendation/score'
+import { ALLERGY_LABELS, SAFETY_FLAG_TEXTS } from '@/lib/recommendation/slug-weights'
+import { calculateCategoryScores, scoresSortedDesc } from '@/lib/recommendation/score'
+import { selectRoutineKit, FALLBACK_DIAGNOSIS, FALLBACK_TAGS } from '@/lib/recommendation/kit-routes'
+import { validateAiRoutine } from '@/lib/recommendation/ai-routine'
 
 const CAT_COLORS: Record<string, string> = {
   piel:          'var(--cat-coral)',
@@ -14,11 +16,20 @@ const CAT_COLORS: Record<string, string> = {
   'pies-cuerpo': 'var(--cat-durazno)',
 }
 
+// Rangos de presupuesto del quiz (sincronizados con quiz_question_options,
+// migración 20260716000000_update_budget_ranges)
+const BUDGET_RANGES: Record<string, { label: string; min?: number; max?: number }> = {
+  'presupuesto-bajo':    { label: 'hasta S/200', max: 200 },
+  'presupuesto-medio':   { label: 'entre S/200 y S/400', min: 200, max: 400 },
+  'presupuesto-alto':    { label: 'entre S/400 y S/600', min: 400, max: 600 },
+  'presupuesto-premium': { label: 'más de S/600, sin límite', min: 600 },
+}
 
 export interface KitItem {
   variantId: string
   productId: string
   name: string
+  brand: string | null
   variantName: string
   categoryName: string
   categorySlug: string
@@ -26,6 +37,9 @@ export interface KitItem {
   currency: string
   imageUrl: string | null
   categoryColor: string
+  stepLabel?: string | null
+  stepWhen?: string | null
+  stepInstruction?: string | null
 }
 
 export async function GET(request: NextRequest) {
@@ -54,7 +68,9 @@ export async function GET(request: NextRequest) {
 
   // Auto-claim: if user is logged in and profile has no owner, link it now
   if (user && !profile.user_id) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (admin as any).from('quiz_profiles').update({ user_id: user.id }).eq('id', profileId)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(profile as any).user_id = user.id
   }
 
@@ -68,14 +84,21 @@ export async function GET(request: NextRequest) {
   const answers = profile.answers as Record<string, string[]>
   const questionIds = Object.keys(answers)
 
-  // Get human-readable Q&A for OpenAI
+  // Get human-readable Q&A + slugs. El hint !question_id es obligatorio:
+  // quiz_question_options tiene dos FKs hacia quiz_questions (question_id y
+  // next_question_id) y sin él PostgREST rechaza el embed por ambigüedad.
   type QuizQ = { id: string; text: string; quiz_question_options: { id: string; text: string; slug: string }[] }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: questionsRaw } = await (admin as any)
+  const { data: questionsRaw, error: questionsError } = await (admin as any)
     .from('quiz_questions')
-    .select('id, text, quiz_question_options(id, text, slug)')
+    .select('id, text, quiz_question_options!question_id(id, text, slug)')
     .in('id', questionIds)
   const questions = (questionsRaw ?? []) as QuizQ[]
+
+  if (questionsError || questions.length === 0) {
+    console.error('[kit/recommend] questions fetch failed:', questionsError ?? 'no questions matched answers')
+    return NextResponse.json({ error: 'No pudimos leer tus respuestas. Intenta de nuevo.' }, { status: 500 })
+  }
 
   const qaLines: string[] = []
   const allSlugs: string[] = []
@@ -89,10 +112,12 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  const scores = calculateCategoryScores(allSlugs)
+
   // Load full product catalog
   const { data: products } = await admin
     .from('products')
-    .select('id, name, cover_image_url, category_id')
+    .select('id, name, brand, cover_image_url, category_id')
     .eq('is_active', true)
 
   const { data: categories } = await admin
@@ -126,6 +151,7 @@ export async function GET(request: NextRequest) {
       variantId: v.id,
       productId: product.id,
       name: product.name,
+      brand: (product as { brand?: string | null }).brand ?? null,
       variantName: v.name,
       categoryName: cat?.name ?? '',
       categorySlug: cat?.slug ?? '',
@@ -136,162 +162,249 @@ export async function GET(request: NextRequest) {
     })
   }
 
-  let kitVariantIds: string[] = []
-  let suggestionVariantIds: string[] = []
+  const catalogByVariant = new Map(catalog.map((c) => [c.variantId, c]))
+
+  let kitItems: CatalogEntry[] = []
+  let suggestions: CatalogEntry[] = []
   let diagnosis = ''
   let tags: string[] = []
+  let routineName: string | null = null
+  let routineSlug: string | null = null
 
-  // OpenAI path
-  if (process.env.OPENAI_API_KEY) {
+  // ══ CORAZÓN DEL SISTEMA: la IA arma la rutina desde TODO el catálogo ══
+  if (process.env.OPENAI_API_KEY && catalog.length > 0) {
     try {
       const { default: OpenAI } = await import('openai')
       const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY, timeout: 25000, maxRetries: 1 })
 
-      const catalogText = catalog
-        .map((c) => `ID:${c.variantId} | ${c.name} (${c.variantName}) | ${c.categoryName} | S/${(c.priceCents / 100).toFixed(0)}`)
+      // Catálogo completo al inicio del system prompt: es el prefijo estable
+      // entre llamadas, así el prompt caching de OpenAI abarata cada quiz.
+      // Se numera con índices cortos (#1..#N) — los modelos confunden UUIDs —
+      // y se ordena por categoría para que los productos afines queden juntos.
+      const promptCatalog = [...catalog].sort((a, b) =>
+        a.categoryName.localeCompare(b.categoryName) || a.name.localeCompare(b.name))
+      const catalogText = promptCatalog
+        .map((c, i) => `#${i + 1} | ${c.name}${c.brand ? ` · ${c.brand}` : ''} (${c.variantName}) | ${c.categoryName} | S/${(c.priceCents / 100).toFixed(0)}`)
         .join('\n')
 
-      // Extract context signals for prompt enrichment
-      const budgetSlug = allSlugs.find(s => s.startsWith('presupuesto-'))
-      const budgetLabel: Record<string, string> = {
-        'presupuesto-bajo': 'hasta S/80',
-        'presupuesto-medio': 'entre S/80 y S/150',
-        'presupuesto-alto': 'entre S/150 y S/250',
-        'presupuesto-premium': 'sin límite de presupuesto',
-      }
-      const allergySlugs = allSlugs.filter(s => s in ALLERGY_LABELS)
-      const restrictions = allergySlugs.map(s => ALLERGY_LABELS[s]).filter(Boolean)
+      const budgetSlug = allSlugs.find((s) => s in BUDGET_RANGES)
+      const budget = budgetSlug ? BUDGET_RANGES[budgetSlug] : null
+
+      const restrictions = allSlugs.filter((s) => s in ALLERGY_LABELS).map((s) => ALLERGY_LABELS[s])
       const prefersNatural = allSlugs.includes('prefiere-natural')
+      const activeSafetyFlags = allSlugs.filter((s) => SAFETY_FLAG_TEXTS[s]).map((s) => SAFETY_FLAG_TEXTS[s])
 
-      const activeSafetyFlags = allSlugs
-        .filter(s => SAFETY_FLAG_TEXTS[s])
-        .map(s => SAFETY_FLAG_TEXTS[s])
-      const ageSlug = allSlugs.find(s => s.startsWith('edad-'))
-
-      const genderSlug = allSlugs.find(s => s.startsWith('genero-'))
+      const genderSlug = allSlugs.find((s) => s.startsWith('genero-'))
       const genderLabel = genderSlug === 'genero-femenino' ? 'mujer' : genderSlug === 'genero-masculino' ? 'hombre' : null
       const pronoun = genderSlug === 'genero-masculino' ? 'él' : 'ella'
 
-      const objSlug = allSlugs.find(s => s.startsWith('obj-'))
-      const objLabels: Record<string, string> = {
-        'obj-rendimiento':  'rendimiento físico y deporte',
-        'obj-belleza':      'cuidado de piel y cabello',
-        'obj-bienestar':    'bienestar emocional (estrés o sueño)',
-        'obj-digestivo':    'digestión e hidratación',
-        'obj-nutricion':    'nutrición general y vitaminas',
-        'obj-solar':        'protección solar y cuidado al sol',
-        'obj-viaje':        'kit de viaje y outdoor',
-        'obj-hogar':        'botiquín y primeros auxilios en casa',
-        'obj-pies-cuerpo':  'cuidado de pies y cuerpo',
-        'obj-guia':         'descubrir qué productos necesita',
+      const routineSizeSlug = allSlugs.find((s) => s.startsWith('rutina-'))
+      const routineSizeHint: Record<string, string> = {
+        'rutina-simple':     'Prefiere una rutina MUY simple: usa 3-4 pasos.',
+        'rutina-balanceada': 'Prefiere una rutina balanceada: usa 4-5 pasos.',
+        'rutina-completa':   'Quiere una rutina completa: usa 5-6 pasos.',
+        'rutina-guiada':     'Pidió ser guiada/o: usa 4-5 pasos.',
       }
-      const objLabel = objSlug ? objLabels[objSlug] : null
 
-      const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        temperature: 0.3,
-        response_format: { type: 'json_object' },
-        messages: [
-          {
-            role: 'system',
-            content: `Eres el motor de recomendaciones de LIORA, una marca peruana de bienestar natural.
-Dado el cuestionario de un/a cliente/a y el catálogo actual, devuelve un kit personalizado.
+      const systemPrompt = `Eres el motor de recomendaciones de LIORA, una marca peruana de bienestar natural.
+
+CATÁLOGO COMPLETO (#item | producto · marca (presentación) | categoría | precio):
+Nota: puede haber productos con el mismo nombre en marcas distintas y precios distintos — son productos diferentes; elige la marca que mejor convenga al perfil y presupuesto.
+${catalogText}
+
+Tu tarea: a partir del cuestionario de la persona, ARMA UNA RUTINA PERSONALIZADA paso a paso eligiendo productos del catálogo. La rutina es un plan de uso diario: paso 1 toma/usa esto, paso 2 esto, en orden cronológico.
 
 Responde SOLO con JSON:
 {
-  "kit_variant_ids": ["id",...],
-  "suggestion_variant_ids": ["id",...],
+  "routine_name": "string",
   "diagnosis": "string",
-  "tags": ["string",...]
+  "tags": ["string", ...],
+  "steps": [{ "item": número, "product_name": "string", "step_label": "string", "step_when": "string", "step_instruction": "string" }, ...],
+  "suggestion_items": [número, ...]
 }
 
 Reglas estrictas:
-- kit_variant_ids: 4-5 variantes en orden de prioridad (IDs exactos del catálogo)
-- suggestion_variant_ids: 3-4 variantes adicionales NO incluidas en el kit
-- diagnosis: 2-3 oraciones personalizadas. Empieza con un insight sobre el perfil de la persona (no empieces con "Te recomendamos"). Usa el pronombre correcto si conoces el género.
-- tags: 3-5 etiquetas cortas en español que describan el perfil
-- NO repitas el mismo producto en kit y suggestions
-- OBJETIVO PRINCIPAL: ${objLabel ? `La persona busca ${objLabel}. Prioriza productos de esa área.` : 'Objetivo no especificado — analiza las respuestas.'}
-- GÉNERO: ${genderLabel ? `La persona es ${genderLabel}. Usa pronombres correctos (${pronoun}) en el diagnosis y adapta si hay necesidades específicas de su biología.` : 'Género no especificado — usa lenguaje neutro.'}
-- PRESUPUESTO: ${budgetSlug ? `Quiere invertir ${budgetLabel[budgetSlug] ?? 'precio moderado'}. Prioriza productos dentro de ese rango.` : 'Sin dato de presupuesto.'}
-- RESTRICCIONES: ${restrictions.length ? `EXCLUIR productos que contengan ${restrictions.join(', ')}. CRÍTICO para su seguridad.` : 'Sin restricciones.'}
-- PREFERENCIA: ${prefersNatural ? 'Prefiere productos 100% naturales y orgánicos.' : 'Abierta/o a todo tipo de suplementos.'}
-- EDAD: ${ageSlug ? `Etapa: ${ageSlug}. Adapta según necesidades de esa etapa de vida.` : ''}
-- CONTEXTO LOCAL: Somos una marca peruana. El clima costero (húmedo) afecta la piel — menciónalo si aplica al perfil de skin care.${activeSafetyFlags.length ? `\n- ADVERTENCIAS MÉDICAS (CRÍTICO — reportadas por el usuario, respetar siempre):\n${activeSafetyFlags.map((f, i) => `  ${i + 1}. ${f}`).join('\n')}` : ''}
-- Responde completamente en español`,
-          },
-          {
-            role: 'user',
-            content: `Respuestas del cuestionario:\n${qaLines.join('\n')}\n\nCatálogo:\n${catalogText}`,
-          },
-        ],
-      })
+- steps: 4 a 6 pasos (cada paso = un producto DIFERENTE). ${routineSizeSlug ? routineSizeHint[routineSizeSlug] ?? '' : ''}
+- item: el número EXACTO del catálogo (#N). product_name: copia EXACTA del nombre de ese mismo item. Si no coinciden, el paso se descarta — verifica que el número y el nombre sean de la MISMA línea del catálogo.
+- COHERENCIA (lo más importante): TODOS los productos deben servir directamente al objetivo principal de la persona. Nunca incluyas productos de otras áreas solo para llenar (ej: jamás desodorante o proteína de gym en una rutina digestiva). Respeta las características que la persona indicó (ej: si su piel es grasa, no elijas productos formulados para piel seca).
+- Orden cronológico de uso: mañana → noche. step_when corto con emoji y momento, coherente con el tipo de producto (suplementos: en ayunas o con comidas; cosméticos: "🌅 Mañana" / "🌙 Noche" — un sérum no se toma "en ayunas").
+- step_label: el ROL del producto en la rutina, 2-4 palabras (ej: "Probiótico vivo intensivo") — NO repitas el nombre del producto.
+- step_instruction: 1-2 oraciones concretas: cómo tomarlo/aplicarlo, cantidad, y qué logra en la rutina.
+- PRESUPUESTO: ${budget ? `el TOTAL del kit debe quedar ${budget.label}${budget.max ? ` (suma los precios: no pases de S/${budget.max}${budget.min ? ` ni armes algo muy por debajo de S/${budget.min}` : ''})` : ' — puedes elegir lo mejor del catálogo'}. Si el objetivo no se puede cubrir dentro del rango, acércate lo más posible priorizando lo esencial.` : 'sin dato — apunta a un total moderado (S/200-400).'}
+- RESTRICCIONES: ${restrictions.length ? `la persona evita: ${restrictions.join(', ')}. CRÍTICO para su seguridad — no incluyas productos que los contengan.` : 'sin restricciones.'}
+- PREFERENCIA: ${prefersNatural ? 'prefiere productos 100% naturales y orgánicos — priorízalos.' : 'abierta/o a todo tipo de productos.'}
+- GÉNERO: ${genderLabel ? `la persona es ${genderLabel}; usa pronombres correctos (${pronoun}) en el diagnosis.` : 'no especificado — usa lenguaje neutro.'}
+- routine_name: nombre corto y atractivo en español que describa el objetivo (ej: "Rutina Digestión Ligera").
+- diagnosis: 2-3 oraciones cálidas. Empieza con un insight sobre el perfil (no con "Te recomendamos") y explica por qué esta rutina encaja.${activeSafetyFlags.length ? ' Cierra recordando con calidez consultar a su médico antes de iniciar.' : ''}
+- tags: 3-5 etiquetas cortas en español del perfil.
+- suggestion_items: 2-4 items del catálogo NO incluidos en steps y afines al MISMO objetivo (nunca de otras áreas). Varía: no repitas el mismo ingrediente o tipo de producto en distintas marcas. Si no hay complementos coherentes, devuelve [].
+- CONTEXTO LOCAL: marca peruana; el clima costero húmedo afecta la piel — menciónalo solo si aplica.${activeSafetyFlags.length ? `\n- ADVERTENCIAS MÉDICAS (CRÍTICO — reportadas por la persona, respetar siempre):\n${activeSafetyFlags.map((f, i) => `  ${i + 1}. ${f}`).join('\n')}` : ''}
+- Responde completamente en español.`
 
-      const raw = completion.choices[0]?.message?.content ?? '{}'
-      const parsed = JSON.parse(raw)
-      // Solo aceptar IDs que existan realmente en el catálogo (GPT puede alucinar IDs),
-      // sin duplicados y sin solaparse entre kit y sugerencias.
-      const validIds = new Set(catalog.map((c) => c.variantId))
-      const seen = new Set<string>()
-      const cleanKit: string[] = []
-      for (const id of (parsed.kit_variant_ids ?? []) as string[]) {
-        if (validIds.has(id) && !seen.has(id)) { seen.add(id); cleanKit.push(id) }
+      type ChatMsg = { role: 'system' | 'user' | 'assistant'; content: string }
+      const messages: ChatMsg[] = [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: `Respuestas del cuestionario:\n${qaLines.join('\n')}` },
+      ]
+
+      const callAi = async () => {
+        const completion = await openai.chat.completions.create({
+          model: process.env.OPENAI_MODEL ?? 'gpt-4o-mini',
+          temperature: 0.4,
+          response_format: { type: 'json_object' },
+          messages,
+        })
+        const raw = completion.choices[0]?.message?.content ?? '{}'
+        // promptCatalog en el mismo orden con el que se numeró el prompt (#1 = [0])
+        return { raw, validated: validateAiRoutine(JSON.parse(raw), promptCatalog) }
       }
-      const cleanSugg: string[] = []
-      for (const id of (parsed.suggestion_variant_ids ?? []) as string[]) {
-        if (validIds.has(id) && !seen.has(id)) { seen.add(id); cleanSugg.push(id) }
+
+      const routineTotalCents = (steps: { variantId: string }[]) =>
+        steps.reduce((sum, s) => sum + (catalogByVariant.get(s.variantId)?.priceCents ?? 0), 0)
+
+      let { raw, validated } = await callAi()
+
+      // gpt-4o-mini es débil sumando precios: si se pasó del tope (>15% de
+      // tolerancia), se reintenta con la aritmética ya resuelta (desglose por
+      // item) hasta 2 veces, quedándonos siempre con la versión más barata
+      // válida. Si aun así queda sobre el tope, se acepta: mejor una rutina
+      // coherente algo cara que un kit roto (el fallback curado tampoco
+      // respeta presupuesto).
+      if (validated && budget?.max) {
+        const maxCents = budget.max * 100
+        for (let retryN = 0; retryN < 2; retryN++) {
+          const totalCents = routineTotalCents(validated.steps)
+          if (totalCents <= maxCents * 1.15) break
+
+          const breakdown = validated.steps
+            .map((s) => {
+              const c = catalogByVariant.get(s.variantId)
+              return c ? `- ${c.name}: S/${Math.round(c.priceCents / 100)}` : null
+            })
+            .filter(Boolean)
+            .join('\n')
+
+          messages.push(
+            { role: 'assistant', content: raw },
+            { role: 'user', content: `Tu rutina se pasó del presupuesto. Suma S/${Math.round(totalCents / 100)}:\n${breakdown}\n\nEl máximo de la persona es S/${budget.max}. Rearma la rutina para que el TOTAL quede en S/${budget.max} o menos: reemplaza los productos caros por opciones más económicas del catálogo (revisa los precios de cada línea) o usa menos pasos, manteniendo la coherencia con su objetivo. Responde con el mismo formato JSON.` },
+          )
+          const retry = await callAi()
+          if (!retry.validated) break
+          if (routineTotalCents(retry.validated.steps) < totalCents) {
+            validated = retry.validated
+            raw = retry.raw
+          } else {
+            break
+          }
+        }
       }
-      kitVariantIds = cleanKit
-      suggestionVariantIds = cleanSugg
-      diagnosis = parsed.diagnosis ?? ''
-      tags = parsed.tags ?? []
+
+      if (validated) {
+        kitItems = validated.steps.map((s) => ({
+          ...catalogByVariant.get(s.variantId)!,
+          stepLabel: s.stepLabel,
+          stepWhen: s.stepWhen,
+          stepInstruction: s.stepInstruction,
+        }))
+        suggestions = validated.suggestionVariantIds
+          .map((id) => catalogByVariant.get(id))
+          .filter(Boolean) as CatalogEntry[]
+        diagnosis = validated.diagnosis
+        tags = validated.tags
+        routineName = validated.routineName
+      } else {
+        console.error('[kit/recommend] AI routine failed validation, falling back to curated routine. Raw:', raw.slice(0, 400))
+      }
     } catch (err) {
       console.error('[kit/recommend] OpenAI error:', err)
     }
   }
 
-  // Scoring fallback: si la IA no dio IDs válidos, o quedó sin kit tras la limpieza
-  if (kitVariantIds.length === 0) {
-    const scores = calculateCategoryScores(allSlugs)
+  // ── Fallback 1: rutina curada de la categoría ganadora ──
+  if (kitItems.length === 0) {
+    const { kitSlug, topCategory } = selectRoutineKit(allSlugs)
 
-    const sortedCats = Object.entries(scores).sort(([, a], [, b]) => b - a)
-    const usedProducts = new Set<string>()
-    const kitItems: CatalogEntry[] = []
-    const suggItems: CatalogEntry[] = []
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: routineKit, error: routineError } = await (admin as any)
+      .from('kits')
+      .select(`id, name, slug,
+        kit_products(quantity, variant_id, sort_order, step_label, step_when, step_instruction)`)
+      .eq('slug', kitSlug)
+      .eq('is_active', true)
+      .single()
 
-    for (const [catSlug, score] of sortedCats) {
-      const catProds = catalog.filter((c) => c.categorySlug === catSlug && !usedProducts.has(c.productId))
-      const count = score >= 2 ? 2 : 1
-      catProds.slice(0, count).forEach((p) => { kitItems.push(p); usedProducts.add(p.productId) })
+    if (routineError) console.error('[kit/recommend] routine kit fetch failed:', kitSlug, routineError)
+
+    type RoutineRow = { variant_id: string; sort_order: number | null; step_label: string | null; step_when: string | null; step_instruction: string | null }
+    const routineRows = (((routineKit?.kit_products ?? []) as RoutineRow[]))
+      .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+
+    kitItems = routineRows
+      .map((kp) => {
+        const base = catalogByVariant.get(kp.variant_id)
+        if (!base) return null
+        return { ...base, stepLabel: kp.step_label, stepWhen: kp.step_when, stepInstruction: kp.step_instruction }
+      })
+      .filter(Boolean) as CatalogEntry[]
+
+    if (kitItems.length > 0) {
+      routineName = routineKit?.name ?? null
+      routineSlug = routineKit ? kitSlug : null
+      diagnosis = topCategory ? FALLBACK_DIAGNOSIS[topCategory] : 'Armamos una rutina de bienestar pensada para ti, paso a paso.'
+      tags = topCategory ? FALLBACK_TAGS[topCategory] : ['Bienestar', 'Personalizado']
     }
+  }
 
-    if (kitItems.length === 0) catalog.slice(0, 5).forEach((c) => kitItems.push(c))
+  // ── Fallback 2 (red de seguridad): solo categorías que puntuaron ──
+  if (kitItems.length === 0) {
+    const usedProducts = new Set<string>()
+    for (const { cat, score } of scoresSortedDesc(scores)) {
+      if (score <= 0) continue
+      const catProds = catalog.filter((c) => c.categorySlug === cat && !usedProducts.has(c.productId))
+      catProds.slice(0, 2).forEach((p) => { kitItems.push(p); usedProducts.add(p.productId) })
+    }
+    if (kitItems.length === 0) {
+      console.error('[kit/recommend] no routine and no scored categories for profile', profileId)
+      return NextResponse.json({ error: 'No pudimos armar tu kit. Intenta de nuevo.' }, { status: 500 })
+    }
+    const top = scoresSortedDesc(scores)[0]?.cat
+    diagnosis = top ? FALLBACK_DIAGNOSIS[top] : 'Seleccionamos productos alineados a tus objetivos de bienestar.'
+    tags = top ? FALLBACK_TAGS[top] : ['Bienestar', 'Personalizado']
+  }
 
-    for (const item of catalog) {
-      if (!usedProducts.has(item.productId) && suggItems.length < 4) {
-        suggItems.push(item)
-        usedProducts.add(item.productId)
+  // ── Sugerencias: completar si la IA no dio suficientes ──
+  // Identidad de producto = nombre + marca (hay productos con el mismo nombre
+  // en marcas distintas y ambos son válidos)
+  const identity = (item: CatalogEntry) => `${item.name} · ${item.brand ?? ''}`.trim().toLowerCase()
+  const kitProductIds = new Set(kitItems.map((k) => k.productId))
+  const kitIdentities = new Set(kitItems.map(identity))
+  const notInKit = (item: CatalogEntry) =>
+    !kitProductIds.has(item.productId) && !kitIdentities.has(identity(item))
+
+  if (suggestions.length === 0) {
+    // Fuentes en orden de afinidad: categorías con señal clara del quiz (score >= 2)
+    // y luego las categorías que componen la propia rutina.
+    const suggestionCats: string[] = []
+    for (const { cat, score } of scoresSortedDesc(scores)) {
+      if (score >= 2) suggestionCats.push(cat)
+    }
+    for (const k of kitItems) {
+      if (k.categorySlug && !suggestionCats.includes(k.categorySlug)) suggestionCats.push(k.categorySlug)
+    }
+    for (const cat of suggestionCats) {
+      if (suggestions.length >= 4) break
+      for (const item of catalog) {
+        if (suggestions.length >= 4) break
+        if (item.categorySlug === cat && notInKit(item) &&
+            !suggestions.some((s) => s.productId === item.productId || identity(s) === identity(item))) {
+          suggestions.push(item)
+        }
       }
     }
-
-    kitVariantIds = kitItems.slice(0, 6).map((c) => c.variantId)
-    suggestionVariantIds = suggItems.map((c) => c.variantId)
-
-    const topTags: string[] = []
-    if (scores.gym > 0) topTags.push('Rendimiento')
-    if (scores.piel > 0) topTags.push('Cuidado de piel')
-    if (scores.digestivo > 0) topTags.push('Alimentación limpia')
-    if (scores.bienestar > 0) topTags.push('Bienestar')
-    const objFallback = allSlugs.find(s => s.startsWith('obj-'))
-    const objFallbackLabels: Record<string, string> = {
-      'obj-bienestar': 'Bienestar emocional',
-      'obj-digestivo': 'Digestión',
-      'obj-cabello': 'Cuidado capilar',
-    }
-    if (objFallback && objFallbackLabels[objFallback]) topTags.push(objFallbackLabels[objFallback])
-    diagnosis = 'Seleccionamos los productos que mejor se adaptan a tus objetivos de bienestar.'
-    tags = topTags.length ? topTags : ['Bienestar', 'Personalizado']
   }
+
+  const kitVariantIds = kitItems.map((k) => k.variantId)
+  const suggestionVariantIds = suggestions.map((s) => s.variantId)
 
   // Persist to recommendations
   const { data: existing } = await admin
@@ -317,8 +430,12 @@ Reglas estrictas:
     if (rows.length) await admin.from('recommendations').insert(rows)
   }
 
-  const kit = kitVariantIds.map((vid) => catalog.find((c) => c.variantId === vid)).filter(Boolean) as CatalogEntry[]
-  const suggestions = suggestionVariantIds.map((vid) => catalog.find((c) => c.variantId === vid)).filter(Boolean) as CatalogEntry[]
-
-  return NextResponse.json({ kit, suggestions, diagnosis, tags })
+  return NextResponse.json({
+    kit: kitItems,
+    suggestions,
+    diagnosis,
+    tags,
+    routineName,
+    routineSlug,
+  })
 }

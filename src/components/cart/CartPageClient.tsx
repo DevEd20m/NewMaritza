@@ -15,12 +15,16 @@ interface KitItem {
   variantId: string
   productId: string
   name: string
+  brand?: string | null
   variantName: string
   categoryName: string
   priceCents: number
   currency: string
   imageUrl: string | null
   categoryColor: string
+  stepLabel?: string | null
+  stepWhen?: string | null
+  stepInstruction?: string | null
 }
 
 interface KitData {
@@ -28,6 +32,8 @@ interface KitData {
   suggestions: KitItem[]
   diagnosis: string
   tags: string[]
+  routineName?: string | null
+  routineSlug?: string | null
 }
 
 type BotMsg = { who: 'bot' | 'user'; text: string }
@@ -117,7 +123,9 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
         const preview = (data.kit ?? []).slice(0, 2).map((i) => i.name).join(' + ')
         setBotThread([{
           who: 'bot',
-          text: `Hola 👋 Armé tu kit con ${(data.kit ?? []).length} productos.${preview ? ` Incluye ${preview}` : ''} ¿Tienes alguna pregunta?`,
+          text: data.routineName
+            ? `Hola 👋 Armé tu ${data.routineName} con ${(data.kit ?? []).length} pasos, en el orden exacto de uso. ¿Tienes alguna pregunta?`
+            : `Hola 👋 Armé tu kit con ${(data.kit ?? []).length} productos.${preview ? ` Incluye ${preview}` : ''} ¿Tienes alguna pregunta?`,
         }])
       })
       .catch(() => setKitError('No se pudo cargar tu kit. Intenta de nuevo.'))
@@ -185,7 +193,15 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
       const res = await fetch('/api/kit/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMsg, profileId, kitItems: items.map((i) => `${i.name} (${i.variantName})`) }),
+        body: JSON.stringify({
+          message: userMsg,
+          profileId,
+          kitItems: items.map((i) => `${i.name} (${i.variantName})`),
+          routineName: kitData?.routineName ?? undefined,
+          routineSteps: (kitData?.kit ?? [])
+            .filter((k) => k.stepInstruction || k.stepLabel)
+            .map((k, i) => `Paso ${i + 1}${k.stepWhen ? ` (${k.stepWhen})` : ''}: ${k.name} — ${k.stepLabel ?? ''}`),
+        }),
       })
       const data = await res.json()
       setBotThread([...newThread, { who: 'bot', text: data.reply ?? 'Entendido. ¿En qué más puedo ayudarte?' }])
@@ -288,22 +304,53 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
 
           {/* Left column ─── items + suggestions + bot */}
           <div>
-            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20, color: 'var(--liora-uva)', marginBottom: 14 }}>
-              Tu kit ({items.length} {items.length === 1 ? 'producto' : 'productos'})
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20, color: 'var(--liora-uva)', marginBottom: 4 }}>
+              {kitData?.routineName ?? `Tu kit (${items.length} ${items.length === 1 ? 'producto' : 'productos'})`}
             </div>
+            {kitData?.routineName && (
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-uva)', opacity: 0.65, marginBottom: 14 }}>
+                Tu ritual paso a paso · en el orden exacto de uso
+              </div>
+            )}
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {items.map((item) => (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: kitData?.routineName ? 0 : 10 }}>
+              {items.map((item, idx) => {
+                const step = kitData?.kit.find((k) => k.variantId === item.variantId)
+                const hasStep = Boolean(step?.stepInstruction || step?.stepLabel)
+                return (
                 <article key={item.variantId} style={{ background: 'var(--liora-blanco)', borderRadius: 24, border: '1.5px solid var(--liora-arena)', padding: 20, display: 'flex', gap: 20, alignItems: 'center' }}>
-                  <div style={{ width: 88, height: 88, borderRadius: 18, background: item.categoryColor ?? 'var(--cat-lavanda)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
-                    {item.imageUrl
-                      ? <img src={item.imageUrl} alt={item.name} style={{ width: '90%', height: '90%', objectFit: 'contain' }} />
-                      : <Package size={32} style={{ opacity: 0.4, color: 'var(--liora-uva)' }} />
-                    }
+                  <div style={{ position: 'relative', flexShrink: 0 }}>
+                    {hasStep && (
+                      <span style={{ position: 'absolute', top: -8, left: -8, zIndex: 1, width: 26, height: 26, borderRadius: 999, background: 'var(--liora-uva)', color: 'var(--liora-crema)', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {idx + 1}
+                      </span>
+                    )}
+                    <div style={{ width: 88, height: 88, borderRadius: 18, background: item.categoryColor ?? 'var(--cat-lavanda)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                      {item.imageUrl
+                        ? <img src={item.imageUrl} alt={item.name} style={{ width: '90%', height: '90%', objectFit: 'contain' }} />
+                        : <Package size={32} style={{ opacity: 0.4, color: 'var(--liora-uva)' }} />
+                      }
+                    </div>
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 19, color: 'var(--liora-uva)', lineHeight: 1.15 }}>{item.name}</div>
-                    <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, opacity: 0.65, marginTop: 4 }}>{item.variantName}</div>
+                    {hasStep && (
+                      <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>
+                        Paso {idx + 1}{step?.stepWhen ? ` · ${step.stepWhen}` : ''}
+                      </div>
+                    )}
+                    <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 19, color: 'var(--liora-uva)', lineHeight: 1.15 }}>
+                      {item.name}
+                      {step?.brand && <span style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13, opacity: 0.6 }}> · {step.brand}</span>}
+                    </div>
+                    {hasStep && step?.stepLabel && (
+                      <div style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13, color: 'var(--liora-uva)', opacity: 0.85, marginTop: 4 }}>{step.stepLabel}</div>
+                    )}
+                    {hasStep && step?.stepInstruction && (
+                      <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, lineHeight: 1.45, color: 'var(--liora-uva)', opacity: 0.7, marginTop: 4 }}>{step.stepInstruction}</div>
+                    )}
+                    {!hasStep && (
+                      <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, opacity: 0.65, marginTop: 4 }}>{item.variantName}</div>
+                    )}
                     <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 17, color: 'var(--liora-uva)', marginTop: 6 }}>{fmt(item.priceCents)}</div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'var(--liora-crema)', borderRadius: 999, padding: 4, flexShrink: 0 }}>
@@ -315,7 +362,8 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
                     <X size={20} />
                   </button>
                 </article>
-              ))}
+                )
+              })}
             </div>
 
             {/* Suggestions strip */}
@@ -343,7 +391,7 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
                         </div>
                         <div>
                           <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 15, color: 'var(--liora-uva)', lineHeight: 1.15 }}>{s.name}</div>
-                          <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--liora-uva)', opacity: 0.65, marginTop: 3 }}>{s.variantName}</div>
+                          <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--liora-uva)', opacity: 0.65, marginTop: 3 }}>{s.brand ? `${s.brand} · ` : ''}{s.variantName}</div>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
                           <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 15, color: 'var(--liora-uva)' }}>{fmt(s.priceCents)}</span>
