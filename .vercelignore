@@ -1,7 +1,6 @@
 /.codex/
 /.github/
 /supabase/
-/tests/
 /playwright-report/
 /test-results/
 /coverage/
