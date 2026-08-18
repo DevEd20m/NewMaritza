@@ -84,6 +84,15 @@ const EMPTY_MSG: CSSProperties = { padding: 28, textAlign: 'center', fontFamily:
 const ROW_TEXT: CSSProperties = { fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 12, color: 'var(--liora-uva)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }
 const COUNT_PILL: CSSProperties = { background: 'var(--liora-lima)', borderRadius: 999, padding: '3px 10px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)', flexShrink: 0 }
 
+function formatLimaDate(value: string, includeTime = true) {
+  const parts = new Intl.DateTimeFormat('es-PE', {
+    timeZone: 'America/Lima', day: '2-digit', month: '2-digit',
+    ...(includeTime ? { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' as const } : {}),
+  }).formatToParts(new Date(value))
+  const values = Object.fromEntries(parts.map(part => [part.type, part.value]))
+  return includeTime ? `${values.day}/${values.month} ${values.hour}:${values.minute}` : `${values.day}/${values.month}`
+}
+
 function RankList({ title, rows, empty }: { title: string; rows: Array<{ label: string; sub?: string; count: number }>; empty: string }) {
   return (
     <div>
@@ -181,7 +190,7 @@ function VisitorsSection({ v }: { v: VisitorsData }) {
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderBottom: i < v.checkoutErrors.length - 1 ? '1px solid var(--liora-arena)' : 'none' }}>
                   <div style={{ flex: 1, minWidth: 0, fontFamily: 'var(--font-body)', fontSize: 12, color: '#C2433A', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.message || 'Error sin detalle'}</div>
                   <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--liora-uva)', opacity: 0.5, flexShrink: 0 }}>
-                    {new Date(e.created_at).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                    {formatLimaDate(e.created_at)}
                   </div>
                 </div>
               ))}
@@ -260,7 +269,7 @@ function JourneySection({ journeys, days, filters }: { journeys: JourneySummary[
                 <td style={{ padding: '12px 14px', fontSize: 11 }}><div style={{ display: 'flex', gap: 5, alignItems: 'center' }}><Path size={13} /> {journey.page_view_count} pantallas</div><div style={{ opacity: 0.55 }}>{journey.landing_path ?? '—'} → {journey.last_path ?? '—'}</div></td>
                 <td style={{ padding: '12px 14px', fontSize: 12 }}><Clock size={13} style={{ verticalAlign: -2 }} /> {formatDuration(journey.active_ms)}</td>
                 <td style={{ padding: '12px 14px', fontSize: 11 }}>{journey.whatsapp_clicked && <div><WhatsappLogo size={13} style={{ verticalAlign: -2 }} /> {journey.whatsapp_code}</div>}{journey.order_number && <div>Pedido {journey.order_number}</div>}{journey.quiz_profile_id && <div>Cuestionario</div>}</td>
-                <td style={{ padding: '12px 14px', fontSize: 11 }}>{new Date(journey.last_seen_at).toLocaleString('es-PE', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}<div style={{ opacity: 0.5 }}>{journey.source}</div></td>
+                <td style={{ padding: '12px 14px', fontSize: 11 }}>{formatLimaDate(journey.last_seen_at)}<div style={{ opacity: 0.5 }}>{journey.source}</div></td>
               </tr>
             ))}</tbody>
           </table>
@@ -354,7 +363,7 @@ export function AnalyticsClient({ data, visitors, journeys, filters }: { data: A
                       </td>
                       <td style={{ padding: '10px 16px' }}>
                         <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--liora-uva)', opacity: 0.6 }}>
-                          {new Date(p.createdAt).toLocaleDateString('es-PE', { day: '2-digit', month: 'short' })}
+                          {formatLimaDate(p.createdAt, false)}
                         </div>
                       </td>
                     </tr>

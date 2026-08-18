@@ -10,6 +10,7 @@ export async function updateSupabaseSession(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
+        encode: 'tokens-only',
         getAll: () => request.cookies.getAll(),
         setAll(cookiesToSet, headersToSet) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))

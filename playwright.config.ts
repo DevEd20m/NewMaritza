@@ -23,8 +23,9 @@ export default defineConfig({
     { name: 'webkit-auth-analytics', testMatch: /.*(admin-auth|analytics)\.spec\.ts/, use: { ...devices['Desktop Safari'] } },
   ],
   webServer: externalBaseUrl ? undefined : {
-    command: 'npm run dev',
+    command: process.env.PLAYWRIGHT_WEB_SERVER_COMMAND ?? 'npm run dev',
     url: 'http://localhost:3000',
+    timeout: 120_000,
     reuseExistingServer: !process.env.CI,
   },
 })

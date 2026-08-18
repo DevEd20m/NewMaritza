@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Logo } from '@/components/layout/Logo'
@@ -15,10 +15,14 @@ export function LoginClient() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [magicSent, setMagicSent] = useState(false)
+  const formRef = useRef<HTMLFormElement>(null)
 
-  const supabase = createClient()
+  useEffect(() => {
+    formRef.current?.setAttribute('data-auth-ready', 'true')
+  }, [])
 
   const handleGoogle = async () => {
+    const supabase = createClient()
     const callbackUrl = `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`
     await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: callbackUrl } })
   }
@@ -29,11 +33,19 @@ export function LoginClient() {
     setError('')
     try {
       if (mode === 'login') {
-        const { error } = await supabase.auth.signInWithPassword({ email, password })
-        if (error) throw error
-        await fetch('/api/analytics/session', { method: 'POST', credentials: 'same-origin' }).catch(() => undefined)
+        const sessionResponse = await fetch('/api/auth/login', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        })
+        if (!sessionResponse.ok) {
+          const result = await sessionResponse.json().catch(() => null) as { error?: string } | null
+          throw new Error(result?.error ?? 'No se pudo iniciar sesión')
+        }
         window.location.assign(nextPath)
       } else {
+        const supabase = createClient()
         const callbackUrl = `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`
         const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: callbackUrl } })
         if (error) throw error
@@ -88,7 +100,7 @@ export function LoginClient() {
           <div style={{ flex: 1, height: 1, background: 'var(--liora-arena)' }} />
         </div>
 
-        <form onSubmit={handleEmail} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <form ref={formRef} data-auth-ready="false" onSubmit={handleEmail} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <input aria-label="Correo electrónico" type="email" placeholder="tu@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required style={inputStyle} />
           <input aria-label="Contraseña" type="password" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} required style={inputStyle} />
 

@@ -4,11 +4,13 @@ const enabled = process.env.RUN_ANALYTICS_E2E === '1'
 const email = process.env.E2E_ADMIN_EMAIL
 const password = process.env.E2E_ADMIN_PASSWORD
 
+test.setTimeout(90_000)
+
 test.describe('Recorrido y WhatsApp', () => {
   test.skip(!enabled, 'RUN_ANALYTICS_E2E=1 habilita la prueba contra staging migrado')
 
   test('crea un recorrido anónimo y atribuye la apertura de WhatsApp', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/', { waitUntil: 'domcontentloaded' })
     const accept = page.getByRole('button', { name: 'Aceptar' })
     if (await accept.isVisible().catch(() => false)) await accept.click()
     const tiendaTracked = page.waitForResponse(response => {
@@ -16,7 +18,7 @@ test.describe('Recorrido y WhatsApp', () => {
       const payload = response.request().postDataJSON() as { events?: Array<{ path?: string }> } | null
       return payload?.events?.some(event => event.path === '/tienda') ?? false
     })
-    await page.goto('/tienda')
+    await page.goto('/tienda', { waitUntil: 'domcontentloaded' })
     await tiendaTracked
 
     const whatsapp = page.getByLabel('Contactar por WhatsApp')
@@ -31,16 +33,18 @@ test.describe('Recorrido y WhatsApp', () => {
 
     if (!email || !password) return
     const code = decodeURIComponent(location).match(/LIO-[A-F0-9]{6}/)?.[0]
-    await page.goto('/login?next=/admin/analytics')
+    await page.goto('/login?next=/admin/analytics', { waitUntil: 'domcontentloaded' })
+    await expect(page.locator('form[data-auth-ready="true"]')).toBeVisible()
     await page.getByPlaceholder('tu@email.com').fill(email)
     await page.getByPlaceholder('Contraseña').fill(password)
     await page.getByRole('button', { name: 'Iniciar sesión' }).click()
-    await page.goto(`/admin/analytics?dias=1&q=${code}&whatsapp=1`)
-    await expect(page.getByText(code!)).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Analítica' })).toBeVisible({ timeout: 20_000 })
+    await page.goto(`/admin/analytics?dias=1&q=${code}&whatsapp=1`, { waitUntil: 'domcontentloaded' })
+    await expect(page.getByText(code!)).toBeVisible({ timeout: 15_000 })
   })
 
   test('desactivar analítica persiste la preferencia', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/', { waitUntil: 'domcontentloaded' })
     await page.getByRole('button', { name: 'Configurar' }).click()
     await page.getByRole('button', { name: 'Desactivar' }).click()
     await expect.poll(async () => page.context().cookies().then(cookies => cookies.find(cookie => cookie.name === 'liora_analytics_preference')?.value)).toBe('optout')

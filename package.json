@@ -6,7 +6,7 @@
     "node": "22.x"
   },
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
@@ -15,6 +15,7 @@
     "test:recommendation": "vitest run tests/unit/recommendation",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
+    "test:e2e:local": "node scripts/run-local-e2e.mjs",
     "test:e2e:ui": "playwright test --ui",
     "typecheck": "tsc --noEmit",
     "report:quiz": "tsx scripts/generate-quiz-variant-report.ts",
