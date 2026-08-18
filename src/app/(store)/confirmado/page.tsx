@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getPaymentProvider } from '@/lib/payment/provider'
-import { getStoreSettings } from '@/lib/settings'
 import { markOrderPaid } from '@/lib/orders/mark-paid'
 import { SuccessClient } from '@/components/checkout/SuccessClient'
 import type { ConfirmedOrder } from '@/components/checkout/SuccessClient'
@@ -64,10 +63,7 @@ export default async function SuccessPage({ searchParams }: Props) {
   const { session_id: sessionId } = await searchParams
   const orderId = sessionId ? await confirmOrderFromSession(sessionId) : null
 
-  const [order, settings] = await Promise.all([
-    orderId ? getOrder(orderId) : Promise.resolve(null),
-    getStoreSettings(),
-  ])
+  const order = orderId ? await getOrder(orderId) : null
 
   if (!order) {
     return (
@@ -83,7 +79,6 @@ export default async function SuccessPage({ searchParams }: Props) {
   return (
     <SuccessClient
       order={order}
-      whatsappNumber={settings.whatsapp_number}
       quizProfileId={quizProfileId}
       trackingToken={paymentMetadata?.tracking_token ?? null}
     />

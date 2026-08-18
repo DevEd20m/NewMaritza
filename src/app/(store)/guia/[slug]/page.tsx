@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { getGuideBySlugDB, getAllGuideSlugsDB } from '@/lib/guides/db'
 import { GuideAccordion } from '@/components/guides/GuideAccordion'
 import { PersonalizedIntro } from '@/components/guides/PersonalizedIntro'
-import { getStoreSettings } from '@/lib/settings'
+import { trackedWhatsAppHref } from '@/lib/analytics/whatsapp'
 import { ArrowLeft } from '@phosphor-icons/react/dist/ssr'
 import { Suspense } from 'react'
 
@@ -27,11 +27,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function GuidePage({ params }: Props) {
   const { slug } = await params
-  const [guide, settings] = await Promise.all([getGuideBySlugDB(slug), getStoreSettings()])
+  const guide = await getGuideBySlugDB(slug)
   if (!guide) notFound()
 
   const kitSlug = slug.replace('kit-', '')
-  const waNumber = settings.whatsapp_number
 
   return (
     <div style={{ background: 'var(--liora-crema)', minHeight: '100vh' }}>
@@ -254,7 +253,7 @@ export default async function GuidePage({ params }: Props) {
                 Ir al kit →
               </Link>
               <a
-                href={`https://wa.me/${waNumber}?text=Hola%2C%20tengo%20preguntas%20sobre%20el%20${encodeURIComponent(guide.kitName)}`}
+                href={trackedWhatsAppHref('guide_public', `Hola, tengo preguntas sobre el ${guide.kitName}`)}
                 target="_blank" rel="noopener"
                 style={{
                   background: '#25d366', color: '#ffffff',

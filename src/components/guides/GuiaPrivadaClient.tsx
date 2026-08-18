@@ -1,4 +1,5 @@
 'use client'
+import { trackedWhatsAppHref } from '@/lib/analytics/whatsapp'
 import { useState } from 'react'
 import { Warning, CheckCircle, CaretDown } from '@phosphor-icons/react'
 
@@ -140,7 +141,7 @@ function SafetySection({ flags }: { flags: SafetyFlag[] }) {
   )
 }
 
-export function GuiaPrivadaClient({ snapshot, whatsappNumber }: { snapshot: OrderGuideSnapshot; whatsappNumber?: string }) {
+export function GuiaPrivadaClient({ snapshot }: { snapshot: OrderGuideSnapshot }) {
   const guide = snapshot.guide_snapshot_json
   const products = snapshot.products_snapshot_json ?? []
   const safetyFlags = snapshot.safety_flags_snapshot_json ?? []
@@ -202,7 +203,7 @@ export function GuiaPrivadaClient({ snapshot, whatsappNumber }: { snapshot: Orde
             Nuestro equipo puede orientarte. Sin costo, sin compromiso.
           </p>
           <a
-            href={`https://wa.me/${whatsappNumber ?? ''}`}
+            href={trackedWhatsAppHref('guide_private', 'Hola, tengo una pregunta sobre mi guía LIORA')}
             target="_blank"
             rel="noopener noreferrer"
             style={{ background: 'var(--liora-lima)', color: 'var(--liora-uva)', borderRadius: 999, padding: '14px 24px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 15, textDecoration: 'none' }}

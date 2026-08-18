@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
+import { trackedWhatsAppHref } from '@/lib/analytics/whatsapp'
 import type { Icon, IconWeight } from '@phosphor-icons/react'
 import { ArrowLeft, Truck, ArrowUUpLeft, MapPin, CreditCard, Sparkle, ChatCircle, MagnifyingGlass, Plus, Minus, WhatsappLogo, EnvelopeSimple, Phone } from '@phosphor-icons/react'
 
@@ -107,8 +108,8 @@ export function AyudaClient({ whatsappNumber, deliveryTime, shippingCostCents, f
     return digits.startsWith('51') ? `+${digits}` : digits
   })()
 
-  const waLink = `https://wa.me/${whatsappNumber.replace(/\D/g, '')}?text=${encodeURIComponent('Hola, necesito ayuda con mi pedido LIORA.')}`
-  const waCallLink = `https://wa.me/${whatsappNumber.replace(/\D/g, '')}?text=${encodeURIComponent('Hola, quisiera coordinar una llamada con el equipo LIORA.')}`
+  const waLink = trackedWhatsAppHref('help', 'Hola, necesito ayuda con mi pedido LIORA.')
+  const waCallLink = trackedWhatsAppHref('help', 'Hola, quisiera coordinar una llamada con el equipo LIORA.')
 
   const HELP_FAQS = buildFaqs(waDisplay, deliveryTime, shippingCostCents, freeShippingThresholdCents)
   const faqs = HELP_FAQS[cat as keyof typeof HELP_FAQS] ?? []

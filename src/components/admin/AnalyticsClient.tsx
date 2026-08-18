@@ -1,6 +1,6 @@
 'use client'
 import type { CSSProperties } from 'react'
-import { ChartBar, UserCircle, ShoppingCart, Sparkle, ArrowRight, TrendUp, Eye, DeviceMobile, Warning } from '@phosphor-icons/react'
+import { ChartBar, UserCircle, ShoppingCart, Sparkle, ArrowRight, TrendUp, Eye, DeviceMobile, Warning, WhatsappLogo, Clock, Path } from '@phosphor-icons/react'
 import Link from 'next/link'
 import Image from 'next/image'
 
@@ -33,6 +33,28 @@ export interface AnalyticsData {
     kitCount: number
   }>
 }
+
+export interface JourneySummary {
+  session_id: string
+  status: 'anonymous' | 'identified' | 'opted_out'
+  started_at: string
+  last_seen_at: string
+  landing_path: string | null
+  last_path: string | null
+  active_ms: number
+  page_view_count: number
+  device: string | null
+  source: string
+  display_name: string
+  email: string | null
+  quiz_profile_id: string | null
+  order_id: string | null
+  order_number: string | null
+  whatsapp_code: string | null
+  whatsapp_clicked: boolean
+}
+
+type JourneyFilters = { query: string; identity: string; whatsappOnly: boolean }
 
 const CAT_COLORS: Record<string, string> = {
   'Gym & Proteínas': 'var(--cat-durazno)',
@@ -112,7 +134,7 @@ function VisitorsSection({ v }: { v: VisitorsData }) {
 
       {/* KPIs de visitantes */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
-        <KPI label="Visitantes reales" value={String(v.sessions)} sub={`últimos ${v.days} días`} icon={UserCircle} color="var(--cat-lavanda)" />
+        <KPI label="Sesiones" value={String(v.sessions)} sub={`últimos ${v.days} días`} icon={UserCircle} color="var(--cat-lavanda)" />
         <KPI label="Páginas vistas" value={String(v.pageViews)} sub={v.sessions > 0 ? `${(v.pageViews / v.sessions).toFixed(1)} por visita` : undefined} icon={Eye} color="var(--cat-cielo)" />
         <KPI label="Desde celular" value={`${mobilePct}%`} sub={`${v.mobileSessions} visitantes`} icon={DeviceMobile} color="var(--cat-menta)" />
         <KPI label="Conversión a compra" value={`${pct(v.funnel.purchased, v.sessions)}%`} sub={`${v.funnel.purchased} compras`} icon={ShoppingCart} color="var(--cat-durazno)" />
@@ -204,7 +226,51 @@ function VisitorsSection({ v }: { v: VisitorsData }) {
   )
 }
 
-export function AnalyticsClient({ data, visitors }: { data: AnalyticsData; visitors: VisitorsData }) {
+function formatDuration(ms: number) {
+  const seconds = Math.round(ms / 1000)
+  if (seconds < 60) return `${seconds}s`
+  return `${Math.floor(seconds / 60)}m ${seconds % 60}s`
+}
+
+function JourneySection({ journeys, days, filters }: { journeys: JourneySummary[]; days: number; filters: JourneyFilters }) {
+  return (
+    <section style={{ display: 'grid', gap: 14 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'end', flexWrap: 'wrap' }}>
+        <div>
+          <div style={PANEL_LABEL}>Recorridos recientes</div>
+          <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-uva)', opacity: 0.6 }}>Pantallas, tiempo activo, cuestionario, compra y origen de WhatsApp.</div>
+        </div>
+        <form method="get" action="/admin/analytics" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <input type="hidden" name="dias" value={days} />
+          <input aria-label="Buscar recorrido" name="q" defaultValue={filters.query} placeholder="Email, pedido o código" style={{ border: '1px solid var(--liora-arena)', borderRadius: 999, padding: '9px 14px', background: 'var(--liora-blanco)', color: 'var(--liora-uva)' }} />
+          <select aria-label="Filtrar por identidad" name="identidad" defaultValue={filters.identity} style={{ border: '1px solid var(--liora-arena)', borderRadius: 999, padding: '9px 12px', background: 'var(--liora-blanco)', color: 'var(--liora-uva)' }}>
+            <option value="all">Todos</option><option value="identified">Identificados</option><option value="anonymous">Anónimos</option>
+          </select>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'var(--font-body)', fontSize: 12 }}><input type="checkbox" name="whatsapp" value="1" defaultChecked={filters.whatsappOnly} /> WhatsApp</label>
+          <button type="submit" style={{ border: 0, borderRadius: 999, padding: '9px 16px', background: 'var(--liora-uva)', color: 'var(--liora-crema)', fontWeight: 700 }}>Filtrar</button>
+        </form>
+      </div>
+      <div style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 20, overflowX: 'auto' }}>
+        {journeys.length === 0 ? <div style={EMPTY_MSG}>Aún no hay recorridos con estos filtros.</div> : (
+          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 840 }}>
+            <thead><tr>{['Visitante', 'Recorrido', 'Tiempo', 'Resultado', 'Última actividad'].map(label => <th key={label} style={{ padding: '11px 14px', textAlign: 'left', fontFamily: 'var(--font-body)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', opacity: 0.5 }}>{label}</th>)}</tr></thead>
+            <tbody>{journeys.map(journey => (
+              <tr key={journey.session_id} style={{ borderTop: '1px solid var(--liora-arena)' }}>
+                <td style={{ padding: '12px 14px' }}><Link href={`/admin/analytics/${journey.session_id}`} style={{ color: 'var(--liora-uva)', fontWeight: 700, fontSize: 12 }}>{journey.display_name}</Link><div style={{ fontSize: 10, opacity: 0.55 }}>{journey.email ?? 'Anónimo'} · {journey.device ?? '—'}</div></td>
+                <td style={{ padding: '12px 14px', fontSize: 11 }}><div style={{ display: 'flex', gap: 5, alignItems: 'center' }}><Path size={13} /> {journey.page_view_count} pantallas</div><div style={{ opacity: 0.55 }}>{journey.landing_path ?? '—'} → {journey.last_path ?? '—'}</div></td>
+                <td style={{ padding: '12px 14px', fontSize: 12 }}><Clock size={13} style={{ verticalAlign: -2 }} /> {formatDuration(journey.active_ms)}</td>
+                <td style={{ padding: '12px 14px', fontSize: 11 }}>{journey.whatsapp_clicked && <div><WhatsappLogo size={13} style={{ verticalAlign: -2 }} /> {journey.whatsapp_code}</div>}{journey.order_number && <div>Pedido {journey.order_number}</div>}{journey.quiz_profile_id && <div>Cuestionario</div>}</td>
+                <td style={{ padding: '12px 14px', fontSize: 11 }}>{new Date(journey.last_seen_at).toLocaleString('es-PE', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}<div style={{ opacity: 0.5 }}>{journey.source}</div></td>
+              </tr>
+            ))}</tbody>
+          </table>
+        )}
+      </div>
+    </section>
+  )
+}
+
+export function AnalyticsClient({ data, visitors, journeys, filters }: { data: AnalyticsData; visitors: VisitorsData; journeys: JourneySummary[]; filters: JourneyFilters }) {
   const conversionRate = data.totalQuizzes > 0
     ? Math.round((data.withKit / data.totalQuizzes) * 100)
     : 0
@@ -219,6 +285,8 @@ export function AnalyticsClient({ data, visitors }: { data: AnalyticsData; visit
       </div>
 
       <VisitorsSection v={visitors} />
+
+      <JourneySection journeys={journeys} days={visitors.days} filters={filters} />
 
       {/* ── Sección quiz/pedidos (histórico) ─────────────────────────── */}
       <div>

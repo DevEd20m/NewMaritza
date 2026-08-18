@@ -1,11 +1,11 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { WhatsappLogo, X } from '@phosphor-icons/react'
+import { trackedWhatsAppHref } from '@/lib/analytics/whatsapp'
 
 const WA_MESSAGE = '¡Hola! Tengo una pregunta sobre los productos LIORA 🌿'
 
-export function WhatsAppButton({ number }: { number?: string }) {
-  const waNumber = number ?? process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '51999999999'
+export function WhatsAppButton() {
   const [visible, setVisible] = useState(false)
   const [tooltip, setTooltip] = useState(true)
 
@@ -24,7 +24,7 @@ export function WhatsAppButton({ number }: { number?: string }) {
 
   if (!visible) return null
 
-  const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(WA_MESSAGE)}`
+  const waUrl = trackedWhatsAppHref('floating', WA_MESSAGE)
 
   return (
     <>
@@ -77,6 +77,7 @@ export function WhatsAppButton({ number }: { number?: string }) {
           rel="noopener noreferrer"
           className="liora-wa-btn"
           aria-label="Contactar por WhatsApp"
+          data-analytics-id="whatsapp:floating"
           style={{
             width: 58, height: 58, borderRadius: '50%',
             background: '#25d366',

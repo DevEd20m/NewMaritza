@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
+import { requireAdmin } from '@/lib/auth/guards'
 
 const schema = z.object({
   free_shipping_threshold_cents: z.number().int().min(0),
@@ -14,18 +14,9 @@ const schema = z.object({
   email_contact: z.string().email().or(z.literal('')).optional(),
 })
 
-async function requireAdmin() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if ((profile as { role: string | null } | null)?.role !== 'admin') return null
-  return user
-}
-
 export async function GET() {
-  const user = await requireAdmin()
-  if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  const guard = await requireAdmin()
+  if (!guard.ok) return guard.response
 
   const admin = createAdminClient()
   const { data } = await (admin as any).from('store_settings').select('key, value')
@@ -44,8 +35,8 @@ export async function GET() {
 }
 
 export async function PUT(request: NextRequest) {
-  const user = await requireAdmin()
-  if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  const guard = await requireAdmin()
+  if (!guard.ok) return guard.response
 
   const body = await request.json()
   const parsed = schema.safeParse(body)

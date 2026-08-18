@@ -20,6 +20,7 @@ export default defineConfig({
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'webkit-auth-analytics', testMatch: /.*(admin-auth|analytics)\.spec\.ts/, use: { ...devices['Desktop Safari'] } },
   ],
   webServer: externalBaseUrl ? undefined : {
     command: 'npm run dev',

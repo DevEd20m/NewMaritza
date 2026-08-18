@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { buildBaseMetadata } from '@/lib/seo/metadata'
-import { GTMScript, GTMNoScript, GA4Script } from '@/components/layout/GTM'
+import { AnalyticsProviders } from '@/components/analytics/AnalyticsProviders'
+import { AnalyticsConsent } from '@/components/analytics/AnalyticsConsent'
 import './globals.css'
 import '@/styles/responsive.css'
 
@@ -14,10 +15,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="es-PE" className="h-full">
       <head />
       <body style={{ background: 'var(--liora-crema)', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-        {gtmId && <GTMNoScript gtmId={gtmId} />}
         {children}
-        {gtmId && <GTMScript gtmId={gtmId} />}
-        {ga4Id && <GA4Script ga4Id={ga4Id} />}
+        <AnalyticsConsent />
+        <AnalyticsProviders gtmId={gtmId} ga4Id={ga4Id} />
       </body>
     </html>
   )

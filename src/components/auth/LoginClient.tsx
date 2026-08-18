@@ -1,13 +1,13 @@
 'use client'
 import { useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Logo } from '@/components/layout/Logo'
+import { sanitizeNextPath } from '@/lib/auth/next-path'
 
 export function LoginClient() {
-  const router = useRouter()
   const searchParams = useSearchParams()
-  const nextPath = searchParams.get('next') ?? '/cuenta'
+  const nextPath = sanitizeNextPath(searchParams.get('next'))
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -31,7 +31,8 @@ export function LoginClient() {
       if (mode === 'login') {
         const { error } = await supabase.auth.signInWithPassword({ email, password })
         if (error) throw error
-        router.push(nextPath)
+        await fetch('/api/analytics/session', { method: 'POST', credentials: 'same-origin' }).catch(() => undefined)
+        window.location.assign(nextPath)
       } else {
         const callbackUrl = `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`
         const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: callbackUrl } })
@@ -73,6 +74,7 @@ export function LoginClient() {
 
         {/* Google SSO */}
         <button
+          type="button"
           onClick={handleGoogle}
           style={{ width: '100%', background: 'var(--liora-blanco)', color: 'var(--liora-uva)', border: '1.5px solid var(--liora-arena)', borderRadius: 999, padding: '14px 24px', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 15, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 24 }}
         >
@@ -87,8 +89,8 @@ export function LoginClient() {
         </div>
 
         <form onSubmit={handleEmail} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <input type="email" placeholder="tu@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required style={inputStyle} />
-          <input type="password" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} required style={inputStyle} />
+          <input aria-label="Correo electrónico" type="email" placeholder="tu@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required style={inputStyle} />
+          <input aria-label="Contraseña" type="password" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} required style={inputStyle} />
 
           {error && <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--color-error)' }}>{error}</p>}
 
@@ -102,6 +104,7 @@ export function LoginClient() {
         </form>
 
         <button
+          type="button"
           onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
           style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--liora-uva)', opacity: 0.7, marginTop: 20, width: '100%' }}
         >

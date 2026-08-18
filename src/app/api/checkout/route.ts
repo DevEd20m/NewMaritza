@@ -5,6 +5,7 @@ import { createOrderSchema } from '@/lib/validation/checkout'
 import { getStoreSettings } from '@/lib/settings'
 import { consumeRateLimit, requestIp } from '@/lib/security/rate-limit'
 import { CHECKOUT_COOKIE, createOpaqueToken, hashOpaqueToken } from '@/lib/security/tokens'
+import { linkCurrentAnalyticsSession } from '@/lib/analytics/server'
 
 // Product decision: every checkout capability and inventory reservation lasts 30 minutes.
 const RESERVATION_TTL_SECONDS = 30 * 60
@@ -279,6 +280,8 @@ export async function POST(request: NextRequest) {
       await admin.from('orders').update({ status: 'cancelled' }).eq('id', order.id)
       return NextResponse.json({ error: 'Error al preparar el pago' }, { status: 500 })
     }
+
+    await linkCurrentAnalyticsSession({ orderId: order.id, quizProfileId: validatedQuizProfileId })
 
     const response = NextResponse.json({
       orderId: order.id,

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { z } from 'zod'
 import { consumeRateLimit, requestIp } from '@/lib/security/rate-limit'
+import { linkCurrentAnalyticsSession } from '@/lib/analytics/server'
 
 const schema = z.object({
   email: z.string().email(),
@@ -17,10 +18,12 @@ export async function POST(request: NextRequest) {
     const { email, source } = schema.parse(body)
 
     const admin = createAdminClient()
-    await admin.from('leads').upsert(
+    const { data: lead } = await admin.from('leads').upsert(
       { email, source, phone: null, quiz_profile_id: null },
-      { onConflict: 'email', ignoreDuplicates: true }
-    )
+      { onConflict: 'email' }
+    ).select('id').single()
+
+    await linkCurrentAnalyticsSession({ leadId: lead?.id ?? null })
 
     return NextResponse.json({ ok: true })
   } catch {

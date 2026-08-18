@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
+import { requireAdmin } from '@/lib/auth/guards'
 
 const schema = z.object({
   code: z.string().min(2),
@@ -26,21 +26,12 @@ const schema = z.object({
   promo_cta: z.string().nullable().optional(),
 })
 
-async function requireAdmin() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if ((profile as { role: string | null } | null)?.role !== 'admin') return null
-  return user
-}
-
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const user = await requireAdmin()
-  if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  const guard = await requireAdmin()
+  if (!guard.ok) return guard.response
 
   const { id } = await params
   const body = await request.json()
@@ -69,8 +60,8 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const user = await requireAdmin()
-  if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  const guard = await requireAdmin()
+  if (!guard.ok) return guard.response
 
   const { id } = await params
   const admin = createAdminClient()

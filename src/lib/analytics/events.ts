@@ -1,6 +1,7 @@
 'use client'
 
 import { track } from './tracker'
+import { analyticsEnabled } from './preference'
 
 declare global {
   interface Window {
@@ -10,17 +11,17 @@ declare global {
 }
 
 function push(event: Record<string, unknown> & { event: string; ecommerce?: Record<string, unknown> }) {
-  if (typeof window === 'undefined') return
+  if (typeof window === 'undefined' || !analyticsEnabled()) return
   window.dataLayer = window.dataLayer ?? []
   window.dataLayer.push(event)
-  // GA4 directo (gtag.js) no lee pushes arbitrarios del dataLayer: reenviar explícitamente.
-  if (typeof window.gtag === 'function' && event.ecommerce) {
-    window.gtag('event', event.event, event.ecommerce)
+  // Con GTM el dataLayer es la única salida para evitar eventos duplicados.
+  if (!process.env.NEXT_PUBLIC_GTM_ID && typeof window.gtag === 'function') {
+    window.gtag('event', event.event, event.ecommerce ?? Object.fromEntries(Object.entries(event).filter(([key]) => key !== 'event')))
   }
 }
 
 export function trackPageView(path: string) {
-  track({ event: 'page_view', path })
+  push({ event: 'page_view', page_path: path })
 }
 
 export function trackViewItem(product: {
@@ -64,7 +65,7 @@ export function trackBeginCheckout(totalCents: number, items: { variantId: strin
 }
 
 export function trackCheckoutError(message: string, totalCents?: number) {
-  push({ event: 'checkout_error', error_message: message })
+  push({ event: 'checkout_error' })
   track({ event: 'checkout_error', value_cents: totalCents, metadata: { message: message.slice(0, 300) } })
 }
 

@@ -3,6 +3,8 @@ import { InstagramLogo, TiktokLogo, WhatsappLogo, EnvelopeSimple } from '@phosph
 import { Logo } from './Logo'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getStoreSettings } from '@/lib/settings'
+import { trackedWhatsAppHref } from '@/lib/analytics/whatsapp'
+import { FooterPrivacyButton } from '@/components/analytics/FooterPrivacyButton'
 
 const STATIC_LINKS = {
   Tienda: [
@@ -35,7 +37,7 @@ export async function Footer() {
   const social = [
     { Icon: InstagramLogo,  href: settings.instagram_url  || null,                                    label: 'Instagram de LIORA' },
     { Icon: TiktokLogo,     href: settings.tiktok_url     || null,                                    label: 'TikTok de LIORA' },
-    { Icon: WhatsappLogo,   href: settings.whatsapp_number ? `https://wa.me/${settings.whatsapp_number}` : null, label: 'WhatsApp de LIORA' },
+    { Icon: WhatsappLogo,   href: settings.whatsapp_number ? trackedWhatsAppHref('footer') : null, label: 'WhatsApp de LIORA' },
     { Icon: EnvelopeSimple, href: settings.email_contact   ? `mailto:${settings.email_contact}` : null,          label: 'Email de LIORA' },
   ].filter((s): s is { Icon: typeof InstagramLogo; href: string; label: string } => s.href !== null)
   return (
@@ -133,6 +135,7 @@ export async function Footer() {
         <div style={{ display: 'flex', gap: 20, fontFamily: 'var(--font-body)', fontSize: 13, opacity: 0.7 }}>
           <Link href="/terminos" style={{ color: 'var(--liora-crema)' }}>Términos</Link>
           <Link href="/privacidad" style={{ color: 'var(--liora-crema)' }}>Privacidad</Link>
+          <FooterPrivacyButton />
         </div>
       </div>
     </footer>

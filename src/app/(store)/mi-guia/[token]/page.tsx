@@ -2,7 +2,6 @@ import { notFound } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { Metadata } from 'next'
 import { GuiaPrivadaClient } from '@/components/guides/GuiaPrivadaClient'
-import { getStoreSettings } from '@/lib/settings'
 
 export const metadata: Metadata = {
   title: 'Tu guía personalizada | LIORA',
@@ -56,6 +55,5 @@ export default async function MiGuiaPage({ params }: { params: Promise<{ token: 
       .eq('id', snapshot.id)
   }
 
-  const { whatsapp_number } = await getStoreSettings()
-  return <GuiaPrivadaClient snapshot={snapshot} whatsappNumber={whatsapp_number} />
+  return <GuiaPrivadaClient snapshot={snapshot} />
 }

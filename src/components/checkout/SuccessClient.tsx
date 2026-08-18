@@ -5,6 +5,7 @@ import { CheckCircle, Copy, Check, ArrowRight, WhatsappLogo } from '@phosphor-ic
 import { useCartStore } from '@/lib/store/cart'
 import { trackPurchase } from '@/lib/analytics/events'
 import type { KitGuide } from '@/lib/guides'
+import { trackedWhatsAppHref } from '@/lib/analytics/whatsapp'
 
 export interface ConfirmedOrder {
   id: string
@@ -18,8 +19,7 @@ export interface ConfirmedOrder {
   order_items: { variant_id: string | null; product_name_snapshot: string; variant_name_snapshot: string; quantity: number; unit_price_cents: number }[]
 }
 
-export function SuccessClient({ order, whatsappNumber, quizProfileId, trackingToken }: { order: ConfirmedOrder; whatsappNumber?: string; quizProfileId?: string | null; trackingToken?: string | null }) {
-  const WHATSAPP_NUMBER = whatsappNumber ?? '51999999999'
+export function SuccessClient({ order, quizProfileId, trackingToken }: { order: ConfirmedOrder; quizProfileId?: string | null; trackingToken?: string | null }) {
   const { clearCart } = useCartStore()
   const [copied, setCopied] = useState(false)
   const [guide, setGuide] = useState<KitGuide | null>(null)
@@ -81,7 +81,7 @@ export function SuccessClient({ order, whatsappNumber, quizProfileId, trackingTo
   const waText = guide
     ? `Hola, acabo de comprar el ${guide.kitName} (pedido #${order.order_number}) y tengo una pregunta`
     : `Hola, acabo de comprar (pedido #${order.order_number}) y tengo una pregunta`
-  const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(waText)}`
+  const waUrl = trackedWhatsAppHref('order_confirmation', waText)
 
   return (
     <div className="liora-cart-outer" style={{ background: 'var(--liora-crema)', padding: '64px 48px 96px', maxWidth: 760, margin: '0 auto' }}>

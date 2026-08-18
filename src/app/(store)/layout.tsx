@@ -46,7 +46,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
       <LiveActivityToast />
       <ExitIntentModal isLoggedIn={!!user} />
       <HideOnQuiz>
-        <WhatsAppButton number={settings.whatsapp_number} />
+        <WhatsAppButton />
       </HideOnQuiz>
     </>
   )

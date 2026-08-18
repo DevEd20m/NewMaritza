@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
+import { updateSupabaseSession } from '@/lib/supabase/proxy'
 
 // ─── Rutas que requieren sesión activa (redirect a /login si no) ──────────────
 const AUTH_REQUIRED_PREFIXES = ['/cuenta']
@@ -10,47 +10,26 @@ const ADMIN_PREFIXES = ['/admin']
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
+  const { response, userId } = await updateSupabaseSession(request)
   // ── 1. Auth check para rutas protegidas ────────────────────────────────────
   const needsAuth  = AUTH_REQUIRED_PREFIXES.some(p => pathname.startsWith(p))
   const needsAdmin = ADMIN_PREFIXES.some(p => pathname.startsWith(p))
 
   if (needsAuth || needsAdmin) {
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll: () => request.cookies.getAll(),
-          setAll: () => {},   // read-only in middleware
-        },
-      }
-    )
-
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
+    if (!userId) {
       const loginUrl = new URL('/login', request.url)
       loginUrl.searchParams.set('next', pathname)
-      return NextResponse.redirect(loginUrl)
-    }
-
-    // Admin routes: verify role
-    if (needsAdmin) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single()
-
-      if ((profile as { role: string | null } | null)?.role !== 'admin') {
-        return NextResponse.redirect(new URL('/', request.url))
+      const redirectResponse = NextResponse.redirect(loginUrl)
+      response.cookies.getAll().forEach(cookie => redirectResponse.cookies.set(cookie))
+      for (const header of ['cache-control', 'expires', 'pragma']) {
+        const value = response.headers.get(header)
+        if (value) redirectResponse.headers.set(header, value)
       }
+      return redirectResponse
     }
   }
 
   // ── 2. Security headers en todas las respuestas ────────────────────────────
-  const response = NextResponse.next()
-
   response.headers.set('X-Content-Type-Options', 'nosniff')
   response.headers.set('X-Frame-Options', 'SAMEORIGIN')
   response.headers.set('X-DNS-Prefetch-Control', 'on')

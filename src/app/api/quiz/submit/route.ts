@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 import { createOpaqueToken } from '@/lib/security/tokens'
 import { consumeRateLimit, requestIp } from '@/lib/security/rate-limit'
+import { linkCurrentAnalyticsSession } from '@/lib/analytics/server'
 
 const schema = z.object({
   templateId: z.string().min(1),
@@ -53,14 +54,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Save lead if email provided
+    let leadId: string | null = null
     if (email) {
-      await admin.from('leads').upsert({
+      const { data: lead } = await admin.from('leads').upsert({
         email,
         phone: phone ?? null,
         quiz_profile_id: profile.id,
         source: 'quiz_p7',
-      }, { onConflict: 'email', ignoreDuplicates: true })
+      }, { onConflict: 'email' }).select('id').single()
+      leadId = lead?.id ?? null
     }
+
+    await linkCurrentAnalyticsSession({ leadId, quizProfileId: profile.id })
 
     // Las recomendaciones las genera y persiste /api/kit/recommend (el motor
     // real) cuando el carrito carga el perfil — aquí no se insertan filas

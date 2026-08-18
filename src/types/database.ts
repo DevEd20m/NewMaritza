@@ -23,6 +23,13 @@ export interface Database {
       release_order_inventory: { Args: { p_order_id: string; p_reason?: string; p_expired?: boolean }; Returns: boolean }
       release_expired_inventory_reservations: { Args: Record<PropertyKey, never>; Returns: number }
       finalize_paid_order: { Args: { p_order_id: string; p_provider_reference: string; p_source: string }; Returns: string }
+      ingest_analytics_events: { Args: { p_session_id: string; p_events: Json }; Returns: number }
+      link_analytics_session: { Args: { p_token_hash: string; p_user_id?: string | null; p_lead_id?: string | null; p_quiz_profile_id?: string | null; p_order_id?: string | null }; Returns: string | null }
+      claim_analytics_outbox: { Args: { p_limit?: number }; Returns: Database['public']['Tables']['analytics_delivery_outbox']['Row'][] }
+      cleanup_analytics_journeys: { Args: { p_retention_days?: number }; Returns: number }
+      analytics_summary: { Args: { p_days?: number }; Returns: Json }
+      admin_analytics_session_list: { Args: { p_days?: number; p_limit?: number; p_offset?: number; p_query?: string | null; p_identity?: string; p_whatsapp?: boolean }; Returns: Json }
+      admin_analytics_session_detail: { Args: { p_session_id: string }; Returns: Json }
     }
     Tables: {
       categories: {
@@ -116,9 +123,27 @@ export interface Database {
         Relationships: []
       }
       analytics_events: {
-        Row: { id: string; session_id: string; user_id: string | null; event: string; path: string | null; referrer: string | null; utm_source: string | null; utm_medium: string | null; utm_campaign: string | null; product_slug: string | null; variant_id: string | null; value_cents: number | null; metadata: Json; device: string | null; created_at: string }
-        Insert: { session_id: string; event: string; user_id?: string | null; path?: string | null; referrer?: string | null; utm_source?: string | null; utm_medium?: string | null; utm_campaign?: string | null; product_slug?: string | null; variant_id?: string | null; value_cents?: number | null; metadata?: Json; device?: string | null; created_at?: string }
+        Row: { id: string; session_id: string; analytics_session_id: string | null; event_id: string | null; page_view_id: string | null; user_id: string | null; event: string; path: string | null; referrer: string | null; utm_source: string | null; utm_medium: string | null; utm_campaign: string | null; product_slug: string | null; variant_id: string | null; value_cents: number | null; metadata: Json; device: string | null; occurred_at: string | null; target_id: string | null; target_type: string | null; engagement_ms: number | null; created_at: string }
+        Insert: { session_id: string; event: string; analytics_session_id?: string | null; event_id?: string | null; page_view_id?: string | null; user_id?: string | null; path?: string | null; referrer?: string | null; utm_source?: string | null; utm_medium?: string | null; utm_campaign?: string | null; product_slug?: string | null; variant_id?: string | null; value_cents?: number | null; metadata?: Json; device?: string | null; occurred_at?: string | null; target_id?: string | null; target_type?: string | null; engagement_ms?: number | null; created_at?: string }
         Update: Partial<Database['public']['Tables']['analytics_events']['Insert']>
+        Relationships: []
+      }
+      analytics_sessions: {
+        Row: { id: string; token_hash: string; status: 'anonymous' | 'identified' | 'opted_out'; started_at: string; last_seen_at: string; ended_at: string | null; landing_path: string | null; last_path: string | null; active_ms: number; page_view_count: number; device: string | null; referrer: string | null; utm_source: string | null; utm_medium: string | null; utm_campaign: string | null; user_id: string | null; lead_id: string | null; quiz_profile_id: string | null; order_id: string | null; identified_at: string | null; whatsapp_code: string | null; created_at: string; updated_at: string }
+        Insert: { token_hash: string; status?: 'anonymous' | 'identified' | 'opted_out'; user_id?: string | null; identified_at?: string | null }
+        Update: Partial<Database['public']['Tables']['analytics_sessions']['Row']>
+        Relationships: []
+      }
+      analytics_page_views: {
+        Row: { id: string; session_id: string; path: string; title: string | null; entered_at: string; last_active_at: string; exited_at: string | null; engaged_ms: number; created_at: string }
+        Insert: Omit<Database['public']['Tables']['analytics_page_views']['Row'], 'created_at' | 'engaged_ms'> & { engaged_ms?: number }
+        Update: Partial<Database['public']['Tables']['analytics_page_views']['Insert']>
+        Relationships: []
+      }
+      analytics_delivery_outbox: {
+        Row: { id: string; event_id: string; provider: 'amplitude'; payload: Json; status: 'pending' | 'processing' | 'sent' | 'failed'; attempts: number; next_attempt_at: string; locked_at: string | null; last_error: string | null; sent_at: string | null; created_at: string }
+        Insert: { event_id: string; provider: 'amplitude'; payload: Json }
+        Update: Partial<Database['public']['Tables']['analytics_delivery_outbox']['Row']>
         Relationships: []
       }
       profiles: {
