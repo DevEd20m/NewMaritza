@@ -32,7 +32,7 @@ export function ProductCard({
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
     addItem({ variantId, productId, name, variantName: subname ?? '', priceCents, currency, imageUrl, categoryColor })
-    trackAddToCart({ variantId, name, priceCents, quantity: 1, currency })
+    trackAddToCart({ variantId, name, priceCents, quantity: 1, currency, productSlug: slug })
   }
 
   const metaLine = [categoryName, subname].filter(Boolean).join(' · ')

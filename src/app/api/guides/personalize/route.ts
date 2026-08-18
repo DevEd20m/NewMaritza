@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
+import { consumeRateLimit, requestIp } from '@/lib/security/rate-limit'
 
 export const dynamic = 'force-dynamic'
 
@@ -10,10 +12,29 @@ interface PersonalizationResult {
 }
 
 export async function POST(req: NextRequest) {
+  if (!await consumeRateLimit('guide-personalize', requestIp(req), 8, 60)) {
+    return NextResponse.json({ error: 'Demasiadas solicitudes' }, { status: 429 })
+  }
   const { profileId, guideSlug } = await req.json().catch(() => ({}))
   if (!profileId || !guideSlug) return NextResponse.json(null, { status: 400 })
 
   const admin = createAdminClient()
+
+  const { data: profile } = await (admin as any)
+    .from('quiz_profiles')
+    .select('answers, applied_tags, user_id, session_token')
+    .eq('id', profileId)
+    .maybeSingle()
+
+  if (!profile) return NextResponse.json(null, { status: 404 })
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const sessionToken = req.cookies.get('liora_session')?.value
+  const ownsProfile =
+    (user && profile.user_id === user.id)
+    || (sessionToken && profile.session_token === sessionToken)
+  if (!ownsProfile) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
 
   // Return cached result if available
   const { data: cached } = await (admin as any)
@@ -32,15 +53,6 @@ export async function POST(req: NextRequest) {
   }
 
   if (!process.env.OPENAI_API_KEY) return NextResponse.json(null)
-
-  // Load quiz profile
-  const { data: profile } = await (admin as any)
-    .from('quiz_profiles')
-    .select('answers, applied_tags, user_id')
-    .eq('id', profileId)
-    .maybeSingle()
-
-  if (!profile) return NextResponse.json(null)
 
   // Load guide tips
   const { data: guide } = await (admin as any)

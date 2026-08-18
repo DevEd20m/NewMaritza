@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
   let subtitle = 'Tu cuerpo, tu kit, tu rutina.'
   let imageUrl: string | null = null
   let badge    = 'Wellness'
-  let priceLabel: string | null = price ? `S/ ${price}` : null
+  const priceLabel: string | null = price ? `S/ ${price}` : null
 
   if (slug) {
     const admin = createAdminClient()

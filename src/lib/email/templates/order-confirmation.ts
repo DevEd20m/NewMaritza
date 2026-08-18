@@ -20,6 +20,7 @@ interface OrderConfirmationProps {
   activationUrl?: string
   whatsappUrl: string
   siteUrl: string
+  trackingUrl: string
 }
 
 const fmt = (cents: number) => `S/ ${(cents / 100).toFixed(0)}`
@@ -37,6 +38,7 @@ export function orderConfirmationEmail({
   activationUrl,
   whatsappUrl,
   siteUrl,
+  trackingUrl,
 }: OrderConfirmationProps): string {
   const name = customerName?.split(' ')[0] ?? 'amig@'
 
@@ -207,7 +209,7 @@ export function orderConfirmationEmail({
                   <div style="font-family:'Helvetica Neue',sans-serif;font-size:12px;color:#3d1a3a;opacity:0.75;margin-top:2px;">Lima: 36–48h · Provincias: 3–5 días hábiles</div>
                 </td>
                 <td style="text-align:right;vertical-align:middle;">
-                  <a href="${siteUrl}/tracking" style="font-family:'Helvetica Neue',sans-serif;font-size:12px;font-weight:700;color:#3d1a3a;text-decoration:underline;">Seguir pedido →</a>
+                  <a href="${trackingUrl}" style="font-family:'Helvetica Neue',sans-serif;font-size:12px;font-weight:700;color:#3d1a3a;text-decoration:underline;">Seguir pedido →</a>
                 </td>
               </tr>
             </table>
@@ -249,7 +251,7 @@ export function orderConfirmationEmail({
               &nbsp;·&nbsp;
               <a href="${siteUrl}/ayuda" style="color:#a09090;text-decoration:none;">Ayuda</a>
               &nbsp;·&nbsp;
-              <a href="${siteUrl}/tracking" style="color:#a09090;text-decoration:none;">Rastrear pedido</a>
+              <a href="${trackingUrl}" style="color:#a09090;text-decoration:none;">Rastrear pedido</a>
             </p>
           </td>
         </tr>

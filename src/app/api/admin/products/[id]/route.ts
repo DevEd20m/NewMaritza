@@ -56,11 +56,18 @@ export async function PUT(
 
     if (variant_id) {
       // El stock vive en la variante: es lo que el checkout valida y descuenta al vender
-      await (admin as any).from('product_variants').update({
+      const { error: stockError } = await (admin as any).from('product_variants').update({
         name: variant_name,
         sku: sku || undefined,
         stock_quantity: stock_quantity ?? null,
       }).eq('id', variant_id)
+      if (stockError?.message.includes('cannot_change_stock_mode_with_active_reservations')) {
+        return NextResponse.json(
+          { error: 'No puedes cambiar entre stock limitado e ilimitado mientras existan reservas activas.' },
+          { status: 409 },
+        )
+      }
+      if (stockError) throw stockError
 
       // Update active price, or insert if none
       const { data: existingPrice } = await (admin as any)

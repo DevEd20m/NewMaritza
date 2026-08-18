@@ -1,11 +1,12 @@
 'use client'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { SquaresFour, Receipt, Package, Sparkle, UsersThree, Bell, ClipboardText, Ticket, GearSix, Tag, ChartBar, FolderSimple, BookOpen } from '@phosphor-icons/react'
+import { SquaresFour, Receipt, Package, Sparkle, UsersThree, Bell, ClipboardText, Ticket, GearSix, Tag, ChartBar, FolderSimple, BookOpen, Pulse } from '@phosphor-icons/react'
 
 const NAV = [
   { href: '/admin',                  label: 'Dashboard',    Icon: SquaresFour },
   { href: '/admin/pedidos',          label: 'Pedidos',      Icon: Receipt },
+  { href: '/admin/operaciones',      label: 'Operaciones',  Icon: Pulse },
   { href: '/admin/productos',        label: 'Productos',    Icon: Package },
   { href: '/admin/kits',             label: 'Kits',         Icon: Sparkle },
   { href: '/admin/categorias',       label: 'Categorías',   Icon: FolderSimple },

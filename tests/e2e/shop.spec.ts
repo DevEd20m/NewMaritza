@@ -6,12 +6,10 @@ test.describe('Shop page', () => {
     await expect(page.locator('h1')).toBeVisible()
   })
 
-  test('can toggle between kits and individual products', async ({ page }) => {
+  test('shows kits and individual products sections', async ({ page }) => {
     await page.goto('/tienda')
-    const individualBtn = page.locator('a[href="/tienda?modo=individual"]')
-    await expect(individualBtn).toBeVisible()
-    await individualBtn.click()
-    await expect(page.url()).toContain('modo=individual')
+    await expect(page.locator('#kits-base')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Productos sueltos' })).toBeVisible()
   })
 
   test('product detail page loads', async ({ page }) => {

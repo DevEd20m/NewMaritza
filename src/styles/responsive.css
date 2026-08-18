@@ -14,6 +14,9 @@
   .liora-header-nav { display: none !important; }
   .liora-header-menu-btn { display: flex !important; }
   .liora-header-user-name { display: none !important; }
+  /* En móvil el campo de búsqueda se compacta a solo la lupa */
+  .liora-header-search-field { display: none !important; }
+  .liora-header-search-icon { display: flex !important; }
 }
 .liora-header-menu-btn { display: none; }
 

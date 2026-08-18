@@ -1,9 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
-import { KitCard } from '@/components/products/KitCard'
+import { KitsShowcase } from '@/components/products/KitsShowcase'
 import { ShopProductsSection, type ShopProduct } from '@/components/products/ShopProductsSection'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import type { KitWithProducts } from '@/types/database'
+import type { RelatedKit } from '@/lib/recommendation/related'
 import { ArrowRight, Sparkle } from '@phosphor-icons/react/dist/ssr'
 
 export const metadata: Metadata = {
@@ -16,7 +17,7 @@ async function getProducts(): Promise<ShopProduct[]> {
   const { data } = await supabase
     .from('products')
     .select(`
-      id, name, slug, cover_image_url, category_id,
+      id, name, slug, brand, created_at, cover_image_url, category_id,
       categories ( slug, name ),
       product_variants (
         id, name,
@@ -25,7 +26,7 @@ async function getProducts(): Promise<ShopProduct[]> {
     `)
     .eq('is_active', true)
     .order('name')
-  return (data as ShopProduct[]) ?? []
+  return (data as unknown as ShopProduct[]) ?? []
 }
 
 async function getKits(): Promise<KitWithProducts[]> {
@@ -44,7 +45,7 @@ async function getKits(): Promise<KitWithProducts[]> {
       )
     `)
     .eq('is_active', true)
-  return (data as KitWithProducts[]) ?? []
+  return (data as unknown as KitWithProducts[]) ?? []
 }
 
 const STEPS = [
@@ -53,11 +54,30 @@ const STEPS = [
   { n: '03', title: 'Tu kit personalizado', sub: '4–5 productos + diagnóstico incluido' },
 ]
 
-interface Props { searchParams: Promise<{ categoria?: string }> }
+// Forma compacta para el carrusel de kits (misma que usa KitMiniCard)
+function toRelatedKits(kits: KitWithProducts[]): RelatedKit[] {
+  return kits
+    .map((kit) => ({
+      id: kit.id,
+      name: kit.name,
+      slug: kit.slug,
+      description: kit.description,
+      coverImageUrl: kit.cover_image_url,
+      productCount: kit.kit_products.length,
+      totalCents: kit.kit_products.reduce((s, kp) => {
+        const price = kp.variant?.prices?.find((p) => !p.effective_to) ?? kp.variant?.prices?.[0]
+        return s + (price?.amount_cents ?? 0) * kp.quantity
+      }, 0),
+    }))
+    .filter((k) => k.totalCents > 0)
+}
+
+interface Props { searchParams: Promise<{ categoria?: string; q?: string }> }
 
 export default async function ShopPage({ searchParams }: Props) {
-  const { categoria } = await searchParams
+  const { categoria, q } = await searchParams
   const [products, kits] = await Promise.all([getProducts(), getKits()])
+  const relatedKits = toRelatedKits(kits)
 
   return (
     <div style={{ background: 'var(--liora-crema)' }}>
@@ -113,7 +133,7 @@ export default async function ShopPage({ searchParams }: Props) {
                 color: 'var(--liora-crema)', opacity: 0.55, textDecoration: 'none',
                 borderBottom: '1px solid rgba(255,255,255,0.3)', paddingBottom: 2,
               }}>
-                o elige un kit base ↓
+                o explora la tienda ↓
               </a>
             </div>
           </div>
@@ -150,9 +170,9 @@ export default async function ShopPage({ searchParams }: Props) {
 
       <div className="liora-px" style={{ maxWidth: 1280, margin: '0 auto', padding: '64px 48px 96px' }}>
 
-        {/* ── KITS BASE ──────────────────────────────────────────────────── */}
-        <section id="kits-base" style={{ marginBottom: 80 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 36 }}>
+        {/* ── KITS BASE: carrusel compacto ───────────────────────────────── */}
+        <section id="kits-base" style={{ marginBottom: 72 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 24 }}>
             <div>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--liora-lima)', borderRadius: 999, padding: '5px 14px', marginBottom: 14 }}>
                 <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
@@ -164,10 +184,10 @@ export default async function ShopPage({ searchParams }: Props) {
                 color: 'var(--liora-uva)', margin: 0, lineHeight: 1.0,
                 fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1",
               }}>
-                Los más populares
+                Rutinas listas para ti
               </h2>
               <p style={{ fontFamily: 'var(--font-body)', fontSize: 15, color: 'var(--liora-uva)', opacity: 0.65, margin: '8px 0 0', maxWidth: 480 }}>
-                Cada kit está pensado para un objetivo. Entra y personalízalo con 3 preguntas rápidas — o cómpralo tal cual.
+                Cada kit está pensado para un objetivo. Entra y personalízalo — o cómpralo tal cual.
               </p>
             </div>
             <Link href="/cuestionario" style={{
@@ -181,12 +201,10 @@ export default async function ShopPage({ searchParams }: Props) {
             </Link>
           </div>
 
-          <div className="liora-kits-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 20 }}>
-            {kits.map((kit) => <KitCard key={kit.id} kit={kit} />)}
-          </div>
+          <KitsShowcase kits={relatedKits} />
         </section>
 
-        <ShopProductsSection products={products} initialCategoria={categoria ?? ''} />
+        <ShopProductsSection products={products} initialCategoria={categoria ?? ''} initialQ={q ?? ''} />
 
       </div>
     </div>

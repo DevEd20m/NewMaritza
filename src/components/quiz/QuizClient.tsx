@@ -8,6 +8,7 @@ import {
 } from '@phosphor-icons/react'
 import type { Icon } from '@phosphor-icons/react'
 import { useQuizStore } from '@/lib/store/quiz'
+import { trackQuizStart, trackQuizStep, trackQuizComplete } from '@/lib/analytics/events'
 import { createClient as createBrowserClient } from '@/lib/supabase/client'
 
 interface QuizOption { id: string; text: string; slug: string; icon_url: string | null; sort_order: number }
@@ -110,6 +111,8 @@ export function QuizClient({ templateId, groups, isLoggedIn = false, userName, u
 
   useEffect(() => { if (userEmail) setLeadEmail(userEmail) }, [userEmail])
 
+  useEffect(() => { trackQuizStart() }, [])
+
   useLayoutEffect(() => {
     quizTopRef.current?.scrollIntoView({ block: 'start', behavior: 'auto' })
   }, [stepIdx])
@@ -164,6 +167,12 @@ export function QuizClient({ templateId, groups, isLoggedIn = false, userName, u
       setStepIdx(Math.max(0, visibleSteps.length - 1))
     }
   }, [stepIdx, visibleSteps.length])
+
+  useEffect(() => {
+    if (stepIdx > 0) trackQuizStep(stepIdx, visibleSteps.length)
+    // Solo interesa el avance de paso, no los recálculos de ramas visibles
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stepIdx])
 
   const step = visibleSteps[stepIdx]
   const progress = visibleSteps.length > 0 ? ((stepIdx + 1) / visibleSteps.length) * 100 : 0
@@ -288,9 +297,7 @@ export function QuizClient({ templateId, groups, isLoggedIn = false, userName, u
       if (data.profileId) {
         setProfileId(data.profileId)
         complete()
-        if (data.sessionToken) {
-          document.cookie = `liora_session=${data.sessionToken}; path=/; max-age=2592000; SameSite=Lax`
-        }
+        trackQuizComplete()
         if (leadEmail && !isLoggedIn) {
           const supa = createBrowserClient()
           const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(`/carrito?profileId=${data.profileId}`)}`
@@ -453,7 +460,7 @@ export function QuizClient({ templateId, groups, isLoggedIn = false, userName, u
             {step.question.subtext && (
               <p style={{ fontFamily: 'var(--font-body)', fontSize: 16, color: 'var(--liora-uva)', opacity: 0.75, marginTop: 16, marginBottom: 0 }}>{step.question.subtext}</p>
             )}
-            {manyOptions && (
+            {manyOptions && step.question.type === 'single' && (
               <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-uva)', opacity: 0.55, marginTop: 8, marginBottom: 0 }}>
                 Elige una de {step.question.quiz_question_options.length} opciones
               </p>

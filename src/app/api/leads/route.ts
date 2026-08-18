@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { z } from 'zod'
+import { consumeRateLimit, requestIp } from '@/lib/security/rate-limit'
 
 const schema = z.object({
   email: z.string().email(),
@@ -9,6 +10,9 @@ const schema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    if (!await consumeRateLimit('leads', requestIp(request), 5, 15 * 60)) {
+      return NextResponse.json({ ok: false }, { status: 429 })
+    }
     const body = await request.json()
     const { email, source } = schema.parse(body)
 

@@ -1,7 +1,22 @@
 'use client'
-import { ChartBar, UserCircle, ShoppingCart, Sparkle, ArrowRight, TrendUp } from '@phosphor-icons/react'
+import type { CSSProperties } from 'react'
+import { ChartBar, UserCircle, ShoppingCart, Sparkle, ArrowRight, TrendUp, Eye, DeviceMobile, Warning } from '@phosphor-icons/react'
 import Link from 'next/link'
 import Image from 'next/image'
+
+export interface VisitorsData {
+  days: number
+  sessions: number
+  pageViews: number
+  mobileSessions: number
+  funnel: { visited: number; viewedProduct: number; addedToCart: number; beganCheckout: number; purchased: number }
+  quiz: { started: number; completed: number }
+  exitPages: Array<{ path: string; sessions: number }>
+  topViewed: Array<{ name: string; slug: string | null; views: number; sessions: number }>
+  topAdded: Array<{ name: string; adds: number }>
+  checkoutErrors: Array<{ message: string; created_at: string }>
+  sources: Array<{ source: string; sessions: number }>
+}
 
 export interface AnalyticsData {
   totalQuizzes: number
@@ -41,7 +56,155 @@ function KPI({ label, value, sub, icon: Icon, color }: { label: string; value: s
   )
 }
 
-export function AnalyticsClient({ data }: { data: AnalyticsData }) {
+const PANEL_LABEL: CSSProperties = { fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)', textTransform: 'uppercase', letterSpacing: '0.12em', opacity: 0.6, marginBottom: 14 }
+const PANEL_BOX: CSSProperties = { background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 20, padding: '8px 0' }
+const EMPTY_MSG: CSSProperties = { padding: 28, textAlign: 'center', fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-uva)', opacity: 0.45 }
+const ROW_TEXT: CSSProperties = { fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 12, color: 'var(--liora-uva)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }
+const COUNT_PILL: CSSProperties = { background: 'var(--liora-lima)', borderRadius: 999, padding: '3px 10px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)', flexShrink: 0 }
+
+function RankList({ title, rows, empty }: { title: string; rows: Array<{ label: string; sub?: string; count: number }>; empty: string }) {
+  return (
+    <div>
+      <div style={PANEL_LABEL}>{title}</div>
+      <div style={PANEL_BOX}>
+        {rows.length === 0 ? (
+          <div style={EMPTY_MSG}>{empty}</div>
+        ) : rows.map((r, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderBottom: i < rows.length - 1 ? '1px solid var(--liora-arena)' : 'none' }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 16, color: 'var(--liora-uva)', opacity: 0.25, width: 20, textAlign: 'right', flexShrink: 0 }}>{i + 1}</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={ROW_TEXT}>{r.label}</div>
+              {r.sub && <div style={{ fontFamily: 'var(--font-body)', fontSize: 10, color: 'var(--liora-uva)', opacity: 0.5 }}>{r.sub}</div>}
+            </div>
+            <div style={COUNT_PILL}>×{r.count}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function VisitorsSection({ v }: { v: VisitorsData }) {
+  const pct = (n: number, base: number) => (base > 0 ? Math.round((n / base) * 100) : 0)
+  const mobilePct = pct(v.mobileSessions, v.sessions)
+  const funnelSteps = [
+    { label: 'Visitó la tienda', value: v.funnel.visited, color: 'var(--cat-lavanda)' },
+    { label: 'Vio un producto', value: v.funnel.viewedProduct, color: 'var(--cat-cielo)' },
+    { label: 'Añadió al carrito', value: v.funnel.addedToCart, color: 'var(--cat-menta)' },
+    { label: 'Inició el pago', value: v.funnel.beganCheckout, color: 'var(--cat-mostaza)' },
+    { label: 'Compró', value: v.funnel.purchased, color: 'var(--cat-durazno)' },
+  ]
+
+  return (
+    <>
+      {/* Selector de rango */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        {[{ d: 7, label: 'Últimos 7 días' }, { d: 30, label: 'Últimos 30 días' }].map(({ d, label }) => (
+          <Link key={d} href={`/admin/analytics?dias=${d}`} style={{
+            textDecoration: 'none', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12,
+            padding: '8px 16px', borderRadius: 999,
+            background: v.days === d ? 'var(--liora-uva)' : 'var(--liora-blanco)',
+            color: v.days === d ? 'var(--liora-crema)' : 'var(--liora-uva)',
+            border: '1.5px solid ' + (v.days === d ? 'var(--liora-uva)' : 'var(--liora-arena)'),
+          }}>{label}</Link>
+        ))}
+      </div>
+
+      {/* KPIs de visitantes */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+        <KPI label="Visitantes reales" value={String(v.sessions)} sub={`últimos ${v.days} días`} icon={UserCircle} color="var(--cat-lavanda)" />
+        <KPI label="Páginas vistas" value={String(v.pageViews)} sub={v.sessions > 0 ? `${(v.pageViews / v.sessions).toFixed(1)} por visita` : undefined} icon={Eye} color="var(--cat-cielo)" />
+        <KPI label="Desde celular" value={`${mobilePct}%`} sub={`${v.mobileSessions} visitantes`} icon={DeviceMobile} color="var(--cat-menta)" />
+        <KPI label="Conversión a compra" value={`${pct(v.funnel.purchased, v.sessions)}%`} sub={`${v.funnel.purchased} compras`} icon={ShoppingCart} color="var(--cat-durazno)" />
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 20 }}>
+        {/* Embudo de visitantes */}
+        <div>
+          <div style={PANEL_LABEL}>¿Dónde se quedan los clientes?</div>
+          <div style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 20, padding: 20 }}>
+            {v.sessions === 0 ? (
+              <div style={EMPTY_MSG}>Aún no hay visitas registradas. Los datos aparecerán apenas alguien navegue la tienda.</div>
+            ) : funnelSteps.map((step, i) => {
+              const prev = i === 0 ? step.value : funnelSteps[i - 1].value
+              const lost = i === 0 ? 0 : prev - step.value
+              return (
+                <div key={i} style={{ marginBottom: i < funnelSteps.length - 1 ? 14 : 0 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--liora-uva)', fontWeight: 600 }}>{step.label}</span>
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--liora-uva)', fontWeight: 700 }}>
+                      {step.value} <span style={{ opacity: 0.5, fontWeight: 400 }}>({pct(step.value, v.sessions)}%)</span>
+                    </span>
+                  </div>
+                  <div style={{ height: 10, background: 'var(--liora-arena)', borderRadius: 999, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${pct(step.value, v.sessions)}%`, background: step.color, borderRadius: 999, transition: 'width 500ms ease' }} />
+                  </div>
+                  {lost > 0 && (
+                    <div style={{ fontFamily: 'var(--font-body)', fontSize: 10, color: '#C2433A', opacity: 0.8, marginTop: 3 }}>
+                      ↓ {lost} {lost === 1 ? 'visitante se quedó' : 'visitantes se quedaron'} en el paso anterior
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Errores de checkout */}
+          <div style={{ marginTop: 16 }}>
+            <div style={PANEL_LABEL}><Warning size={12} weight="bold" style={{ verticalAlign: -1, marginRight: 4 }} />Errores al pagar (por qué no terminan)</div>
+            <div style={PANEL_BOX}>
+              {v.checkoutErrors.length === 0 ? (
+                <div style={EMPTY_MSG}>Sin errores de pago registrados 🎉</div>
+              ) : v.checkoutErrors.map((e, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderBottom: i < v.checkoutErrors.length - 1 ? '1px solid var(--liora-arena)' : 'none' }}>
+                  <div style={{ flex: 1, minWidth: 0, fontFamily: 'var(--font-body)', fontSize: 12, color: '#C2433A', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.message || 'Error sin detalle'}</div>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--liora-uva)', opacity: 0.5, flexShrink: 0 }}>
+                    {new Date(e.created_at).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <RankList
+            title="Productos más vistos"
+            empty="Sin vistas de producto aún"
+            rows={v.topViewed.map(p => ({ label: p.name, sub: `${p.sessions} ${p.sessions === 1 ? 'visitante' : 'visitantes'}`, count: p.views }))}
+          />
+          <RankList
+            title="Más añadidos al carrito"
+            empty="Sin productos añadidos aún"
+            rows={v.topAdded.map(p => ({ label: p.name, count: p.adds }))}
+          />
+          <RankList
+            title="Última pantalla antes de irse (sin comprar)"
+            empty="Sin datos aún"
+            rows={v.exitPages.map(p => ({ label: p.path, count: p.sessions }))}
+          />
+          <RankList
+            title="¿De dónde llegan?"
+            empty="Sin fuentes registradas aún"
+            rows={v.sources.map(s => ({ label: s.source, count: s.sessions }))}
+          />
+          {/* Quiz funnel corto */}
+          <div>
+            <div style={PANEL_LABEL}>Cuestionario ({v.days} días)</div>
+            <div style={{ ...PANEL_BOX, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 600, color: 'var(--liora-uva)' }}>{v.quiz.started} empezaron</span>
+              <ArrowRight size={14} color="var(--liora-uva)" opacity={0.4} />
+              <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 600, color: 'var(--liora-uva)' }}>{v.quiz.completed} terminaron</span>
+              <span style={{ ...COUNT_PILL, marginLeft: 'auto' }}>{pct(v.quiz.completed, v.quiz.started)}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}
+
+export function AnalyticsClient({ data, visitors }: { data: AnalyticsData; visitors: VisitorsData }) {
   const conversionRate = data.totalQuizzes > 0
     ? Math.round((data.withKit / data.totalQuizzes) * 100)
     : 0
@@ -52,7 +215,14 @@ export function AnalyticsClient({ data }: { data: AnalyticsData }) {
       <div>
         <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)', textTransform: 'uppercase', letterSpacing: '0.14em', opacity: 0.55, marginBottom: 4 }}>Marketing</div>
         <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 32, color: 'var(--liora-uva)', margin: 0, lineHeight: 1 }}>Analítica</h1>
-        <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-uva)', opacity: 0.6, marginTop: 6 }}>Comportamiento del quiz, kits generados y conversión a compra.</p>
+        <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-uva)', opacity: 0.6, marginTop: 6 }}>Visitantes de la tienda, embudo de compra, quiz y conversión.</p>
+      </div>
+
+      <VisitorsSection v={visitors} />
+
+      {/* ── Sección quiz/pedidos (histórico) ─────────────────────────── */}
+      <div>
+        <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)', textTransform: 'uppercase', letterSpacing: '0.14em', opacity: 0.55 }}>Quiz y pedidos</div>
       </div>
 
       {/* KPIs */}

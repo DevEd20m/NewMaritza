@@ -9,6 +9,7 @@ export interface CreateSessionInput {
   customerName: string
   successUrl: string
   cancelUrl: string
+  expiresAt: Date
   metadata?: Record<string, string>
 }
 
@@ -31,6 +32,9 @@ export interface WebhookEvent {
   provider: string
   orderId?: string
   paymentId?: string
+  providerReference?: string
+  amountCents?: number
+  currency?: string
   status?: PaymentStatus
   rawPayload: unknown
 }

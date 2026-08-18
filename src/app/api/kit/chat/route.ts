@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { consumeRateLimit, requestIp } from '@/lib/security/rate-limit'
 
 const schema = z.object({
   message:      z.string().min(1).max(300),
@@ -8,29 +9,13 @@ const schema = z.object({
   routineSteps: z.array(z.string().max(300)).max(10).optional(),
 })
 
-// In-memory rate limiter: max 20 requests per IP per minute
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
 const LIMIT = 20
-const WINDOW_MS = 60_000
-
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now()
-  const entry = rateLimitMap.get(ip)
-  if (!entry || now > entry.resetAt) {
-    rateLimitMap.set(ip, { count: 1, resetAt: now + WINDOW_MS })
-    return true
-  }
-  if (entry.count >= LIMIT) return false
-  entry.count++
-  return true
-}
 
 export async function POST(req: NextRequest) {
   let ctxItems: string[] = []
   try {
     // Rate limiting
-    const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown'
-    if (!checkRateLimit(ip)) {
+    if (!await consumeRateLimit('kit-chat', requestIp(req), LIMIT, 60)) {
       return NextResponse.json({ reply: 'Demasiadas solicitudes. Espera un momento.' }, { status: 429 })
     }
 

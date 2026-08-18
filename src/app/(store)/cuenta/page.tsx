@@ -42,7 +42,7 @@ export default async function AccountPage() {
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
     .limit(10)
-  const ordersData = (ordersRaw ?? []) as Array<{ id: string; order_number: string; total_cents: number; status: string; created_at: string; order_items: { id: string }[] }>
+  const ordersData = (ordersRaw ?? []) as unknown as Array<{ id: string; order_number: string; total_cents: number; status: string; created_at: string; order_items: { id: string }[] }>
 
   // Active public coupons only
   const { data: couponsRaw } = await admin

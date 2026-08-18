@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { ShoppingBag, MagnifyingGlass, UserCircle, List, X } from '@phosphor-icons/react'
 import { Logo } from './Logo'
+import { SearchOverlay } from './SearchOverlay'
 import { useCartStore } from '@/lib/store/cart'
 
 interface HeaderProps {
@@ -20,6 +21,7 @@ export function Header({ user }: HeaderProps) {
   const { itemCount, setIsOpen, isOpen } = useCartStore()
   const [mounted, setMounted] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
   useEffect(() => setMounted(true), [])
   const count = mounted ? itemCount() : 0
 
@@ -90,9 +92,26 @@ export function Header({ user }: HeaderProps) {
 
         {/* Right actions */}
         <div style={{ display: 'flex', gap: 16, justifyContent: 'flex-end', alignItems: 'center' }}>
+          {/* Desktop: campo visible; móvil: solo la lupa (vía CSS) */}
+          <button
+            aria-label="Buscar productos"
+            onClick={() => setSearchOpen(true)}
+            className="liora-header-search-field"
+            style={{
+              background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)',
+              borderRadius: 999, padding: '8px 16px', cursor: 'pointer',
+              display: 'inline-flex', alignItems: 'center', gap: 8, minWidth: 190,
+              fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-uva)',
+            }}
+          >
+            <MagnifyingGlass size={16} weight="bold" />
+            <span style={{ opacity: 0.5 }}>Buscar productos…</span>
+          </button>
           <button
             aria-label="Buscar"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--liora-uva)', fontSize: 22, display: 'flex' }}
+            onClick={() => setSearchOpen(true)}
+            className="liora-header-search-icon"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--liora-uva)', fontSize: 22, display: 'none' }}
           >
             <MagnifyingGlass size={22} weight="regular" />
           </button>
@@ -176,6 +195,8 @@ export function Header({ user }: HeaderProps) {
           </button>
         </div>
       </header>
+
+      {searchOpen && <SearchOverlay onClose={() => setSearchOpen(false)} />}
 
       {/* Mobile nav overlay */}
       <div className={`liora-mobile-nav${menuOpen ? ' open' : ''}`}>

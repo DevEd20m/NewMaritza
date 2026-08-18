@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { SignOut, Package, ArrowRight, Check } from '@phosphor-icons/react'
 
 // ── Types passed from server ──────────────────────────────────────────────
@@ -264,12 +265,12 @@ function ResumenTab({
             Empieza con un cuestionario rápido y LIORA te sugerirá un kit<br />según tu rutina, preferencias y necesidades.
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 24, flexWrap: 'wrap' as const }}>
-            <a href="/cuestionario" style={{ background: 'var(--liora-uva)', color: 'var(--liora-crema)', borderRadius: 999, padding: '12px 20px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
+            <Link href="/cuestionario" style={{ background: 'var(--liora-uva)', color: 'var(--liora-crema)', borderRadius: 999, padding: '12px 20px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
               Encontrar mi kit
-            </a>
-            <a href="/tienda?modo=kits" style={{ background: 'transparent', color: 'var(--liora-uva)', border: '1.5px solid var(--liora-arena)', borderRadius: 999, padding: '12px 20px', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>
+            </Link>
+            <Link href="/tienda?modo=kits" style={{ background: 'transparent', color: 'var(--liora-uva)', border: '1.5px solid var(--liora-arena)', borderRadius: 999, padding: '12px 20px', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>
               Explorar kits
-            </a>
+            </Link>
           </div>
         </div>
       )}

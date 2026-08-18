@@ -1,0 +1,4 @@
+-- Historical production migration retained for migration-history parity.
+-- Its prerequisite quiz rows were created out of band, so replaying the
+-- original SQL on a clean database was impossible. The final public quiz
+-- definition is rebuilt idempotently in 20260718000000.

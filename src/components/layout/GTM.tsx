@@ -10,6 +10,17 @@ export function GTMScript({ gtmId }: GTMProps) {
   )
 }
 
+export function GA4Script({ ga4Id }: { ga4Id: string }) {
+  return (
+    <>
+      <Script src={`https://www.googletagmanager.com/gtag/js?id=${ga4Id}`} strategy="afterInteractive" />
+      <Script id="ga4-init" strategy="afterInteractive">
+        {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}window.gtag=gtag;gtag('js',new Date());gtag('config','${ga4Id}',{send_page_view:false});`}
+      </Script>
+    </>
+  )
+}
+
 export function GTMNoScript({ gtmId }: GTMProps) {
   return (
     <noscript>

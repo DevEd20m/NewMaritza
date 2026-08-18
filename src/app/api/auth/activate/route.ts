@@ -2,12 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getResend, FROM_EMAIL } from '@/lib/email/client'
 import { accountActivationEmail } from '@/lib/email/templates/account-activation'
+import { consumeRateLimit, requestIp } from '@/lib/security/rate-limit'
 
 export const dynamic = 'force-dynamic'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://liora.pe'
 
 export async function POST(req: NextRequest) {
+  if (!await consumeRateLimit('auth-activate', requestIp(req), 3, 15 * 60)) {
+    return NextResponse.json({ ok: true })
+  }
   const body = await req.json().catch(() => ({}))
   const { email, firstName } = body as { email?: string; firstName?: string }
 
@@ -27,6 +31,10 @@ export async function POST(req: NextRequest) {
   }
 
   const activationUrl = data.properties.action_link
+
+  if (process.env.EMAIL_DELIVERY_MODE === 'capture') {
+    return NextResponse.json({ ok: true })
+  }
 
   if (process.env.RESEND_API_KEY) {
     const html = accountActivationEmail({ activationUrl, siteUrl: SITE_URL, firstName })

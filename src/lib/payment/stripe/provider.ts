@@ -12,6 +12,8 @@ export const stripeProvider: PaymentProvider = {
     const stripe = getStripe()
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
+      client_reference_id: input.orderId,
+      expires_at: Math.floor(input.expiresAt.getTime() / 1000),
       payment_method_types: ['card'],
       customer_email: input.customerEmail,
       line_items: [
@@ -68,6 +70,9 @@ export const stripeProvider: PaymentProvider = {
       type: event.type,
       provider: 'stripe',
       orderId: session?.metadata?.order_id,
+      providerReference: session?.id,
+      amountCents: session?.amount_total ?? undefined,
+      currency: session?.currency ?? undefined,
       status: session ? this.mapStatus(session.payment_status) : undefined,
       rawPayload: event,
     }

@@ -1,5 +1,7 @@
 'use client'
 
+import { track } from './tracker'
+
 declare global {
   interface Window {
     dataLayer: unknown[]
@@ -7,14 +9,22 @@ declare global {
   }
 }
 
-function push(event: Record<string, unknown>) {
+function push(event: Record<string, unknown> & { event: string; ecommerce?: Record<string, unknown> }) {
   if (typeof window === 'undefined') return
   window.dataLayer = window.dataLayer ?? []
   window.dataLayer.push(event)
+  // GA4 directo (gtag.js) no lee pushes arbitrarios del dataLayer: reenviar explícitamente.
+  if (typeof window.gtag === 'function' && event.ecommerce) {
+    window.gtag('event', event.event, event.ecommerce)
+  }
+}
+
+export function trackPageView(path: string) {
+  track({ event: 'page_view', path })
 }
 
 export function trackViewItem(product: {
-  id: string; name: string; category?: string; priceCents: number; currency?: string
+  id: string; name: string; category?: string; priceCents: number; currency?: string; slug?: string
 }) {
   push({
     event: 'view_item',
@@ -24,10 +34,11 @@ export function trackViewItem(product: {
       items: [{ item_id: product.id, item_name: product.name, item_category: product.category, price: product.priceCents / 100 }],
     },
   })
+  track({ event: 'view_item', product_slug: product.slug ?? product.id, value_cents: product.priceCents, metadata: { name: product.name, category: product.category } })
 }
 
 export function trackAddToCart(item: {
-  variantId: string; name: string; priceCents: number; quantity: number; currency?: string
+  variantId: string; name: string; priceCents: number; quantity: number; currency?: string; productSlug?: string
 }) {
   push({
     event: 'add_to_cart',
@@ -37,6 +48,7 @@ export function trackAddToCart(item: {
       items: [{ item_id: item.variantId, item_name: item.name, price: item.priceCents / 100, quantity: item.quantity }],
     },
   })
+  track({ event: 'add_to_cart', variant_id: item.variantId, product_slug: item.productSlug, value_cents: item.priceCents * item.quantity, metadata: { name: item.name, quantity: item.quantity } })
 }
 
 export function trackBeginCheckout(totalCents: number, items: { variantId: string; name: string; priceCents: number; quantity: number }[], currency = 'PEN') {
@@ -48,6 +60,12 @@ export function trackBeginCheckout(totalCents: number, items: { variantId: strin
       items: items.map((i) => ({ item_id: i.variantId, item_name: i.name, price: i.priceCents / 100, quantity: i.quantity })),
     },
   })
+  track({ event: 'begin_checkout', value_cents: totalCents, metadata: { items: items.map((i) => ({ name: i.name, quantity: i.quantity })) } })
+}
+
+export function trackCheckoutError(message: string, totalCents?: number) {
+  push({ event: 'checkout_error', error_message: message })
+  track({ event: 'checkout_error', value_cents: totalCents, metadata: { message: message.slice(0, 300) } })
 }
 
 export function trackPurchase(order: {
@@ -63,4 +81,24 @@ export function trackPurchase(order: {
       items: order.items.map((i) => ({ item_id: i.variantId, item_name: i.name, price: i.priceCents / 100, quantity: i.quantity })),
     },
   })
+  track({ event: 'purchase', value_cents: order.totalCents, metadata: { order_number: order.orderNumber, items: order.items.map((i) => ({ name: i.name, quantity: i.quantity })) } })
+}
+
+export function trackSearch(query: string, resultsCount: number) {
+  track({
+    event: resultsCount === 0 ? 'search_no_results' : 'search',
+    metadata: { query: query.slice(0, 120), results: resultsCount },
+  })
+}
+
+export function trackQuizStart() {
+  track({ event: 'quiz_start' })
+}
+
+export function trackQuizStep(stepIndex: number, totalSteps: number) {
+  track({ event: 'quiz_step', metadata: { step: stepIndex + 1, total: totalSteps } })
+}
+
+export function trackQuizComplete() {
+  track({ event: 'quiz_complete' })
 }

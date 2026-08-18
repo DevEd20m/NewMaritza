@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LIORA
 
-## Getting Started
+Ecommerce peruano de bienestar personalizado construido con Next.js 16, React 19, Supabase, Stripe, Resend y OpenAI.
 
-First, run the development server:
+## Requisitos
+
+- Node.js 22
+- npm
+- Docker Desktop
+- Supabase CLI 2.114 o posterior
+- Stripe CLI
+
+## Configuración local
 
 ```bash
+nvm use
+npm ci
+cp .env.example .env.local
+supabase start
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Completa `.env.local` con claves exclusivamente de desarrollo. Nunca apuntes un servidor local o un Preview de Vercel a la base de producción.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Para probar webhooks de Stripe:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+stripe listen --forward-to localhost:3000/api/payment/webhook
+```
 
-## Learn More
+Copia el `whsec_…` temporal entregado por Stripe CLI en `STRIPE_WEBHOOK_SECRET` y usa una tarjeta de prueba de Stripe.
 
-To learn more about Next.js, take a look at the following resources:
+## Entornos
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Entorno | Supabase | Stripe | Email |
+|---|---|---|---|
+| Local | Supabase local o staging | Test | `capture` |
+| Vercel Preview | Staging | Test | `capture` |
+| Producción | Producción | Live | `send` |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Las variables de Preview y Production se administran separadamente en Vercel. `CRON_SECRET`, claves de servicio, Stripe, Resend y OpenAI son siempre server-only.
 
-## Deploy on Vercel
+## Comandos de calidad
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm run typecheck
+npm test
+npm run lint
+npm run build
+npm run test:e2e
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+La compra Stripe completa está protegida por una bandera para no crear órdenes
+en ejecuciones locales accidentales:
+
+```bash
+PLAYWRIGHT_BASE_URL=https://preview.example \
+VERCEL_AUTOMATION_BYPASS_SECRET=... \
+RUN_STRIPE_E2E=1 npx playwright test tests/e2e/checkout.spec.ts
+```
+
+## Base de datos
+
+Producción es la fuente histórica canónica. Antes de crear una migración:
+
+```bash
+supabase migration list
+supabase db pull
+supabase db reset
+supabase db lint --local --fail-on error
+```
+
+Antes de aplicar en staging o producción:
+
+```bash
+supabase db push --linked --dry-run
+```
+
+No uses `db reset --linked` contra producción. Las correcciones productivas son siempre migraciones nuevas y forward-only.
+
+## Checkout e inventario
+
+- `product_variants.stock_quantity = NULL`: stock ilimitado.
+- Un entero no negativo: stock finito disponible.
+- Checkout reserva inventario durante aproximadamente 30 minutos.
+- Stripe consume o libera la reserva mediante webhooks idempotentes.
+- Los correos salen desde un outbox reintentable; staging captura el HTML sin enviarlo.

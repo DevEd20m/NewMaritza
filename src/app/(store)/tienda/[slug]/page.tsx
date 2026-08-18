@@ -1,9 +1,14 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { loadCatalog, buildSuggestions, getKitsContainingProduct } from '@/lib/recommendation/related'
+import { SuggestionCarousel, CarouselItem, KitBanner } from '@/components/products/SuggestionCarousel'
+import { ProductCard } from '@/components/products/ProductCard'
 import { buildProductMetadata, buildProductJsonLd } from '@/lib/seo/metadata'
 import { AddToCartButton } from '@/components/products/AddToCartButton'
 import { ViewerBadge } from '@/components/urgency/ViewerBadge'
+import { ViewItemTracker } from '@/components/products/ViewItemTracker'
 import { StockUrgency } from '@/components/urgency/StockUrgency'
 
 interface Props { params: Promise<{ slug: string }> }
@@ -73,6 +78,42 @@ export default async function ProductDetailPage({ params }: Props) {
   const product = await getProduct(slug)
   if (!product) notFound()
 
+  // Cross-sell determinístico: kits que incluyen este producto + productos
+  // de la misma categoría (sin repetir ingredientes).
+  const relatedAdmin = createAdminClient()
+  const [relatedKits, catalog] = await Promise.all([
+    getKitsContainingProduct(relatedAdmin, product.id, 1),
+    loadCatalog(relatedAdmin),
+  ])
+  // Productos similares: primero la misma categoría (permitiendo otra marca o
+  // variante del mismo activo), y si falta surtido se completa con las
+  // categorías con más productos.
+  const currentProduct = { productId: product.id, name: product.name, brand: (product as { brand?: string | null }).brand ?? null }
+  const relatedProducts = buildSuggestions({
+    catalog,
+    exclude: [currentProduct],
+    preferredCategories: product.categories?.slug ? [product.categories.slug] : [],
+    limit: 6,
+    maxPerCategory: 6,
+    dedupeIngredients: false,
+  })
+  if (relatedProducts.length < 4) {
+    const catCounts = new Map<string, number>()
+    for (const c of catalog) {
+      if (c.categorySlug && c.categorySlug !== product.categories?.slug) {
+        catCounts.set(c.categorySlug, (catCounts.get(c.categorySlug) ?? 0) + 1)
+      }
+    }
+    const fill = buildSuggestions({
+      catalog,
+      exclude: [currentProduct, ...relatedProducts],
+      preferredCategories: [...catCounts.entries()].sort((a, b) => b[1] - a[1]).map(([slug]) => slug),
+      limit: 4 - relatedProducts.length,
+      maxPerCategory: 1,
+    })
+    relatedProducts.push(...fill)
+  }
+
   const activeVariant = product.product_variants?.find((v) => v.is_active) ?? product.product_variants?.[0]
   const price = activeVariant?.product_prices?.find((p) => !p.effective_to)
   const catSlug = product.categories?.slug ?? ''
@@ -95,6 +136,14 @@ export default async function ProductDetailPage({ params }: Props) {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <ViewItemTracker
+        id={product.id}
+        name={product.name}
+        slug={product.slug}
+        category={product.categories?.name}
+        priceCents={price?.amount_cents ?? 0}
+        currency={price?.currency}
+      />
 
       <div className="liora-cart-outer" style={{ background: 'var(--liora-crema)', padding: '48px 48px 96px', maxWidth: 1280, margin: '0 auto' }}>
         <div className="liora-product-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'flex-start' }}>
@@ -169,6 +218,7 @@ export default async function ProductDetailPage({ params }: Props) {
                 currency={price.currency}
                 imageUrl={product.cover_image_url ?? undefined}
                 categoryColor={catColor}
+                productSlug={product.slug}
               />
             )}
 
@@ -194,6 +244,34 @@ export default async function ProductDetailPage({ params }: Props) {
           </div>
         </div>
       </div>
+
+      {relatedKits.length > 0 && <KitBanner kit={relatedKits[0]} />}
+
+      {relatedProducts.length > 0 && (
+        <SuggestionCarousel
+          eyebrow="Para ti"
+          title="Combínalo con estos productos"
+          linkHref="/tienda"
+          linkLabel="Ver toda la tienda"
+        >
+          {relatedProducts.map((p) => (
+            <CarouselItem key={p.variantId} width={260}>
+              <ProductCard
+                variantId={p.variantId}
+                productId={p.productId}
+                slug={p.productSlug}
+                name={p.name}
+                subname={p.variantName}
+                priceCents={p.priceCents}
+                currency={p.currency}
+                categoryColor={p.categoryColor}
+                categoryName={p.categoryName}
+                imageUrl={p.imageUrl ?? undefined}
+              />
+            </CarouselItem>
+          ))}
+        </SuggestionCarousel>
+      )}
     </>
   )
 }

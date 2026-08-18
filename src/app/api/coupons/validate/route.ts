@@ -3,9 +3,13 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { couponValidateSchema } from '@/lib/validation/checkout'
 import { getStoreSettings } from '@/lib/settings'
+import { consumeRateLimit, requestIp } from '@/lib/security/rate-limit'
 
 export async function POST(request: NextRequest) {
   try {
+    if (!await consumeRateLimit('coupon-validate', requestIp(request), 15, 60)) {
+      return NextResponse.json({ valid: false, message: 'Demasiadas solicitudes' }, { status: 429 })
+    }
     const body = await request.json()
     const parsed = couponValidateSchema.safeParse(body)
     if (!parsed.success) return NextResponse.json({ valid: false, message: 'Datos inválidos' }, { status: 400 })

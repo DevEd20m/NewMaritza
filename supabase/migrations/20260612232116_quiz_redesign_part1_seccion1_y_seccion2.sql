@@ -1,0 +1,2 @@
+-- Historical production migration retained for migration-history parity.
+-- See 20260718000000_public_quiz_definition_baseline.sql.

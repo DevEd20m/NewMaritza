@@ -2,14 +2,18 @@
  * migrate-images.mjs
  * Descarga imágenes de organa CDN → sube a Supabase Storage → actualiza DB
  *
- * Uso: node scripts/migrate-images.mjs
+ * Uso: node --env-file=.env.local scripts/migrate-images.mjs
  */
 
 import { createClient } from '@supabase/supabase-js'
 
-const SUPABASE_URL    = 'https://skcfrccoexscaiayzjzd.supabase.co'
-const SERVICE_KEY     = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrY2ZyY2NvZXhzY2FpYXl6anpkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTEwNTQzNSwiZXhwIjoyMDk0NjgxNDM1fQ.ICG7QSsCtewwm9QvfeLdTfaMuJFs7H-sPSt5AQg5n_E'
+const SUPABASE_URL    = process.env.NEXT_PUBLIC_SUPABASE_URL
+const SERVICE_KEY     = process.env.SUPABASE_SERVICE_ROLE_KEY
 const BUCKET          = 'product-images'
+
+if (!SUPABASE_URL || !SERVICE_KEY) {
+  throw new Error('Faltan NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY en .env.local')
+}
 const PUBLIC_BASE     = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}`
 
 const sb = createClient(SUPABASE_URL, SERVICE_KEY)

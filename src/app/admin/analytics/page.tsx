@@ -1,22 +1,65 @@
 import type { Metadata } from 'next'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { AnalyticsClient, type AnalyticsData } from '@/components/admin/AnalyticsClient'
+import { AnalyticsClient, type AnalyticsData, type VisitorsData } from '@/components/admin/AnalyticsClient'
 
 export const metadata: Metadata = { title: 'Analítica — Admin LIORA' }
 
-export default async function AdminAnalyticsPage() {
+const EMPTY_VISITORS: VisitorsData = {
+  days: 7,
+  sessions: 0,
+  pageViews: 0,
+  mobileSessions: 0,
+  funnel: { visited: 0, viewedProduct: 0, addedToCart: 0, beganCheckout: 0, purchased: 0 },
+  quiz: { started: 0, completed: 0 },
+  exitPages: [],
+  topViewed: [],
+  topAdded: [],
+  checkoutErrors: [],
+  sources: [],
+}
+
+function parseVisitors(raw: unknown, days: number): VisitorsData {
+  if (!raw || typeof raw !== 'object') return { ...EMPTY_VISITORS, days }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const r = raw as Record<string, any>
+  return {
+    days,
+    sessions: r.sessions ?? 0,
+    pageViews: r.page_views ?? 0,
+    mobileSessions: r.mobile_sessions ?? 0,
+    funnel: {
+      visited: r.funnel?.visited ?? 0,
+      viewedProduct: r.funnel?.viewed_product ?? 0,
+      addedToCart: r.funnel?.added_to_cart ?? 0,
+      beganCheckout: r.funnel?.began_checkout ?? 0,
+      purchased: r.funnel?.purchased ?? 0,
+    },
+    quiz: { started: r.quiz?.started ?? 0, completed: r.quiz?.completed ?? 0 },
+    exitPages: r.exit_pages ?? [],
+    topViewed: r.top_viewed ?? [],
+    topAdded: r.top_added ?? [],
+    checkoutErrors: r.checkout_errors ?? [],
+    sources: r.sources ?? [],
+  }
+}
+
+export default async function AdminAnalyticsPage({ searchParams }: { searchParams: Promise<{ dias?: string }> }) {
   const admin = createAdminClient() as any
+  const { dias } = await searchParams
+  const days = dias === '30' ? 30 : 7
 
   const [
     { data: profilesRaw },
     { data: recsRaw },
     { data: ordersRaw },
     { data: topOptsRaw },
+    { data: visitorsRaw },
   ] = await Promise.all([
     admin.from('quiz_profiles').select('id, user_id, created_at').order('created_at', { ascending: false }),
     admin.from('recommendations').select('quiz_profile_id, variant_id, rationale, score, product_variants(name, products(name, cover_image_url, categories(name, slug)))'),
     admin.from('orders').select('id, status, total_cents, created_at').order('created_at', { ascending: false }).limit(200),
     admin.from('quiz_profiles').select('answers').limit(500),
+    admin.rpc('analytics_summary', { p_days: days }),
   ])
 
   // Get emails for users
@@ -86,5 +129,5 @@ export default async function AdminAnalyticsPage() {
     recentProfiles,
   }
 
-  return <AnalyticsClient data={data} />
+  return <AnalyticsClient data={data} visitors={parseVisitors(visitorsRaw, days)} />
 }

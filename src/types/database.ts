@@ -2,8 +2,28 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 
 export interface Database {
   public: {
-    Views: Record<string, never>
-    Functions: Record<string, never>
+    Views: {
+      admin_inventory_reservation_summary: {
+        Row: { id: string; order_id: string; order_number: string; status: string; expires_at: string; created_at: string; finite_units: number }
+        Relationships: []
+      }
+      admin_failed_email_jobs: {
+        Row: { id: string; order_id: string; type: string; attempts: number; last_error: string | null; scheduled_for: string; locked_at: string | null; created_at: string }
+        Relationships: []
+      }
+      admin_payment_review: {
+        Row: { id: string; order_number: string; total_cents: number; currency: string; created_at: string; provider: string | null; provider_reference: string | null; payment_updated_at: string | null }
+        Relationships: []
+      }
+    }
+    Functions: {
+      consume_rate_limit: { Args: { p_bucket_key: string; p_limit: number; p_window_seconds: number }; Returns: boolean }
+      claim_email_jobs: { Args: { p_limit?: number }; Returns: Database['public']['Tables']['email_queue']['Row'][] }
+      reserve_order_inventory: { Args: { p_order_id: string; p_ttl_seconds?: number }; Returns: string }
+      release_order_inventory: { Args: { p_order_id: string; p_reason?: string; p_expired?: boolean }; Returns: boolean }
+      release_expired_inventory_reservations: { Args: Record<PropertyKey, never>; Returns: number }
+      finalize_paid_order: { Args: { p_order_id: string; p_provider_reference: string; p_source: string }; Returns: string }
+    }
     Tables: {
       categories: {
         Row: { id: string; name: string; slug: string; parent_id: string | null; sort_order: number; created_at: string }
@@ -18,8 +38,8 @@ export interface Database {
         Relationships: []
       }
       product_variants: {
-        Row: { id: string; product_id: string; sku: string; name: string; weight_grams: number | null; is_active: boolean; created_at: string }
-        Insert: Omit<Database['public']['Tables']['product_variants']['Row'], 'id' | 'created_at'>
+        Row: { id: string; product_id: string; sku: string; name: string; weight_grams: number | null; is_active: boolean; stock_quantity: number | null; created_at: string }
+        Insert: Omit<Database['public']['Tables']['product_variants']['Row'], 'id' | 'created_at' | 'stock_quantity'> & { stock_quantity?: number | null }
         Update: Partial<Database['public']['Tables']['product_variants']['Insert']>
         Relationships: []
       }
@@ -95,6 +115,12 @@ export interface Database {
         Update: Partial<Database['public']['Tables']['leads']['Insert']>
         Relationships: []
       }
+      analytics_events: {
+        Row: { id: string; session_id: string; user_id: string | null; event: string; path: string | null; referrer: string | null; utm_source: string | null; utm_medium: string | null; utm_campaign: string | null; product_slug: string | null; variant_id: string | null; value_cents: number | null; metadata: Json; device: string | null; created_at: string }
+        Insert: { session_id: string; event: string; user_id?: string | null; path?: string | null; referrer?: string | null; utm_source?: string | null; utm_medium?: string | null; utm_campaign?: string | null; product_slug?: string | null; variant_id?: string | null; value_cents?: number | null; metadata?: Json; device?: string | null; created_at?: string }
+        Update: Partial<Database['public']['Tables']['analytics_events']['Insert']>
+        Relationships: []
+      }
       profiles: {
         Row: { id: string; first_name: string | null; last_name: string | null; phone: string | null; avatar_url: string | null; preferred_currency: string; quiz_profile_id: string | null; role: 'customer' | 'admin'; created_at: string; updated_at: string }
         Insert: Omit<Database['public']['Tables']['profiles']['Row'], 'created_at' | 'updated_at'>
@@ -126,8 +152,8 @@ export interface Database {
         Relationships: []
       }
       orders: {
-        Row: { id: string; order_number: string; user_id: string | null; guest_email: string | null; guest_name: string | null; guest_phone: string | null; shipping_address_id: string | null; subtotal_cents: number; discount_cents: number; tax_cents: number; total_cents: number; currency: string; coupon_id: string | null; referral_code_used: string | null; status: 'pending_payment' | 'paid' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'; notes: string | null; created_at: string; updated_at: string }
-        Insert: { user_id?: string | null; guest_email?: string | null; guest_name?: string | null; guest_phone?: string | null; shipping_address_id?: string | null; subtotal_cents: number; discount_cents: number; tax_cents: number; total_cents: number; currency: string; coupon_id?: string | null; referral_code_used?: string | null; status: 'pending_payment' | 'paid' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'; notes?: string | null }
+        Row: { id: string; order_number: string; user_id: string | null; guest_email: string | null; guest_name: string | null; guest_phone: string | null; shipping_address_id: string | null; subtotal_cents: number; discount_cents: number; tax_cents: number; total_cents: number; currency: string; coupon_id: string | null; referral_code_used: string | null; quiz_profile_id: string | null; checkout_token_hash: string | null; tracking_token_hash: string | null; reservation_expires_at: string | null; status: 'pending_payment' | 'paid' | 'payment_review' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'; notes: string | null; created_at: string; updated_at: string }
+        Insert: { user_id?: string | null; guest_email?: string | null; guest_name?: string | null; guest_phone?: string | null; shipping_address_id?: string | null; subtotal_cents: number; discount_cents: number; tax_cents: number; total_cents: number; currency: string; coupon_id?: string | null; referral_code_used?: string | null; quiz_profile_id?: string | null; checkout_token_hash?: string | null; tracking_token_hash?: string | null; reservation_expires_at?: string | null; status: 'pending_payment' | 'paid' | 'payment_review' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'; notes?: string | null }
         Update: Partial<Database['public']['Tables']['orders']['Insert']>
         Relationships: []
       }
@@ -156,8 +182,8 @@ export interface Database {
         Relationships: []
       }
       payment_events: {
-        Row: { id: string; payment_id: string; provider: string; event_type: string; payload: Json; hmac_verified: boolean; processed: boolean; created_at: string }
-        Insert: Omit<Database['public']['Tables']['payment_events']['Row'], 'id' | 'created_at'>
+        Row: { id: string; payment_id: string; provider: string; provider_event_id: string | null; event_type: string; payload: Json; hmac_verified: boolean; processed: boolean; processing_error: string | null; created_at: string }
+        Insert: Omit<Database['public']['Tables']['payment_events']['Row'], 'id' | 'created_at' | 'provider_event_id' | 'processing_error'> & { provider_event_id?: string | null; processing_error?: string | null }
         Update: Partial<Database['public']['Tables']['payment_events']['Insert']>
         Relationships: []
       }
@@ -177,6 +203,30 @@ export interface Database {
         Row: { id: string; conversation_id: string; role: 'user' | 'assistant'; content: string; suggested_swap: Json | null; swap_accepted: boolean | null; created_at: string }
         Insert: Omit<Database['public']['Tables']['bot_messages']['Row'], 'id' | 'created_at'>
         Update: Partial<Database['public']['Tables']['bot_messages']['Insert']>
+        Relationships: []
+      }
+      inventory_reservations: {
+        Row: { id: string; order_id: string; status: 'active' | 'consumed' | 'released' | 'expired'; expires_at: string; consumed_at: string | null; released_at: string | null; release_reason: string | null; created_at: string; updated_at: string }
+        Insert: { order_id: string; expires_at: string; status?: 'active' | 'consumed' | 'released' | 'expired'; consumed_at?: string | null; released_at?: string | null; release_reason?: string | null }
+        Update: Partial<Database['public']['Tables']['inventory_reservations']['Insert']>
+        Relationships: []
+      }
+      inventory_reservation_items: {
+        Row: { reservation_id: string; variant_id: string; quantity: number }
+        Insert: Database['public']['Tables']['inventory_reservation_items']['Row']
+        Update: Partial<Database['public']['Tables']['inventory_reservation_items']['Insert']>
+        Relationships: []
+      }
+      email_queue: {
+        Row: { id: string; order_id: string; type: string; scheduled_for: string; sent: boolean; sent_at: string | null; status: 'pending' | 'processing' | 'captured' | 'sent' | 'failed'; attempts: number; locked_at: string | null; last_error: string | null; idempotency_key: string | null; payload: Json; html_snapshot: string | null; created_at: string }
+        Insert: { order_id: string; type: string; scheduled_for: string; sent?: boolean; sent_at?: string | null; status?: 'pending' | 'processing' | 'captured' | 'sent' | 'failed'; attempts?: number; locked_at?: string | null; last_error?: string | null; idempotency_key?: string | null; payload?: Json; html_snapshot?: string | null }
+        Update: Partial<Database['public']['Tables']['email_queue']['Insert']>
+        Relationships: []
+      }
+      rate_limit_buckets: {
+        Row: { bucket_key: string; request_count: number; window_started_at: string; expires_at: string }
+        Insert: Database['public']['Tables']['rate_limit_buckets']['Row']
+        Update: Partial<Database['public']['Tables']['rate_limit_buckets']['Insert']>
         Relationships: []
       }
     }

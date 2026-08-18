@@ -1,5 +1,25 @@
 drop extension if exists "pg_net";
 
+-- The remote dump originally declared this function after `orders`, even
+-- though the table default references it. Defining it first makes a fresh
+-- database rebuildable; the canonical body later in this file replaces it.
+create or replace function public.generate_order_number()
+returns text
+language plpgsql
+as $function$
+declare
+  v_num text;
+  v_exists boolean;
+begin
+  loop
+    v_num := 'LIO-' || to_char(now(), 'YYMMDD') || '-' || upper(substring(gen_random_uuid()::text from 1 for 6));
+    select exists (select 1 from public.orders where order_number = v_num) into v_exists;
+    exit when not v_exists;
+  end loop;
+  return v_num;
+end;
+$function$;
+
 
   create table "public"."addresses" (
     "id" uuid not null default extensions.uuid_generate_v4(),
@@ -2376,5 +2396,4 @@ CREATE TRIGGER set_updated_at BEFORE UPDATE ON public.products FOR EACH ROW EXEC
 CREATE TRIGGER set_updated_at BEFORE UPDATE ON public.profiles FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
-
 

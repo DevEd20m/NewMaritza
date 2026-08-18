@@ -46,14 +46,14 @@ function loadEnv() {
 }
 
 const env         = loadEnv()
-const SUPABASE_URL = env.NEXT_PUBLIC_SUPABASE_URL || 'https://skcfrccoexscaiayzjzd.supabase.co'
-const SERVICE_KEY  = env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrY2ZyY2NvZXhzY2FpYXl6anpkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTEwNTQzNSwiZXhwIjoyMDk0NjgxNDM1fQ.ICG7QSsCtewwm9QvfeLdTfaMuJFs7H-sPSt5AQg5n_E'
+const SUPABASE_URL = env.NEXT_PUBLIC_SUPABASE_URL
+const SERVICE_KEY  = env.SUPABASE_SERVICE_ROLE_KEY
 const OPENAI_KEY   = env.OPENAI_API_KEY || process.env.OPENAI_API_KEY
 const PUBLIC_BASE  = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}`
 
-if (!OPENAI_KEY) {
-  console.error('❌  Falta OPENAI_API_KEY')
-  console.error('   Añade a .env.local:  OPENAI_API_KEY=sk-proj-...')
+if (!SUPABASE_URL || !SERVICE_KEY || !OPENAI_KEY) {
+  console.error('❌  Faltan credenciales locales requeridas')
+  console.error('   Configura NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY y OPENAI_API_KEY en .env.local')
   process.exit(1)
 }
 

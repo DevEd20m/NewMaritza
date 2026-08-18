@@ -78,6 +78,18 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
       .catch(() => {})
   }, [])
 
+  // Sin quiz: sugerencias determinísticas según el contenido del carrito
+  const relatedKey = useRef('')
+  const variantsKey = items.map((i) => i.variantId).sort().join(',')
+  useEffect(() => {
+    if (profileId || !variantsKey || relatedKey.current === variantsKey) return
+    relatedKey.current = variantsKey
+    fetch(`/api/related?variants=${encodeURIComponent(variantsKey)}&limit=4`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => { if (data?.suggestions) setSuggestions(data.suggestions) })
+      .catch(() => {})
+  }, [profileId, variantsKey])
+
   useEffect(() => {
     if (!profileId || hasFetched.current) return
     hasFetched.current = true
@@ -558,6 +570,50 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
               <button onClick={() => removeItem(item.variantId)} aria-label="Quitar" style={{ background: 'transparent', border: 'none', cursor: 'pointer', opacity: 0.5, padding: 4 }}><X size={20} /></button>
             </article>
           ))}
+
+          {/* Sugerencias determinísticas en carrusel horizontal */}
+          {suggestions.length > 0 && (
+            <div style={{ marginTop: 24 }}>
+              <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 14 }}>
+                <div>
+                  <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6 }}>Antes de pagar</div>
+                  <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 22, color: 'var(--liora-uva)' }}>Completa tu pedido</div>
+                </div>
+                <Link href="/tienda" style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13, color: 'var(--liora-uva)', borderBottom: '1.5px solid var(--liora-uva)', paddingBottom: 1, whiteSpace: 'nowrap', textDecoration: 'none' }}>
+                  Ver más
+                </Link>
+              </div>
+              <div style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 8, scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}>
+                {suggestions.map((s) => {
+                  const inCart = items.some((i) => i.variantId === s.variantId)
+                  return (
+                    <article key={s.variantId} style={{ flex: '0 0 200px', width: 200, scrollSnapAlign: 'start', background: s.categoryColor, borderRadius: 20, padding: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      <div style={{ aspectRatio: '1 / 1', borderRadius: 14, background: 'rgba(255,255,255,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--liora-uva)', overflow: 'hidden' }}>
+                        {s.imageUrl
+                          ? <img src={s.imageUrl} alt={s.name} style={{ width: '85%', height: '85%', objectFit: 'contain' }} />
+                          : <Package size={32} style={{ opacity: 0.6 }} />
+                        }
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 14, color: 'var(--liora-uva)', lineHeight: 1.15, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{s.name}</div>
+                        <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--liora-uva)', opacity: 0.65, marginTop: 3 }}>{s.variantName}</div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                        <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 15, color: 'var(--liora-uva)' }}>{fmt(s.priceCents)}</span>
+                        <button
+                          onClick={() => !inCart && addSuggestion(s)}
+                          disabled={inCart}
+                          style={{ background: inCart ? 'rgba(61,26,58,0.25)' : 'var(--liora-uva)', color: 'var(--liora-crema)', border: 'none', borderRadius: 999, padding: '8px 14px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, cursor: inCart ? 'default' : 'pointer', whiteSpace: 'nowrap' }}
+                        >
+                          {inCart ? 'Agregado ✓' : 'Agregar'}
+                        </button>
+                      </div>
+                    </article>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         <aside style={{ background: 'var(--liora-uva)', color: 'var(--liora-crema)', borderRadius: 28, padding: 28, position: 'sticky', top: 100 }}>

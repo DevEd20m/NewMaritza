@@ -5,8 +5,8 @@ import { validateAiRoutine, nameMatches, MIN_ROUTINE_STEPS, type CatalogRef } fr
 const CATALOG: CatalogRef[] = [
   { variantId: 'v1', productId: 'p1', name: 'Kéfir de Leche', brand: 'Mama Pacha' },   // #1
   { variantId: 'v2', productId: 'p2', name: 'Kéfir de Agua', brand: 'Mama Pacha' },    // #2
-  { variantId: 'v3', productId: 'p3', name: 'Moringa Oleifera Herbals', brand: 'H&H' },// #3
-  { variantId: 'v4', productId: 'p4', name: 'Neem Herbals & Health', brand: 'H&H' },   // #4
+  { variantId: 'v3', productId: 'p3', name: 'Moringa Oleifera Herbals', brand: 'Herbals & Health' },// #3
+  { variantId: 'v4', productId: 'p4', name: 'Neem Herbals & Health', brand: 'Herbals & Health' },   // #4
   { variantId: 'v5', productId: 'p5', name: 'Siete Semillas Vainilla', brand: 'Naturandes' }, // #5
   // Caso real: mismo nombre, OTRA marca → producto distinto y válido
   { variantId: 'v6', productId: 'p6', name: 'Kéfir de Leche', brand: 'Hiri' },         // #6
@@ -53,12 +53,14 @@ describe('validateAiRoutine', () => {
         step(4, 'Neem Herbals & Health'),
         step(5, 'Siete Semillas Vainilla'),
       ],
-      suggestion_items: [2],
+      // #2 (Kéfir de Agua) comparte el ingrediente "kefir" con el paso #1 →
+      // se descarta; #7 no colisiona y sí entra.
+      suggestion_items: [2, 7],
     }, CATALOG)
     expect(result).not.toBeNull()
     expect(result!.routineName).toBe('Rutina Digestión Ligera')
     expect(result!.steps.map(s => s.variantId)).toEqual(['v1', 'v3', 'v4', 'v5'])
-    expect(result!.suggestionVariantIds).toEqual(['v2'])
+    expect(result!.suggestionVariantIds).toEqual(['v7'])
   })
 
   it('descarta pasos donde el nombre no corresponde al índice (ID cruzado)', () => {
@@ -84,8 +86,9 @@ describe('validateAiRoutine', () => {
     expect(result).toBeNull()
   })
 
-  it('permite el mismo nombre en marcas distintas (Mama Pacha e Hiri)', () => {
-    // #1 y #6 son "Kéfir de Leche" de marcas distintas → ambos válidos
+  it('dedup por ingrediente: el mismo activo en otra marca no se repite en la rutina', () => {
+    // #1 y #6 son "Kéfir de Leche" de marcas distintas: mismo ingrediente
+    // activo → solo entra el primero
     const result = validateAiRoutine({
       ...base,
       steps: [
@@ -96,7 +99,7 @@ describe('validateAiRoutine', () => {
       ],
     }, CATALOG)
     expect(result).not.toBeNull()
-    expect(result!.steps.map(s => s.variantId)).toEqual(['v1', 'v6', 'v3', 'v4'])
+    expect(result!.steps.map(s => s.variantId)).toEqual(['v1', 'v3', 'v4'])
   })
 
   it('deduplica el duplicado verdadero: mismo nombre y misma marca', () => {
@@ -128,7 +131,7 @@ describe('validateAiRoutine', () => {
     expect(result!.steps).toHaveLength(3)
   })
 
-  it('las sugerencias no repiten el kit, pero sí permiten otra marca del mismo nombre', () => {
+  it('las sugerencias no repiten productos ni ingredientes del kit', () => {
     const result = validateAiRoutine({
       ...base,
       steps: [
@@ -136,12 +139,12 @@ describe('validateAiRoutine', () => {
         step(3, 'Moringa Oleifera Herbals'),
         step(4, 'Neem Herbals & Health'),
       ],
-      suggestion_items: [1, 8, 6, 2],
+      suggestion_items: [1, 8, 6, 2, 7],
     }, CATALOG)
     expect(result).not.toBeNull()
-    // #1 está en el kit; #8 es su duplicado exacto (misma marca);
-    // #6 es otra marca → sugerencia válida
-    expect(result!.suggestionVariantIds).toEqual(['v6', 'v2'])
+    // #1 está en el kit; #8 es su duplicado exacto; #6 y #2 comparten el
+    // ingrediente "kefir" con el kit → solo #7 es sugerencia válida
+    expect(result!.suggestionVariantIds).toEqual(['v7'])
   })
 
   it('rechaza JSON con forma inválida', () => {

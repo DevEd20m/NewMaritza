@@ -1,19 +1,61 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { X, Minus, Plus, ShoppingBag, Tag } from '@phosphor-icons/react'
 import { useCartStore } from '@/lib/store/cart'
+import { trackAddToCart } from '@/lib/analytics/events'
 
 interface CartDrawerProps {
   shippingThresholdCents: number
   shippingCostCents: number
 }
 
+interface RelatedItem {
+  variantId: string
+  productId: string
+  name: string
+  variantName: string
+  priceCents: number
+  currency: string
+  imageUrl: string | null
+  categoryColor: string
+  productSlug: string
+}
+
 export function CartDrawer({ shippingThresholdCents, shippingCostCents }: CartDrawerProps) {
-  const { isOpen, setIsOpen, items, removeItem, updateQuantity, subtotalCents, totalCents, discountCents, appliedCouponCode, setAppliedCoupon } = useCartStore()
+  const { isOpen, setIsOpen, items, addItem, removeItem, updateQuantity, subtotalCents, totalCents, discountCents, appliedCouponCode, setAppliedCoupon } = useCartStore()
   const [couponInput, setCouponInput] = useState('')
   const [couponError, setCouponError] = useState<string | null>(null)
   const [couponLoading, setCouponLoading] = useState(false)
+  const [related, setRelated] = useState<RelatedItem[]>([])
+  const relatedKey = useRef('')
+
+  // Sugerencias determinísticas según el contenido del carrito
+  const variantsKey = items.map((i) => i.variantId).sort().join(',')
+  useEffect(() => {
+    if (!isOpen || !variantsKey || relatedKey.current === variantsKey) return
+    relatedKey.current = variantsKey
+    fetch(`/api/related?variants=${encodeURIComponent(variantsKey)}&limit=6`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => { if (data?.suggestions) setRelated(data.suggestions) })
+      .catch(() => {})
+  }, [isOpen, variantsKey])
+
+  const addRelated = (s: RelatedItem) => {
+    addItem({
+      variantId: s.variantId,
+      productId: s.productId,
+      name: s.name,
+      variantName: s.variantName,
+      priceCents: s.priceCents,
+      currency: s.currency,
+      imageUrl: s.imageUrl ?? undefined,
+      categoryColor: s.categoryColor,
+    })
+    trackAddToCart({ variantId: s.variantId, name: s.name, priceCents: s.priceCents, quantity: 1, currency: s.currency, productSlug: s.productSlug })
+  }
+
+  const visibleRelated = related.filter((s) => !items.some((i) => i.variantId === s.variantId)).slice(0, 4)
 
   const sub = subtotalCents()
   const total = totalCents()
@@ -147,6 +189,42 @@ export function CartDrawer({ shippingThresholdCents, shippingCostCents }: CartDr
                 </button>
               </article>
             ))
+          )}
+
+          {/* Completa tu pedido: sugerencias con agregado rápido */}
+          {items.length > 0 && visibleRelated.length > 0 && (
+            <div style={{ marginTop: 8 }}>
+              <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)', textTransform: 'uppercase', letterSpacing: '0.12em', opacity: 0.6, marginBottom: 10 }}>
+                Completa tu pedido
+              </div>
+              <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 8, scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}>
+                {visibleRelated.map((s) => (
+                  <article key={s.variantId} style={{ flex: '0 0 150px', width: 150, scrollSnapAlign: 'start', background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 16, padding: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <Link href={`/tienda/${s.productSlug}`} onClick={() => setIsOpen(false)} style={{ textDecoration: 'none' }}>
+                      <div style={{ aspectRatio: '1 / 1', borderRadius: 12, background: s.categoryColor ?? 'var(--cat-lavanda)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                        {s.imageUrl
+                          ? <img src={s.imageUrl} alt={s.name} style={{ width: '85%', height: '85%', objectFit: 'contain' }} />
+                          : <ShoppingBag size={24} style={{ color: 'var(--liora-uva)', opacity: 0.4 }} />
+                        }
+                      </div>
+                      <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, color: 'var(--liora-uva)', lineHeight: 1.2, marginTop: 8, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                        {s.name}
+                      </div>
+                    </Link>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginTop: 'auto' }}>
+                      <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 13, color: 'var(--liora-uva)' }}>{formatPrice(s.priceCents)}</span>
+                      <button
+                        onClick={() => addRelated(s)}
+                        aria-label={`Agregar ${s.name}`}
+                        style={{ width: 30, height: 30, borderRadius: 999, border: 'none', background: 'var(--liora-uva)', color: 'var(--liora-crema)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+                      >
+                        <Plus size={14} weight="bold" />
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
           )}
         </div>
 

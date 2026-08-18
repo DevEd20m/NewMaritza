@@ -2,10 +2,14 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { ArrowLeft, CheckCircle, Package, Truck, MapPin, HandHeart, Copy } from '@phosphor-icons/react/dist/ssr'
+import { cookies } from 'next/headers'
+import { createClient } from '@/lib/supabase/server'
+import { hashOpaqueToken } from '@/lib/security/tokens'
+import { TrackingLookupForm } from '@/components/tracking/TrackingLookupForm'
 
 export const metadata: Metadata = { title: 'Rastrear pedido — LIORA', robots: { index: false, follow: false } }
 
-interface Props { searchParams: Promise<{ order?: string }> }
+interface Props { searchParams: Promise<{ order?: string; token?: string; access?: string }> }
 
 const STEP_ICONS = [CheckCircle, Package, Truck, MapPin, HandHeart]
 const STEP_LABELS = ['Pedido confirmado', 'Empacando con cariño', 'En camino', 'En reparto', 'Entregado']
@@ -15,9 +19,13 @@ const STATUS_STEP: Record<string, number> = {
 }
 
 export default async function TrackingPage({ searchParams }: Props) {
-  const { order: orderNumber } = await searchParams
+  const { order: orderNumber, token: urlToken, access } = await searchParams
+  const cookieStore = await cookies()
+  const trackingToken = urlToken ?? cookieStore.get('liora_tracking')?.value ?? null
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  if (!orderNumber) {
+  if (!trackingToken && !(orderNumber && user)) {
     return (
       <div style={{ background: 'var(--liora-crema)', padding: '64px 48px 96px', maxWidth: 640, margin: '0 auto', textAlign: 'center' }}>
         <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, color: 'var(--liora-uva)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12 }}>Tu pedido</div>
@@ -25,10 +33,8 @@ export default async function TrackingPage({ searchParams }: Props) {
           Rastrea tu <span style={{ fontFamily: 'var(--font-script)' }}>pedido.</span>
         </h1>
         <p style={{ fontFamily: 'var(--font-body)', fontSize: 17, color: 'var(--liora-uva)', opacity: 0.8, marginTop: 16 }}>Ingresa tu número de pedido.</p>
-        <form method="GET" style={{ marginTop: 32, display: 'flex', gap: 12 }}>
-          <input name="order" placeholder="L-0001-PE" required style={{ flex: 1, background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 12, padding: '14px 18px', fontFamily: 'var(--font-body)', fontSize: 15, color: 'var(--liora-uva)', outline: 'none' }} />
-          <button type="submit" style={{ background: 'var(--liora-uva)', color: 'var(--liora-crema)', border: 'none', borderRadius: 999, padding: '14px 28px', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Buscar</button>
-        </form>
+        {access && <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, opacity: 0.65 }}>No pudimos validar esos datos. Revísalos e intenta nuevamente.</p>}
+        <TrackingLookupForm />
       </div>
     )
   }
@@ -43,11 +49,12 @@ export default async function TrackingPage({ searchParams }: Props) {
   }
 
   const admin = createAdminClient()
-  const { data: orderRaw } = await (admin as any)
+  let orderQuery = admin
     .from('orders')
     .select('order_number, status, total_cents, created_at, guest_name, addresses(first_name, last_name, address_line1, city, district), order_items(product_name_snapshot, quantity, unit_price_cents), shipments(carrier, tracking_number, estimated_delivery_at), order_status_history(status, created_at, note)')
-    .eq('order_number', orderNumber)
-    .single()
+  if (trackingToken) orderQuery = orderQuery.eq('tracking_token_hash', hashOpaqueToken(trackingToken))
+  else orderQuery = orderQuery.eq('order_number', orderNumber!).eq('user_id', user!.id)
+  const { data: orderRaw } = await orderQuery.maybeSingle()
   const order = orderRaw as TrackingOrder | null
 
   if (!order) {

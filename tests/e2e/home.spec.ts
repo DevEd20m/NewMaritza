@@ -3,8 +3,8 @@ import { test, expect } from '@playwright/test'
 test.describe('Home page', () => {
   test('loads and shows LIORA brand', async ({ page }) => {
     await page.goto('/')
-    await expect(page.locator('text=LIORA')).toBeVisible()
-    await expect(page.locator('text=Hecho')).toBeVisible()
+    await expect(page).toHaveTitle(/LIORA/i)
+    await expect(page.getByRole('heading', { name: 'Hecho para ti.' })).toBeVisible()
   })
 
   test('has CTA to cuestionario', async ({ page }) => {

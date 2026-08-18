@@ -48,7 +48,7 @@ async function getQuizData() {
     .eq('template_id', template.id)
     .order('sort_order')
 
-  return { template, groups: (groupsRaw as QuizGroup[]) ?? [] }
+  return { template, groups: (groupsRaw as unknown as QuizGroup[]) ?? [] }
 }
 
 export default async function QuizPage() {

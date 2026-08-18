@@ -62,6 +62,25 @@ const norm = (s: string) =>
 // productos diferentes y ambos pueden ofrecerse.
 const identityKey = (ref: CatalogRef) => norm(`${ref.name} ${ref.brand ?? ''}`)
 
+// Dedup por ingrediente activo: "Ashwagandha Herbals & Health" y "Ashwagandha
+// Root Natures Truth" son el mismo activo en marcas distintas; ni la rutina ni
+// las sugerencias deben repetirlo. Se comparan tokens significativos del
+// nombre (≥5 letras, sin dígitos) descontando la marca y las palabras de
+// presentación o rol, que no identifican ingrediente.
+const GENERIC_TOKENS = new Set([
+  'capsula', 'capsulas', 'tabletas', 'frasco', 'sobres', 'polvo', 'extracto',
+  'aceite', 'crema', 'locion', 'serum', 'spray', 'gotas', 'jabon', 'shampoo',
+  'protector', 'solar', 'facial', 'corporal', 'natural', 'organico',
+  'vitamina', 'suplemento', 'premium',
+])
+
+export function ingredientTokens(name: string, brand?: string | null): string[] {
+  const brandTokens = new Set(norm(brand ?? '').split(' '))
+  return norm(name)
+    .split(' ')
+    .filter((t) => t.length >= 5 && !/\d/.test(t) && !GENERIC_TOKENS.has(t) && !brandTokens.has(t))
+}
+
 // Veto de seguridad: el nombre que la IA dice haber elegido debe corresponder
 // al producto real del índice. Acepta copia exacta, contención o al menos un
 // token significativo compartido (la IA a veces abrevia: "Neem en Cápsulas"
@@ -82,6 +101,14 @@ export function validateAiRoutine(raw: unknown, catalog: CatalogRef[]): Validate
 
   const usedProducts = new Set<string>()
   const usedIdentities = new Set<string>()
+  const usedIngredients = new Set<string>()
+
+  const takesIngredients = (ref: CatalogRef): boolean => {
+    const tokens = ingredientTokens(ref.name, ref.brand)
+    if (tokens.some((t) => usedIngredients.has(t))) return false
+    tokens.forEach((t) => usedIngredients.add(t))
+    return true
+  }
 
   const steps: ValidatedStep[] = []
   for (const s of parsed.data.steps) {
@@ -90,6 +117,7 @@ export function validateAiRoutine(raw: unknown, catalog: CatalogRef[]): Validate
     // La IA puede citar el nombre con o sin marca: se compara contra ambos
     if (!nameMatches(s.product_name, `${ref.name} ${ref.brand ?? ''}`)) continue
     if (usedProducts.has(ref.productId) || usedIdentities.has(identityKey(ref))) continue
+    if (!takesIngredients(ref)) continue
     usedProducts.add(ref.productId)
     usedIdentities.add(identityKey(ref))
     steps.push({
@@ -108,6 +136,7 @@ export function validateAiRoutine(raw: unknown, catalog: CatalogRef[]): Validate
     const ref = catalog[item - 1]
     if (!ref) continue
     if (usedProducts.has(ref.productId) || usedIdentities.has(identityKey(ref))) continue
+    if (!takesIngredients(ref)) continue
     usedProducts.add(ref.productId)
     usedIdentities.add(identityKey(ref))
     suggestionVariantIds.push(ref.variantId)

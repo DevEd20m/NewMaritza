@@ -13,15 +13,16 @@ interface Props {
   currency: string
   imageUrl?: string
   categoryColor?: string
+  productSlug?: string
 }
 
-export function AddToCartButton({ variantId, productId, name, variantName, priceCents, currency, imageUrl, categoryColor }: Props) {
+export function AddToCartButton({ variantId, productId, name, variantName, priceCents, currency, imageUrl, categoryColor, productSlug }: Props) {
   const [added, setAdded] = useState(false)
   const { addItem } = useCartStore()
 
   const handleAdd = () => {
     addItem({ variantId, productId, name, variantName, priceCents, currency, imageUrl, categoryColor })
-    trackAddToCart({ variantId, name, priceCents, quantity: 1, currency })
+    trackAddToCart({ variantId, name, priceCents, quantity: 1, currency, productSlug })
     setAdded(true)
     setTimeout(() => setAdded(false), 2000)
   }

@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react'
 import { Lock, User, UserSwitch } from '@phosphor-icons/react'
 import { checkoutSchema, type CheckoutFormData } from '@/lib/validation/checkout'
 import { useCartStore } from '@/lib/store/cart'
-import { trackBeginCheckout } from '@/lib/analytics/events'
+import { trackBeginCheckout, trackCheckoutError } from '@/lib/analytics/events'
 
 export interface PrefillData {
   isLoggedIn: boolean
@@ -117,7 +117,9 @@ export function CheckoutForm({ prefill, shippingCostCents = 1500, freeShippingTh
       try { localStorage.removeItem('liora-abandoned-kit') } catch {}
       window.location.href = payData.redirectUrl
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error inesperado')
+      const message = err instanceof Error ? err.message : 'Error inesperado'
+      setError(message)
+      trackCheckoutError(message, total)
     } finally {
       setLoading(false)
     }

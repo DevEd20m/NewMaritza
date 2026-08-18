@@ -4,43 +4,20 @@ import { ALLERGY_LABELS, SAFETY_FLAG_TEXTS } from '@/lib/recommendation/slug-wei
 import { calculateCategoryScores, scoresSortedDesc } from '@/lib/recommendation/score'
 import { selectRoutineKit, FALLBACK_DIAGNOSIS, FALLBACK_TAGS } from '@/lib/recommendation/kit-routes'
 import { validateAiRoutine } from '@/lib/recommendation/ai-routine'
+import { loadCatalog, buildSuggestions, type CatalogItem } from '@/lib/recommendation/related'
 
-const CAT_COLORS: Record<string, string> = {
-  piel:          'var(--cat-coral)',
-  solar:         'var(--cat-mostaza)',
-  bienestar:     'var(--cat-lavanda)',
-  gym:           'var(--cat-durazno)',
-  viaje:         'var(--cat-cielo)',
-  hogar:         'var(--cat-rosa)',
-  digestivo:     'var(--cat-menta)',
-  'pies-cuerpo': 'var(--cat-durazno)',
-}
-
-// Rangos de presupuesto del quiz (sincronizados con quiz_question_options,
-// migración 20260716000000_update_budget_ranges)
+// Rangos internos de presupuesto. Desde la migración
+// 20260718170000_quiz_intent_tiers_merge_safety el cliente elige intención
+// ("Lo esencial", "Un ritual equilibrado"...) sin ver montos: los rangos son
+// una guía interna para la IA, nunca una cifra prometida al cliente.
 const BUDGET_RANGES: Record<string, { label: string; min?: number; max?: number }> = {
-  'presupuesto-bajo':    { label: 'hasta S/200', max: 200 },
-  'presupuesto-medio':   { label: 'entre S/200 y S/400', min: 200, max: 400 },
-  'presupuesto-alto':    { label: 'entre S/400 y S/600', min: 400, max: 600 },
-  'presupuesto-premium': { label: 'más de S/600, sin límite', min: 600 },
+  'presupuesto-bajo':    { label: 'eligió "lo esencial": total objetivo hasta S/200', max: 200 },
+  'presupuesto-medio':   { label: 'eligió "un ritual equilibrado": total objetivo entre S/200 y S/400', min: 200, max: 400 },
+  'presupuesto-alto':    { label: 'eligió "una rutina completa": total objetivo entre S/400 y S/600', min: 400, max: 600 },
+  'presupuesto-premium': { label: 'eligió "la experiencia completa": sin límite, elige lo mejor del catálogo', min: 600 },
 }
 
-export interface KitItem {
-  variantId: string
-  productId: string
-  name: string
-  brand: string | null
-  variantName: string
-  categoryName: string
-  categorySlug: string
-  priceCents: number
-  currency: string
-  imageUrl: string | null
-  categoryColor: string
-  stepLabel?: string | null
-  stepWhen?: string | null
-  stepInstruction?: string | null
-}
+export type KitItem = CatalogItem
 
 export async function GET(request: NextRequest) {
   const profileId = request.nextUrl.searchParams.get('profileId')
@@ -115,52 +92,8 @@ export async function GET(request: NextRequest) {
   const scores = calculateCategoryScores(allSlugs)
 
   // Load full product catalog
-  const { data: products } = await admin
-    .from('products')
-    .select('id, name, brand, cover_image_url, category_id')
-    .eq('is_active', true)
-
-  const { data: categories } = await admin
-    .from('categories')
-    .select('id, name, slug')
-
-  const { data: variants } = await admin
-    .from('product_variants')
-    .select('id, product_id, name')
-    .eq('is_active', true)
-
-  const { data: prices } = await admin
-    .from('product_prices')
-    .select('variant_id, amount_cents, currency, effective_to')
-    .is('effective_to', null)
-
-  const catMap = Object.fromEntries((categories ?? []).map((c) => [c.id, c]))
-
   type CatalogEntry = KitItem
-  const catalog: CatalogEntry[] = []
-
-  for (const v of (variants ?? [])) {
-    const price = (prices ?? []).find((p) => p.variant_id === v.id)
-    if (!price) continue
-    const product = (products ?? []).find((p) => p.id === v.product_id)
-    if (!product) continue
-    const cat = catMap[product.category_id ?? '']
-    const color = cat ? (CAT_COLORS[cat.slug] ?? 'var(--cat-lavanda)') : 'var(--cat-lavanda)'
-
-    catalog.push({
-      variantId: v.id,
-      productId: product.id,
-      name: product.name,
-      brand: (product as { brand?: string | null }).brand ?? null,
-      variantName: v.name,
-      categoryName: cat?.name ?? '',
-      categorySlug: cat?.slug ?? '',
-      priceCents: price.amount_cents,
-      currency: price.currency,
-      imageUrl: product.cover_image_url,
-      categoryColor: color,
-    })
-  }
+  const catalog: CatalogEntry[] = await loadCatalog(admin)
 
   const catalogByVariant = new Map(catalog.map((c) => [c.variantId, c]))
 
@@ -189,6 +122,13 @@ export async function GET(request: NextRequest) {
 
       const budgetSlug = allSlugs.find((s) => s in BUDGET_RANGES)
       const budget = budgetSlug ? BUDGET_RANGES[budgetSlug] : null
+
+      // Contextos con exposición solar: la rutina debe incluir protector.
+      // La categoría "viaje" no tiene productos propios, así que sin esta
+      // regla la IA arma kits outdoor solo con suplementos.
+      const sunExposure = allSlugs.some(
+        (s) => ['obj-viaje', 'obj-solar', 'viaje-playa', 'viaje-aventura', 'vacaciones-playa', 'exposicion-solar'].includes(s) || s.startsWith('solar-'),
+      )
 
       const restrictions = allSlugs.filter((s) => s in ALLERGY_LABELS).map((s) => ALLERGY_LABELS[s])
       const prefersNatural = allSlugs.includes('prefiere-natural')
@@ -219,25 +159,24 @@ Responde SOLO con JSON:
   "routine_name": "string",
   "diagnosis": "string",
   "tags": ["string", ...],
-  "steps": [{ "item": número, "product_name": "string", "step_label": "string", "step_when": "string", "step_instruction": "string" }, ...],
-  "suggestion_items": [número, ...]
+  "steps": [{ "item": número, "product_name": "string", "step_label": "string", "step_when": "string", "step_instruction": "string" }, ...]
 }
 
 Reglas estrictas:
 - steps: 4 a 6 pasos (cada paso = un producto DIFERENTE). ${routineSizeSlug ? routineSizeHint[routineSizeSlug] ?? '' : ''}
 - item: el número EXACTO del catálogo (#N). product_name: copia EXACTA del nombre de ese mismo item. Si no coinciden, el paso se descarta — verifica que el número y el nombre sean de la MISMA línea del catálogo.
 - COHERENCIA (lo más importante): TODOS los productos deben servir directamente al objetivo principal de la persona. Nunca incluyas productos de otras áreas solo para llenar (ej: jamás desodorante o proteína de gym en una rutina digestiva). Respeta las características que la persona indicó (ej: si su piel es grasa, no elijas productos formulados para piel seca).
-- Orden cronológico de uso: mañana → noche. step_when corto con emoji y momento, coherente con el tipo de producto (suplementos: en ayunas o con comidas; cosméticos: "🌅 Mañana" / "🌙 Noche" — un sérum no se toma "en ayunas").
+- VARIEDAD: máximo UN producto por rol e ingrediente activo — nunca dos energizantes, dos probióticos ni el mismo activo en marcas distintas. Cada paso debe cubrir una necesidad DIFERENTE de la rutina.${sunExposure ? '\n- SOL: la persona estará expuesta al sol (viaje, playa u outdoor). La rutina DEBE incluir un protector solar del catálogo como uno de sus pasos.' : ''}
+- Orden cronológico de uso: mañana → noche. step_when corto con emoji y momento, coherente con el tipo de producto (suplementos: en ayunas o con comidas; cosméticos: "🌅 Mañana" / "🌙 Noche" — un sérum no se toma "en ayunas"). Un producto energizante (cafeína, maca, guaraná) JAMÁS va en un paso de noche.
 - step_label: el ROL del producto en la rutina, 2-4 palabras (ej: "Probiótico vivo intensivo") — NO repitas el nombre del producto.
 - step_instruction: 1-2 oraciones concretas: cómo tomarlo/aplicarlo, cantidad, y qué logra en la rutina.
-- PRESUPUESTO: ${budget ? `el TOTAL del kit debe quedar ${budget.label}${budget.max ? ` (suma los precios: no pases de S/${budget.max}${budget.min ? ` ni armes algo muy por debajo de S/${budget.min}` : ''})` : ' — puedes elegir lo mejor del catálogo'}. Si el objetivo no se puede cubrir dentro del rango, acércate lo más posible priorizando lo esencial.` : 'sin dato — apunta a un total moderado (S/200-400).'}
+- PRESUPUESTO: ${budget ? `la persona ${budget.label}${budget.max ? ` — suma los precios de tus pasos y NO pases de S/${budget.max}${budget.min ? `; tampoco armes algo muy por debajo de S/${budget.min}` : ''}` : ''}. Si el objetivo no se puede cubrir dentro del rango, acércate lo más posible priorizando lo esencial.` : 'sin dato — apunta a un total moderado (S/200-400).'}
 - RESTRICCIONES: ${restrictions.length ? `la persona evita: ${restrictions.join(', ')}. CRÍTICO para su seguridad — no incluyas productos que los contengan.` : 'sin restricciones.'}
-- PREFERENCIA: ${prefersNatural ? 'prefiere productos 100% naturales y orgánicos — priorízalos.' : 'abierta/o a todo tipo de productos.'}
+- PREFERENCIA: ${prefersNatural ? 'para la persona es FUNDAMENTAL que todo sea natural u orgánico — usa EXCLUSIVAMENTE productos naturales (nada de fórmulas sintéticas de laboratorio). Única excepción: si una necesidad esencial (ej. protector solar) no tiene opción natural en el catálogo, elige la más suave y explica en el diagnosis por qué la incluiste.' : 'abierta/o a todo tipo de productos.'}
 - GÉNERO: ${genderLabel ? `la persona es ${genderLabel}; usa pronombres correctos (${pronoun}) en el diagnosis.` : 'no especificado — usa lenguaje neutro.'}
 - routine_name: nombre corto y atractivo en español que describa el objetivo (ej: "Rutina Digestión Ligera").
 - diagnosis: 2-3 oraciones cálidas. Empieza con un insight sobre el perfil (no con "Te recomendamos") y explica por qué esta rutina encaja.${activeSafetyFlags.length ? ' Cierra recordando con calidez consultar a su médico antes de iniciar.' : ''}
 - tags: 3-5 etiquetas cortas en español del perfil.
-- suggestion_items: 2-4 items del catálogo NO incluidos en steps y afines al MISMO objetivo (nunca de otras áreas). Varía: no repitas el mismo ingrediente o tipo de producto en distintas marcas. Si no hay complementos coherentes, devuelve [].
 - CONTEXTO LOCAL: marca peruana; el clima costero húmedo afecta la piel — menciónalo solo si aplica.${activeSafetyFlags.length ? `\n- ADVERTENCIAS MÉDICAS (CRÍTICO — reportadas por la persona, respetar siempre):\n${activeSafetyFlags.map((f, i) => `  ${i + 1}. ${f}`).join('\n')}` : ''}
 - Responde completamente en español.`
 
@@ -264,17 +203,17 @@ Reglas estrictas:
 
       let { raw, validated } = await callAi()
 
-      // gpt-4o-mini es débil sumando precios: si se pasó del tope (>15% de
+      // gpt-4o-mini es débil sumando precios: si se pasó del objetivo (>5% de
       // tolerancia), se reintenta con la aritmética ya resuelta (desglose por
       // item) hasta 2 veces, quedándonos siempre con la versión más barata
-      // válida. Si aun así queda sobre el tope, se acepta: mejor una rutina
-      // coherente algo cara que un kit roto (el fallback curado tampoco
-      // respeta presupuesto).
+      // válida. Si aun así queda sobre el objetivo, se acepta: mejor una
+      // rutina coherente algo cara que un kit roto — y como el cliente ya no
+      // ve montos en el quiz, el rango es guía interna, no promesa.
       if (validated && budget?.max) {
         const maxCents = budget.max * 100
         for (let retryN = 0; retryN < 2; retryN++) {
           const totalCents = routineTotalCents(validated.steps)
-          if (totalCents <= maxCents * 1.15) break
+          if (totalCents <= maxCents * 1.05) break
 
           const breakdown = validated.steps
             .map((s) => {
@@ -306,9 +245,6 @@ Reglas estrictas:
           stepWhen: s.stepWhen,
           stepInstruction: s.stepInstruction,
         }))
-        suggestions = validated.suggestionVariantIds
-          .map((id) => catalogByVariant.get(id))
-          .filter(Boolean) as CatalogEntry[]
         diagnosis = validated.diagnosis
         tags = validated.tags
         routineName = validated.routineName
@@ -372,47 +308,41 @@ Reglas estrictas:
     tags = top ? FALLBACK_TAGS[top] : ['Bienestar', 'Personalizado']
   }
 
-  // ── Sugerencias: completar si la IA no dio suficientes ──
-  // Identidad de producto = nombre + marca (hay productos con el mismo nombre
-  // en marcas distintas y ambos son válidos)
-  const identity = (item: CatalogEntry) => `${item.name} · ${item.brand ?? ''}`.trim().toLowerCase()
-  const kitProductIds = new Set(kitItems.map((k) => k.productId))
-  const kitIdentities = new Set(kitItems.map(identity))
-  const notInKit = (item: CatalogEntry) =>
-    !kitProductIds.has(item.productId) && !kitIdentities.has(identity(item))
-
-  if (suggestions.length === 0) {
-    // Fuentes en orden de afinidad: categorías con señal clara del quiz (score >= 2)
-    // y luego las categorías que componen la propia rutina.
-    const suggestionCats: string[] = []
-    for (const { cat, score } of scoresSortedDesc(scores)) {
-      if (score >= 2) suggestionCats.push(cat)
-    }
-    for (const k of kitItems) {
-      if (k.categorySlug && !suggestionCats.includes(k.categorySlug)) suggestionCats.push(k.categorySlug)
-    }
-    for (const cat of suggestionCats) {
-      if (suggestions.length >= 4) break
-      for (const item of catalog) {
-        if (suggestions.length >= 4) break
-        if (item.categorySlug === cat && notInKit(item) &&
-            !suggestions.some((s) => s.productId === item.productId || identity(s) === identity(item))) {
-          suggestions.push(item)
-        }
-      }
-    }
+  // ── Sugerencias (siempre determinísticas, sin IA) ──
+  // Fuentes en orden de afinidad: categorías con señal clara del quiz (score >= 2)
+  // y luego las categorías que componen la propia rutina.
+  const suggestionCats: string[] = []
+  for (const { cat, score } of scoresSortedDesc(scores)) {
+    if (score >= 2) suggestionCats.push(cat)
   }
+  for (const k of kitItems) {
+    if (k.categorySlug && !suggestionCats.includes(k.categorySlug)) suggestionCats.push(k.categorySlug)
+  }
+  suggestions = buildSuggestions({
+    catalog,
+    exclude: kitItems,
+    preferredCategories: suggestionCats,
+    limit: 4,
+  })
 
   const kitVariantIds = kitItems.map((k) => k.variantId)
   const suggestionVariantIds = suggestions.map((s) => s.variantId)
 
-  // Persist to recommendations
+  // Persist to recommendations. Solo cuentan las filas con rationale
+  // ('kit'/'suggestion'): las filas legadas sin rationale (insert rápido por
+  // tags que hacía quiz/submit) se reemplazan para que la tabla refleje
+  // siempre el kit realmente mostrado al cliente.
   const { data: existing } = await admin
     .from('recommendations')
-    .select('variant_id')
+    .select('variant_id, rationale')
     .eq('quiz_profile_id', profileId)
 
-  if (!existing?.length) {
+  const hasRealRows = (existing ?? []).some((r) => (r as { rationale: string | null }).rationale)
+  if (existing?.length && !hasRealRows) {
+    await admin.from('recommendations').delete().eq('quiz_profile_id', profileId)
+  }
+
+  if (!hasRealRows) {
     const rows = [
       ...kitVariantIds.map((vid, i) => ({
         quiz_profile_id: profileId,

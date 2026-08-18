@@ -40,7 +40,7 @@ export async function generateOrderGuideSnapshot(orderId: string): Promise<void>
   // 3. Cargar quiz_profile si la orden tiene uno asociado
   let quizAnswers: Record<string, unknown> = {}
   let appliedTags: string[] = []
-  let quizProfileId: string | null = order.quiz_profile_id ?? null
+  const quizProfileId: string | null = order.quiz_profile_id ?? null
 
   if (quizProfileId) {
     const { data: qp } = await (admin as any)

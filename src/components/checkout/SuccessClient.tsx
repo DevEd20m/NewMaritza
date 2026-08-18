@@ -6,7 +6,7 @@ import { useCartStore } from '@/lib/store/cart'
 import { trackPurchase } from '@/lib/analytics/events'
 import type { KitGuide } from '@/lib/guides'
 
-interface Order {
+export interface ConfirmedOrder {
   id: string
   order_number: string
   total_cents: number
@@ -18,7 +18,7 @@ interface Order {
   order_items: { variant_id: string | null; product_name_snapshot: string; variant_name_snapshot: string; quantity: number; unit_price_cents: number }[]
 }
 
-export function SuccessClient({ order, whatsappNumber, quizProfileId }: { order: Order; whatsappNumber?: string; quizProfileId?: string | null }) {
+export function SuccessClient({ order, whatsappNumber, quizProfileId, trackingToken }: { order: ConfirmedOrder; whatsappNumber?: string; quizProfileId?: string | null; trackingToken?: string | null }) {
   const WHATSAPP_NUMBER = whatsappNumber ?? '51999999999'
   const { clearCart } = useCartStore()
   const [copied, setCopied] = useState(false)
@@ -291,7 +291,7 @@ export function SuccessClient({ order, whatsappNumber, quizProfileId }: { order:
 
       {/* ── Acciones ──────────────────────────────────────────────────── */}
       <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-        <Link href={`/tracking?order=${order.order_number}`} style={{
+        <Link href={trackingToken ? `/tracking?token=${encodeURIComponent(trackingToken)}` : '/tracking'} style={{
           background: 'var(--liora-uva)', color: 'var(--liora-crema)',
           borderRadius: 999, padding: '14px 28px',
           fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 15,

@@ -2,28 +2,6 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
-// ─── Rate limiter (API routes públicas sensibles) ─────────────────────────────
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
-
-function rateLimit(ip: string, limit: number, windowMs: number): boolean {
-  const now = Date.now()
-  const entry = rateLimitMap.get(ip)
-  if (!entry || now > entry.resetAt) {
-    rateLimitMap.set(ip, { count: 1, resetAt: now + windowMs })
-    return true
-  }
-  if (entry.count >= limit) return false
-  entry.count++
-  return true
-}
-
-const RATE_LIMITED_PATHS: Record<string, { limit: number; windowMs: number }> = {
-  '/api/quiz/submit':           { limit: 10,  windowMs: 60_000 },
-  '/api/coupons/validate':      { limit: 15,  windowMs: 60_000 },
-  '/api/checkout':              { limit: 5,   windowMs: 60_000 },
-  '/api/payment/create-session':{ limit: 5,   windowMs: 60_000 },
-}
-
 // ─── Rutas que requieren sesión activa (redirect a /login si no) ──────────────
 const AUTH_REQUIRED_PREFIXES = ['/cuenta']
 
@@ -32,21 +10,7 @@ const ADMIN_PREFIXES = ['/admin']
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown'
-
-  // ── 1. Rate limiting en rutas API ──────────────────────────────────────────
-  const rlConfig = RATE_LIMITED_PATHS[pathname]
-  if (rlConfig) {
-    const allowed = rateLimit(`${ip}:${pathname}`, rlConfig.limit, rlConfig.windowMs)
-    if (!allowed) {
-      return NextResponse.json(
-        { error: 'Demasiadas solicitudes. Espera un momento.' },
-        { status: 429, headers: { 'Retry-After': '60' } }
-      )
-    }
-  }
-
-  // ── 2. Auth check para rutas protegidas ────────────────────────────────────
+  // ── 1. Auth check para rutas protegidas ────────────────────────────────────
   const needsAuth  = AUTH_REQUIRED_PREFIXES.some(p => pathname.startsWith(p))
   const needsAdmin = ADMIN_PREFIXES.some(p => pathname.startsWith(p))
 
@@ -84,7 +48,7 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // ── 3. Security headers en todas las respuestas ────────────────────────────
+  // ── 2. Security headers en todas las respuestas ────────────────────────────
   const response = NextResponse.next()
 
   response.headers.set('X-Content-Type-Options', 'nosniff')

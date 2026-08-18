@@ -3,9 +3,21 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { createOrderSchema } from '@/lib/validation/checkout'
 import { getStoreSettings } from '@/lib/settings'
+import { consumeRateLimit, requestIp } from '@/lib/security/rate-limit'
+import { CHECKOUT_COOKIE, createOpaqueToken, hashOpaqueToken } from '@/lib/security/tokens'
+
+// Product decision: every checkout capability and inventory reservation lasts 30 minutes.
+const RESERVATION_TTL_SECONDS = 30 * 60
 
 export async function POST(request: NextRequest) {
   try {
+    if (!await consumeRateLimit('checkout', requestIp(request), 5, 60)) {
+      return NextResponse.json(
+        { error: 'Demasiadas solicitudes. Espera un momento.' },
+        { status: 429, headers: { 'Retry-After': '60' } },
+      )
+    }
+
     const body = await request.json()
     const parsed = createOrderSchema.safeParse(body)
     if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
@@ -171,6 +183,9 @@ export async function POST(request: NextRequest) {
       if (qp) validatedQuizProfileId = quizProfileId
     }
 
+    const checkoutToken = createOpaqueToken()
+    const trackingToken = createOpaqueToken()
+
     const { data: order, error: orderError } = await admin.from('orders').insert({
       user_id: user?.id ?? null,
       guest_email: orderEmail,
@@ -186,6 +201,8 @@ export async function POST(request: NextRequest) {
       notes: notes ?? null,
       status: 'pending_payment',
       quiz_profile_id: validatedQuizProfileId,
+      checkout_token_hash: hashOpaqueToken(checkoutToken),
+      tracking_token_hash: hashOpaqueToken(trackingToken),
     } as any).select('id, order_number').single()
 
     if (orderError || !order) {
@@ -212,6 +229,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Error al crear el pedido' }, { status: 500 })
     }
 
+    const { data: reservationExpiresAt, error: reservationError } = await admin.rpc(
+      'reserve_order_inventory',
+      { p_order_id: order.id, p_ttl_seconds: RESERVATION_TTL_SECONDS },
+    )
+
+    if (reservationError || !reservationExpiresAt) {
+      console.error('[checkout] inventory reservation failed', reservationError)
+      await admin.from('orders').update({ status: 'cancelled' }).eq('id', order.id)
+      const isStockConflict = reservationError?.message.includes('stock_insufficient')
+      return NextResponse.json(
+        { error: isStockConflict ? 'Uno de los productos acaba de agotarse' : 'No pudimos reservar tu pedido' },
+        { status: isStockConflict ? 409 : 500 },
+      )
+    }
+
     if (saveToProfile && user) {
       await Promise.all([
         admin.from('profiles').update({
@@ -227,16 +259,41 @@ export async function POST(request: NextRequest) {
     }
 
     const idempotencyKey = `order_${order.id}`
-    await admin.from('payments').insert({
+    const { error: paymentError } = await admin.from('payments').insert({
       order_id: order.id,
       provider: 'stripe',
       status: 'pending',
       amount_cents: totalCents,
       currency: 'PEN',
       idempotency_key: idempotencyKey,
+      metadata: { tracking_token: trackingToken },
     })
 
-    return NextResponse.json({ orderId: order.id, orderNumber: order.order_number, totalCents })
+    if (paymentError) {
+      console.error('[checkout] payment record failed', paymentError)
+      await admin.rpc('release_order_inventory', {
+        p_order_id: order.id,
+        p_reason: 'payment_record_failed',
+        p_expired: false,
+      })
+      await admin.from('orders').update({ status: 'cancelled' }).eq('id', order.id)
+      return NextResponse.json({ error: 'Error al preparar el pago' }, { status: 500 })
+    }
+
+    const response = NextResponse.json({
+      orderId: order.id,
+      orderNumber: order.order_number,
+      totalCents,
+      reservationExpiresAt,
+    })
+    response.cookies.set(CHECKOUT_COOKIE, checkoutToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: RESERVATION_TTL_SECONDS,
+    })
+    return response
   } catch (err) {
     console.error('[checkout]', err)
     return NextResponse.json({ error: 'Error interno' }, { status: 500 })

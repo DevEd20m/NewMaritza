@@ -6,6 +6,7 @@ import { LiveActivityToast } from '@/components/urgency/LiveActivityToast'
 import { ExitIntentModal } from '@/components/urgency/ExitIntentModal'
 import { WhatsAppButton } from '@/components/layout/WhatsAppButton'
 import HideOnQuiz from '@/components/layout/HideOnQuiz'
+import { PageTracker } from '@/components/layout/PageTracker'
 import { createClient } from '@/lib/supabase/server'
 import { getStoreSettings } from '@/lib/settings'
 
@@ -28,6 +29,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
 
   return (
     <>
+      <PageTracker />
       <HideOnQuiz>
         <AnnouncementBar
           thresholdCents={settings.free_shipping_threshold_cents}

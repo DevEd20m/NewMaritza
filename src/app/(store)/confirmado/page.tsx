@@ -5,69 +5,67 @@ import { getPaymentProvider } from '@/lib/payment/provider'
 import { getStoreSettings } from '@/lib/settings'
 import { markOrderPaid } from '@/lib/orders/mark-paid'
 import { SuccessClient } from '@/components/checkout/SuccessClient'
+import type { ConfirmedOrder } from '@/components/checkout/SuccessClient'
+import type { Json } from '@/types/database'
 
 export const metadata: Metadata = { title: 'Pedido confirmado', robots: { index: false, follow: false } }
 
-interface Props { searchParams: Promise<{ order?: string; session_id?: string }> }
+interface Props { searchParams: Promise<{ session_id?: string }> }
 
-async function getOrder(orderNumber: string) {
+type ConfirmedOrderWithPayments = ConfirmedOrder & {
+  payments?: Array<{ metadata: Json | null }>
+}
+
+async function getOrder(orderId: string) {
   const admin = createAdminClient()
   const { data } = await admin
     .from('orders')
-    .select('*, order_items(*), shipments(*)')
-    .eq('order_number', orderNumber)
+    .select('*, order_items(*), shipments(*), payments(metadata)')
+    .eq('id', orderId)
     .single()
-  return data
+  return data as unknown as ConfirmedOrderWithPayments | null
 }
 
 async function getQuizProfileId(userId: string | null): Promise<string | null> {
   if (!userId) return null
   const admin = createAdminClient()
   const { data } = await admin.from('profiles').select('quiz_profile_id').eq('id', userId).single()
-  return (data as any)?.quiz_profile_id ?? null
+  return data?.quiz_profile_id ?? null
 }
 
-async function confirmOrderFromSession(sessionId: string, orderNumber: string) {
+async function confirmOrderFromSession(sessionId: string): Promise<string | null> {
   try {
-    const admin = createAdminClient()
-    const { data: order } = await admin
-      .from('orders')
-      .select('id, status, total_cents')
-      .eq('order_number', orderNumber)
-      .single()
-
-    if (!order || order.status !== 'pending_payment') return
-
     const provider = getPaymentProvider('stripe')
     const result = await provider.confirmPayment(sessionId)
+    if (result.status !== 'succeeded') return null
 
-    if (result.status !== 'succeeded') return
-
-    // Verificar que la sesión de Stripe corresponde a ESTA orden y por el monto correcto,
-    // para que un session_id ajeno no pueda marcar pagada una orden distinta.
     const session = (result.metadata?.session ?? {}) as { metadata?: { order_id?: string }; amount_total?: number | null }
     const sessionOrderId = session.metadata?.order_id
     const sessionAmount = session.amount_total
-    if (sessionOrderId !== order.id) return
-    if (typeof sessionAmount === 'number' && sessionAmount !== order.total_cents) return
+    if (!sessionOrderId) return null
 
-    await admin.from('payments').update({ provider_reference: sessionId }).eq('order_id', order.id)
-    await markOrderPaid(order.id, 'stripe_redirect')
+    const admin = createAdminClient()
+    const { data: order } = await admin
+      .from('orders')
+      .select('id, total_cents')
+      .eq('id', sessionOrderId)
+      .single()
+    if (!order) return null
+    if (typeof sessionAmount === 'number' && sessionAmount !== order.total_cents) return null
+
+    await markOrderPaid(order.id, 'stripe_redirect', sessionId)
+    return order.id
   } catch {
-    // Silently fail — webhook will catch it as backup
+    return null
   }
 }
 
 export default async function SuccessPage({ searchParams }: Props) {
-  const { order: orderNumber, session_id: sessionId } = await searchParams
-
-  // Confirm payment immediately from Stripe's API — don't wait for webhook
-  if (sessionId && orderNumber) {
-    await confirmOrderFromSession(sessionId, orderNumber)
-  }
+  const { session_id: sessionId } = await searchParams
+  const orderId = sessionId ? await confirmOrderFromSession(sessionId) : null
 
   const [order, settings] = await Promise.all([
-    orderNumber ? getOrder(orderNumber) : Promise.resolve(null),
+    orderId ? getOrder(orderId) : Promise.resolve(null),
     getStoreSettings(),
   ])
 
@@ -80,6 +78,14 @@ export default async function SuccessPage({ searchParams }: Props) {
     )
   }
 
-  const quizProfileId = await getQuizProfileId((order as any).user_id ?? null)
-  return <SuccessClient order={order} whatsappNumber={settings.whatsapp_number} quizProfileId={quizProfileId} />
+  const quizProfileId = await getQuizProfileId(order.user_id)
+  const paymentMetadata = order.payments?.[0]?.metadata as { tracking_token?: string } | null | undefined
+  return (
+    <SuccessClient
+      order={order}
+      whatsappNumber={settings.whatsapp_number}
+      quizProfileId={quizProfileId}
+      trackingToken={paymentMetadata?.tracking_token ?? null}
+    />
+  )
 }

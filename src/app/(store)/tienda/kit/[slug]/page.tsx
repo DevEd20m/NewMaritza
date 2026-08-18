@@ -6,6 +6,9 @@ import { MiniQuizInline } from '@/components/products/MiniQuizInline'
 import { buildKitMetadata, buildKitJsonLd } from '@/lib/seo/metadata'
 import { ViewerBadge } from '@/components/urgency/ViewerBadge'
 import { StockUrgency } from '@/components/urgency/StockUrgency'
+import { ViewItemTracker } from '@/components/products/ViewItemTracker'
+import { getOtherKits } from '@/lib/recommendation/related'
+import { SuggestionCarousel, CarouselItem, KitMiniCard } from '@/components/products/SuggestionCarousel'
 import Link from 'next/link'
 import { getGuideBySlugDB } from '@/lib/guides/db'
 
@@ -89,7 +92,10 @@ export default async function KitPage({ params }: Props) {
   if (!kit) notFound()
 
   const bg = kitColor(slug)
-  const guide = await getGuideBySlugDB(slug)
+  const [guide, otherKits] = await Promise.all([
+    getGuideBySlugDB(slug),
+    getOtherKits(createAdminClient(), slug, 6),
+  ])
   const items = ((kit.kit_products ?? []) as any[])
     .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
   // Si los productos del kit tienen instrucción de paso (manual v4), se muestra el ritual numerado
@@ -116,6 +122,7 @@ export default async function KitPage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(buildKitJsonLd(kit as any, jsonLdProducts)) }}
       />
+      <ViewItemTracker id={kit.id} name={kit.name} slug={`kit/${slug}`} category="Kit" priceCents={totalCents} />
 
       {/* ── Hero ──────────────────────────────────────────────────────── */}
       <div className="liora-cart-outer" style={{ background: bg, padding: '56px 48px 52px' }}>
@@ -390,6 +397,21 @@ export default async function KitPage({ params }: Props) {
           </div>
         </div>
       </div>
+
+      {otherKits.length > 0 && (
+        <SuggestionCarousel
+          eyebrow="Explora más"
+          title="Otros kits para ti"
+          linkHref="/tienda#kits-base"
+          linkLabel="Ver todos los kits"
+        >
+          {otherKits.map((k) => (
+            <CarouselItem key={k.id} width={280}>
+              <KitMiniCard kit={k} />
+            </CarouselItem>
+          ))}
+        </SuggestionCarousel>
+      )}
     </div>
   )
 }

@@ -1,5 +1,8 @@
 import { defineConfig, devices } from '@playwright/test'
 
+const externalBaseUrl = process.env.PLAYWRIGHT_BASE_URL
+const vercelBypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET
+
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: true,
@@ -8,13 +11,17 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
   use: {
-    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000',
+    baseURL: externalBaseUrl ?? 'http://localhost:3000',
     trace: 'on-first-retry',
+    extraHTTPHeaders: vercelBypassSecret ? {
+      'x-vercel-protection-bypass': vercelBypassSecret,
+      'x-vercel-set-bypass-cookie': 'true',
+    } : undefined,
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
   ],
-  webServer: {
+  webServer: externalBaseUrl ? undefined : {
     command: 'npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
