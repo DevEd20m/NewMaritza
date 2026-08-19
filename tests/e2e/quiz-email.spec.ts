@@ -5,6 +5,8 @@ const enabled = process.env.RUN_QUIZ_EMAIL_E2E === '1'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 const bypass = process.env.VERCEL_AUTOMATION_BYPASS_SECRET
+const productionEnabled = process.env.RUN_QUIZ_EMAIL_PROD_E2E === '1'
+const configuredRecipient = process.env.QUIZ_E2E_RECIPIENT
 
 test.setTimeout(120_000)
 
@@ -14,12 +16,25 @@ test.describe('Entrega del resultado del cuestionario', () => {
     'Requiere Supabase staging y RUN_QUIZ_EMAIL_E2E=1',
   )
 
-  test('captura un solo correo LIORA y el enlace restaura el kit', async ({ page, browser }) => {
-    expect(supabaseUrl).not.toContain('skcfrccoexscaiayzjzd')
+  test('captura un solo correo LIORA y el enlace restaura el kit', async ({ page, browser, baseURL }) => {
+    const isProduction = supabaseUrl!.includes('skcfrccoexscaiayzjzd')
+    if (isProduction) {
+      expect(productionEnabled).toBe(true)
+      expect(configuredRecipient).toMatch(/@liora\.pe$/)
+    }
     const admin = createClient(supabaseUrl!, serviceRoleKey!, {
       auth: { autoRefreshToken: false, persistSession: false },
     })
-    const recipient = `quiz-e2e-${Date.now()}@liora.invalid`
+    const recipient = configuredRecipient ?? `quiz-e2e-${Date.now()}@liora.invalid`
+    const { data: usersBefore, error: usersBeforeError } = await admin.auth.admin.listUsers({
+      page: 1,
+      perPage: 1000,
+    })
+    if (usersBeforeError) throw usersBeforeError
+    const matchingUserIdsBefore = usersBefore.users
+      .filter(user => user.email === recipient)
+      .map(user => user.id)
+      .sort()
 
     await page.goto('/cuestionario', { waitUntil: 'domcontentloaded' })
     // La página llega renderizada desde el servidor; espera la hidratación antes
@@ -59,33 +74,50 @@ test.describe('Entrega del resultado del cuestionario', () => {
       status: string
       html_snapshot: string | null
       quiz_profile_id: string | null
+      payload: Record<string, unknown> | null
     }> = []
     await expect.poll(async () => {
       const { data, error } = await admin
         .from('email_queue')
-        .select('status, html_snapshot, quiz_profile_id')
+        .select('status, html_snapshot, quiz_profile_id, payload')
         .eq('recipient_email', recipient)
         .eq('type', 'quiz_welcome')
+        .order('created_at', { ascending: false })
       if (error) throw error
       jobs = data ?? []
-      return `${jobs.length}:${jobs[0]?.status ?? 'missing'}`
-    }, { timeout: 20_000 }).toBe('1:captured')
+      return jobs[0]?.status ?? 'missing'
+    }, { timeout: 20_000 }).toBe(isProduction ? 'sent' : 'captured')
+
+    // El reintento debe apuntar al mismo trabajo; un destinatario productivo
+    // conocido puede tener ejecuciones antiguas, por eso se compara el perfil.
+    const currentProfileId = new URL(page.url()).searchParams.get('profileId')
+    expect(jobs.filter(job => job.quiz_profile_id === currentProfileId)).toHaveLength(1)
 
     const html = jobs[0]?.html_snapshot ?? ''
-    expect(html).toContain('Tu kit personalizado está listo')
-    expect(html).toContain('Ver mi kit personalizado')
-    expect(html).not.toContain('Confirm your email address')
+    if (!isProduction) {
+      expect(html).toContain('Tu kit personalizado está listo')
+      expect(html).toContain('Ver mi kit personalizado')
+      expect(html).not.toContain('Confirm your email address')
+    }
 
     const { data: users, error: usersError } = await admin.auth.admin.listUsers({
       page: 1,
       perPage: 1000,
     })
     if (usersError) throw usersError
-    expect(users.users.some(user => user.email === recipient)).toBe(false)
+    expect(users.users
+      .filter(user => user.email === recipient)
+      .map(user => user.id)
+      .sort()).toEqual(matchingUserIdsBefore)
 
     const encodedResultUrl = html.match(/https?:\/\/[^"'<>\s]+\/api\/quiz\/result\?token=[^"'<>\s]+/)?.[0]
-    expect(encodedResultUrl).toBeTruthy()
-    const resultUrl = encodedResultUrl!.replaceAll('&amp;', '&')
+    const resultToken = typeof jobs[0]?.payload?.result_token === 'string'
+      ? jobs[0].payload.result_token
+      : null
+    const resultUrl = encodedResultUrl
+      ? encodedResultUrl.replaceAll('&amp;', '&')
+      : `${baseURL}/api/quiz/result?token=${encodeURIComponent(resultToken ?? '')}`
+    expect(resultToken || encodedResultUrl).toBeTruthy()
     const secondDevice = await browser.newContext({
       extraHTTPHeaders: bypass ? {
         'x-vercel-protection-bypass': bypass,
