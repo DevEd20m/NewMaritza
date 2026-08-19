@@ -2,11 +2,16 @@ import 'server-only'
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { deliverOrderEmail, type OrderEmailType } from '@/lib/email/deliver-order-email'
+import { deliverQuizWelcomeEmail } from '@/lib/email/deliver-quiz-email'
+import type { Json } from '@/types/database'
 
 export interface EmailJob {
   id: string
-  order_id: string
+  order_id: string | null
+  quiz_profile_id?: string | null
+  recipient_email?: string | null
   type: string
+  payload?: Json
 }
 
 export type EmailJobResult = 'sent' | 'captured' | 'failed' | 'skipped'
@@ -42,7 +47,13 @@ export async function processEmailJob(
   }
 
   try {
-    const result = await deliverOrderEmail(job.order_id, job.type as OrderEmailType)
+    const result = job.type === 'quiz_welcome'
+      ? await deliverQuizWelcomeEmail(
+          job.quiz_profile_id ?? '',
+          job.recipient_email ?? '',
+          (job.payload ?? {}) as Record<string, unknown>,
+        )
+      : await deliverOrderEmail(job.order_id ?? '', job.type as OrderEmailType)
     const captured = result.status === 'captured'
     await admin.from('email_queue').update({
       status: captured ? 'captured' : 'sent',

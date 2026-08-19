@@ -1,7 +1,7 @@
 import 'server-only'
 
 import { createAdminClient } from '@/lib/supabase/admin'
-import { getResend, FROM_EMAIL } from '@/lib/email/client'
+import { getResend, FROM_EMAIL, REPLY_TO } from '@/lib/email/client'
 import { orderConfirmationEmail } from '@/lib/email/templates/order-confirmation'
 import { weekCheckinEmail } from '@/lib/email/templates/week-checkin'
 import { detectKitFromItemsDB } from '@/lib/guides/db'
@@ -78,6 +78,7 @@ export async function deliverOrderEmail(
 
     const { error } = await getResend().emails.send({
       from: FROM_EMAIL,
+      replyTo: REPLY_TO,
       to: toEmail,
       subject: `¿Cómo van tus primeros 7 días con ${guide.kitName}? 🌱`,
       html,
@@ -142,6 +143,7 @@ export async function deliverOrderEmail(
     : `¡Pedido confirmado! #${orderData.order_number} — LIORA 🌿`
   const { error } = await getResend().emails.send({
     from: FROM_EMAIL,
+    replyTo: REPLY_TO,
     to: toEmail,
     subject,
     html,

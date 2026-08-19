@@ -103,3 +103,10 @@ export function trackQuizStep(stepIndex: number, totalSteps: number) {
 export function trackQuizComplete() {
   track({ event: 'quiz_complete' })
 }
+
+export function trackAssistantEvent(
+  event: 'assistant_message' | 'assistant_swap_suggested' | 'assistant_swap_accepted',
+  metadata: Record<string, unknown> = {},
+) {
+  track({ event, metadata })
+}

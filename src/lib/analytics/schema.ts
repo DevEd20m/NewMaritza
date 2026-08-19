@@ -4,6 +4,7 @@ export const ANALYTICS_EVENTS = [
   'page_view', 'page_engagement', 'element_click', 'navigation_click', 'whatsapp_click',
   'view_item', 'add_to_cart', 'begin_checkout', 'checkout_error', 'purchase',
   'search', 'search_no_results', 'quiz_start', 'quiz_step', 'quiz_complete',
+  'assistant_message', 'assistant_swap_suggested', 'assistant_swap_accepted',
 ] as const
 
 const SENSITIVE_KEY = /email|phone|name|address|password|token|document|dni|card|answer/i

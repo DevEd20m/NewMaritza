@@ -12,6 +12,12 @@ export interface CartLineItem {
   quantity: number
   imageUrl?: string
   categoryColor?: string
+  brand?: string | null
+  categoryName?: string
+  stockQuantity?: number | null
+  stepLabel?: string | null
+  stepWhen?: string | null
+  stepInstruction?: string | null
 }
 
 interface CartState {
@@ -27,6 +33,7 @@ interface CartState {
   addItem: (item: Omit<CartLineItem, 'quantity'> & { quantity?: number }) => void
   removeItem: (variantId: string) => void
   updateQuantity: (variantId: string, quantity: number) => void
+  replaceItem: (variantId: string, replacement: Omit<CartLineItem, 'quantity'>) => void
   clearCart: () => void
   setIsOpen: (open: boolean) => void
   setAppliedCoupon: (code: string | null, discountCents: number) => void
@@ -81,6 +88,23 @@ export const useCartStore = create<CartState>()(
           items: state.items.map((i) => (i.variantId === variantId ? { ...i, quantity } : i)),
         }))
       },
+
+      replaceItem: (variantId, replacement) =>
+        set((state) => ({
+          items: state.items.map((item) => item.variantId === variantId
+            ? {
+                ...replacement,
+                quantity: item.quantity,
+                stepLabel: replacement.stepLabel ?? item.stepLabel,
+                stepWhen: replacement.stepWhen ?? item.stepWhen,
+                stepInstruction: replacement.stepInstruction ?? item.stepInstruction,
+              }
+            : item),
+          appliedCouponCode: null,
+          discountCents: 0,
+          cartId: null,
+          isOpen: false,
+        })),
 
       clearCart: () =>
         set({ items: [], appliedCouponCode: null, discountCents: 0, cartId: null }),

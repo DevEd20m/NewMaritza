@@ -30,6 +30,10 @@ export interface CatalogItem {
   imageUrl: string | null
   categoryColor: string
   productSlug: string
+  stockQuantity: number | null
+  description: string | null
+  usageInstructions: string | null
+  indications: string | null
   stepLabel?: string | null
   stepWhen?: string | null
   stepInstruction?: string | null
@@ -38,9 +42,9 @@ export interface CatalogItem {
 // Catálogo activo completo con precio vigente (extraído de kit/recommend).
 export async function loadCatalog(admin: AdminClient): Promise<CatalogItem[]> {
   const [{ data: products }, { data: categories }, { data: variants }, { data: prices }] = await Promise.all([
-    admin.from('products').select('id, name, slug, brand, cover_image_url, category_id').eq('is_active', true),
+    admin.from('products').select('id, name, slug, brand, cover_image_url, category_id, description, usage_instructions, indications').eq('is_active', true),
     admin.from('categories').select('id, name, slug'),
-    admin.from('product_variants').select('id, product_id, name').eq('is_active', true),
+    admin.from('product_variants').select('id, product_id, name, stock_quantity').eq('is_active', true),
     admin.from('product_prices').select('variant_id, amount_cents, currency, effective_to').is('effective_to', null),
   ])
 
@@ -50,6 +54,7 @@ export async function loadCatalog(admin: AdminClient): Promise<CatalogItem[]> {
 
   const catalog: CatalogItem[] = []
   for (const v of (variants ?? [])) {
+    if (v.stock_quantity === 0) continue
     const price = priceMap.get(v.id)
     if (!price) continue
     const product = productMap.get(v.product_id)
@@ -68,6 +73,10 @@ export async function loadCatalog(admin: AdminClient): Promise<CatalogItem[]> {
       imageUrl: product.cover_image_url,
       categoryColor: cat ? (CAT_COLORS[cat.slug] ?? 'var(--cat-lavanda)') : 'var(--cat-lavanda)',
       productSlug: product.slug,
+      stockQuantity: v.stock_quantity,
+      description: product.description,
+      usageInstructions: product.usage_instructions,
+      indications: product.indications,
     })
   }
   return catalog

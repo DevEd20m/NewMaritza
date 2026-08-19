@@ -8,7 +8,7 @@ export interface Database {
         Relationships: []
       }
       admin_failed_email_jobs: {
-        Row: { id: string; order_id: string; type: string; attempts: number; last_error: string | null; scheduled_for: string; locked_at: string | null; created_at: string }
+        Row: { id: string; order_id: string | null; type: string; attempts: number; last_error: string | null; scheduled_for: string; locked_at: string | null; created_at: string }
         Relationships: []
       }
       admin_payment_review: {
@@ -23,6 +23,11 @@ export interface Database {
       release_order_inventory: { Args: { p_order_id: string; p_reason?: string; p_expired?: boolean }; Returns: boolean }
       release_expired_inventory_reservations: { Args: Record<PropertyKey, never>; Returns: number }
       finalize_paid_order: { Args: { p_order_id: string; p_provider_reference: string; p_source: string }; Returns: string }
+      cleanup_expired_quiz_result_tokens: { Args: Record<PropertyKey, never>; Returns: number }
+      submit_quiz_profile_and_email: {
+        Args: { p_submission_key: string; p_session_token: string; p_result_token: string; p_result_token_hash: string; p_template_id: string; p_answers: Json; p_applied_tags: string[]; p_email: string; p_phone?: string | null; p_whatsapp_consent?: boolean; p_user_id?: string | null }
+        Returns: Array<{ profile_id: string; lead_id: string; email_job_id: string; profile_session_token: string }>
+      }
       ingest_analytics_events: { Args: { p_session_id: string; p_events: Json }; Returns: number }
       link_analytics_session: { Args: { p_token_hash: string; p_user_id?: string | null; p_lead_id?: string | null; p_quiz_profile_id?: string | null; p_order_id?: string | null }; Returns: string | null }
       claim_analytics_outbox: { Args: { p_limit?: number }; Returns: Database['public']['Tables']['analytics_delivery_outbox']['Row'][] }
@@ -105,8 +110,8 @@ export interface Database {
         Relationships: []
       }
       quiz_profiles: {
-        Row: { id: string; session_token: string; user_id: string | null; template_id: string | null; answers: Json; applied_tags: string[]; created_at: string }
-        Insert: Omit<Database['public']['Tables']['quiz_profiles']['Row'], 'id' | 'created_at'>
+        Row: { id: string; session_token: string; submission_key: string | null; user_id: string | null; template_id: string | null; answers: Json; applied_tags: string[]; created_at: string }
+        Insert: Omit<Database['public']['Tables']['quiz_profiles']['Row'], 'id' | 'created_at' | 'submission_key'> & { submission_key?: string | null }
         Update: Partial<Database['public']['Tables']['quiz_profiles']['Insert']>
         Relationships: []
       }
@@ -117,8 +122,8 @@ export interface Database {
         Relationships: []
       }
       leads: {
-        Row: { id: string; email: string; phone: string | null; quiz_profile_id: string | null; source: string; created_at: string }
-        Insert: Omit<Database['public']['Tables']['leads']['Row'], 'id' | 'created_at'>
+        Row: { id: string; email: string; phone: string | null; whatsapp_consent: boolean; quiz_profile_id: string | null; source: string; created_at: string }
+        Insert: Omit<Database['public']['Tables']['leads']['Row'], 'id' | 'created_at' | 'whatsapp_consent'> & { whatsapp_consent?: boolean }
         Update: Partial<Database['public']['Tables']['leads']['Insert']>
         Relationships: []
       }
@@ -219,7 +224,7 @@ export interface Database {
         Relationships: []
       }
       bot_conversations: {
-        Row: { id: string; user_id: string | null; session_token: string | null; context_product_ids: string[]; context_cart_id: string | null; created_at: string; updated_at: string }
+        Row: { id: string; user_id: string | null; session_token: string | null; quiz_profile_id: string | null; context_product_ids: string[]; context_cart_id: string | null; created_at: string; updated_at: string }
         Insert: Omit<Database['public']['Tables']['bot_conversations']['Row'], 'id' | 'created_at' | 'updated_at'>
         Update: Partial<Database['public']['Tables']['bot_conversations']['Insert']>
         Relationships: []
@@ -228,6 +233,12 @@ export interface Database {
         Row: { id: string; conversation_id: string; role: 'user' | 'assistant'; content: string; suggested_swap: Json | null; swap_accepted: boolean | null; created_at: string }
         Insert: Omit<Database['public']['Tables']['bot_messages']['Row'], 'id' | 'created_at'>
         Update: Partial<Database['public']['Tables']['bot_messages']['Insert']>
+        Relationships: []
+      }
+      quiz_result_tokens: {
+        Row: { id: string; quiz_profile_id: string; token_hash: string; expires_at: string; created_at: string }
+        Insert: Omit<Database['public']['Tables']['quiz_result_tokens']['Row'], 'id' | 'created_at'>
+        Update: Partial<Database['public']['Tables']['quiz_result_tokens']['Insert']>
         Relationships: []
       }
       inventory_reservations: {
@@ -243,8 +254,8 @@ export interface Database {
         Relationships: []
       }
       email_queue: {
-        Row: { id: string; order_id: string; type: string; scheduled_for: string; sent: boolean; sent_at: string | null; status: 'pending' | 'processing' | 'captured' | 'sent' | 'failed'; attempts: number; locked_at: string | null; last_error: string | null; idempotency_key: string | null; payload: Json; html_snapshot: string | null; created_at: string }
-        Insert: { order_id: string; type: string; scheduled_for: string; sent?: boolean; sent_at?: string | null; status?: 'pending' | 'processing' | 'captured' | 'sent' | 'failed'; attempts?: number; locked_at?: string | null; last_error?: string | null; idempotency_key?: string | null; payload?: Json; html_snapshot?: string | null }
+        Row: { id: string; order_id: string | null; lead_id: string | null; quiz_profile_id: string | null; recipient_email: string | null; type: string; scheduled_for: string; sent: boolean; sent_at: string | null; status: 'pending' | 'processing' | 'captured' | 'sent' | 'failed'; attempts: number; locked_at: string | null; last_error: string | null; idempotency_key: string | null; payload: Json; html_snapshot: string | null; created_at: string }
+        Insert: { order_id?: string | null; lead_id?: string | null; quiz_profile_id?: string | null; recipient_email?: string | null; type: string; scheduled_for: string; sent?: boolean; sent_at?: string | null; status?: 'pending' | 'processing' | 'captured' | 'sent' | 'failed'; attempts?: number; locked_at?: string | null; last_error?: string | null; idempotency_key?: string | null; payload?: Json; html_snapshot?: string | null }
         Update: Partial<Database['public']['Tables']['email_queue']['Insert']>
         Relationships: []
       }

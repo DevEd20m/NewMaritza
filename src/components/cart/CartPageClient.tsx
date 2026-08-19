@@ -8,7 +8,7 @@ import {
   CaretDown, CaretUp, ShieldCheck, Check,
 } from '@phosphor-icons/react'
 import { useCartStore } from '@/lib/store/cart'
-import { trackBeginCheckout } from '@/lib/analytics/events'
+import { trackAssistantEvent, trackBeginCheckout } from '@/lib/analytics/events'
 import { createClient } from '@/lib/supabase/client'
 
 interface KitItem {
@@ -25,6 +25,8 @@ interface KitItem {
   stepLabel?: string | null
   stepWhen?: string | null
   stepInstruction?: string | null
+  stockQuantity?: number | null
+  usageInstructions?: string | null
 }
 
 interface KitData {
@@ -36,7 +38,36 @@ interface KitData {
   routineSlug?: string | null
 }
 
-type BotMsg = { who: 'bot' | 'user'; text: string }
+interface BotReplacement {
+  variantId: string
+  productId: string
+  name: string
+  brand: string | null
+  variantName: string
+  categoryName: string
+  priceCents: number
+  currency: string
+  imageUrl: string | null
+  categoryColor: string
+  stockQuantity: number | null
+  usageInstructions: string | null
+}
+
+interface BotSuggestion {
+  id: string
+  sourceVariantId: string
+  quantity: number
+  reason: string
+  savingsCents: number
+  replacement: BotReplacement
+}
+
+type BotMsg = {
+  who: 'bot' | 'user'
+  text: string
+  messageId?: string | null
+  suggestions?: BotSuggestion[]
+}
 
 interface CartPageClientProps {
   shippingCostCents?: number
@@ -49,7 +80,7 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
   const profileId = searchParams.get('profileId')
 
   const { items, removeItem, updateQuantity, subtotalCents, totalCents, discountCents,
-    appliedCouponCode, setAppliedCoupon, clearCart, addItem, setIsOpen } = useCartStore()
+    appliedCouponCode, setAppliedCoupon, clearCart, addItem, replaceItem, setIsOpen } = useCartStore()
 
   const [kitData, setKitData] = useState<KitData | null>(null)
   const [suggestions, setSuggestions] = useState<KitItem[]>([])
@@ -62,6 +93,8 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
   const [botThread, setBotThread] = useState<BotMsg[]>([])
   const [botInput, setBotInput] = useState('')
   const [botLoading, setBotLoading] = useState(false)
+  const [conversationId, setConversationId] = useState<string | null>(null)
+  const [swapLoadingId, setSwapLoadingId] = useState<string | null>(null)
   const [isGuest, setIsGuest] = useState(false)
   const [featuredCoupon, setFeaturedCoupon] = useState<{ code: string; discountText: string } | null>(null)
   const hasFetched = useRef(false)
@@ -129,6 +162,12 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
             currency: item.currency,
             imageUrl: item.imageUrl ?? undefined,
             categoryColor: item.categoryColor,
+            brand: item.brand,
+            categoryName: item.categoryName,
+            stockQuantity: item.stockQuantity,
+            stepLabel: item.stepLabel,
+            stepWhen: item.stepWhen,
+            stepInstruction: item.stepInstruction,
           })
         }
         setIsOpen(false)
@@ -208,19 +247,74 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
         body: JSON.stringify({
           message: userMsg,
           profileId,
-          kitItems: items.map((i) => `${i.name} (${i.variantName})`),
-          routineName: kitData?.routineName ?? undefined,
-          routineSteps: (kitData?.kit ?? [])
-            .filter((k) => k.stepInstruction || k.stepLabel)
-            .map((k, i) => `Paso ${i + 1}${k.stepWhen ? ` (${k.stepWhen})` : ''}: ${k.name} — ${k.stepLabel ?? ''}`),
+          conversationId: conversationId ?? undefined,
+          cart: items.map((item) => ({ variantId: item.variantId, quantity: item.quantity })),
         }),
       })
       const data = await res.json()
-      setBotThread([...newThread, { who: 'bot', text: data.reply ?? 'Entendido. ¿En qué más puedo ayudarte?' }])
+      if (!res.ok) throw new Error(data.error ?? 'chat_error')
+      if (data.conversationId) setConversationId(data.conversationId)
+      const suggestions = Array.isArray(data.suggestions) ? data.suggestions as BotSuggestion[] : []
+      setBotThread([...newThread, {
+        who: 'bot',
+        text: data.reply ?? 'Entendido. ¿En qué más puedo ayudarte?',
+        messageId: data.messageId,
+        suggestions,
+      }])
+      trackAssistantEvent('assistant_message', { suggestions: suggestions.length })
+      if (suggestions.length) trackAssistantEvent('assistant_swap_suggested', { count: suggestions.length })
     } catch {
       setBotThread([...newThread, { who: 'bot', text: 'Hubo un error. Intenta de nuevo.' }])
     } finally {
       setBotLoading(false)
+    }
+  }
+
+  const acceptSwap = async (message: BotMsg, suggestion: BotSuggestion) => {
+    if (!profileId || !conversationId || !message.messageId || swapLoadingId) return
+    setSwapLoadingId(suggestion.id)
+    try {
+      const res = await fetch('/api/kit/chat/accept', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          profileId,
+          conversationId,
+          messageId: message.messageId,
+          suggestionId: suggestion.id,
+          quantity: suggestion.quantity,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'swap_error')
+      const replacement = data.replacement as BotReplacement
+      replaceItem(data.sourceVariantId, {
+        variantId: replacement.variantId,
+        productId: replacement.productId,
+        name: replacement.name,
+        brand: replacement.brand,
+        variantName: replacement.variantName,
+        categoryName: replacement.categoryName,
+        priceCents: replacement.priceCents,
+        currency: replacement.currency,
+        imageUrl: replacement.imageUrl ?? undefined,
+        categoryColor: replacement.categoryColor,
+        stockQuantity: replacement.stockQuantity,
+        stepInstruction: replacement.usageInstructions,
+      })
+      setBotThread((thread) => [...thread, {
+        who: 'bot',
+        text: `Listo, reemplacé el producto por ${replacement.name}. Revisa el nuevo total antes de pagar; si tenías un cupón, vuelve a aplicarlo.`,
+      }])
+      trackAssistantEvent('assistant_swap_accepted', {
+        source_variant: data.sourceVariantId,
+        replacement_variant: replacement.variantId,
+      })
+    } catch (error) {
+      const messageText = error instanceof Error ? error.message : 'No pudimos hacer el cambio.'
+      setBotThread((thread) => [...thread, { who: 'bot', text: messageText }])
+    } finally {
+      setSwapLoadingId(null)
     }
   }
 
@@ -291,7 +385,7 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
             </span>
             Tu kit personalizado
           </div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 56, lineHeight: 1.1, letterSpacing: '-0.025em', color: 'var(--liora-uva)', margin: 0, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>
+          <h1 className="liora-kit-title" style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 56, lineHeight: 1.1, letterSpacing: '-0.025em', color: 'var(--liora-uva)', margin: 0, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>
             Hicimos esto <span style={{ fontFamily: 'var(--font-script)' }}>para ti</span>.
           </h1>
         </div>
@@ -327,11 +421,10 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: kitData?.routineName ? 0 : 10 }}>
               {items.map((item, idx) => {
-                const step = kitData?.kit.find((k) => k.variantId === item.variantId)
-                const hasStep = Boolean(step?.stepInstruction || step?.stepLabel)
+                const hasStep = Boolean(item.stepInstruction || item.stepLabel)
                 return (
-                <article key={item.variantId} style={{ background: 'var(--liora-blanco)', borderRadius: 24, border: '1.5px solid var(--liora-arena)', padding: 20, display: 'flex', gap: 20, alignItems: 'center' }}>
-                  <div style={{ position: 'relative', flexShrink: 0 }}>
+                <article className="liora-cart-item" key={item.variantId} style={{ background: 'var(--liora-blanco)', borderRadius: 24, border: '1.5px solid var(--liora-arena)', padding: 20, display: 'flex', gap: 20, alignItems: 'center' }}>
+                  <div className="liora-cart-item-image" style={{ position: 'relative', flexShrink: 0 }}>
                     {hasStep && (
                       <span style={{ position: 'absolute', top: -8, left: -8, zIndex: 1, width: 26, height: 26, borderRadius: 999, background: 'var(--liora-uva)', color: 'var(--liora-crema)', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {idx + 1}
@@ -344,33 +437,33 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
                       }
                     </div>
                   </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="liora-cart-item-content" style={{ flex: 1, minWidth: 0 }}>
                     {hasStep && (
                       <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-uva)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>
-                        Paso {idx + 1}{step?.stepWhen ? ` · ${step.stepWhen}` : ''}
+                        Paso {idx + 1}{item.stepWhen ? ` · ${item.stepWhen}` : ''}
                       </div>
                     )}
                     <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 19, color: 'var(--liora-uva)', lineHeight: 1.15 }}>
                       {item.name}
-                      {step?.brand && <span style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13, opacity: 0.6 }}> · {step.brand}</span>}
+                      {item.brand && <span style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13, opacity: 0.6 }}> · {item.brand}</span>}
                     </div>
-                    {hasStep && step?.stepLabel && (
-                      <div style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13, color: 'var(--liora-uva)', opacity: 0.85, marginTop: 4 }}>{step.stepLabel}</div>
+                    {hasStep && item.stepLabel && (
+                      <div style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13, color: 'var(--liora-uva)', opacity: 0.85, marginTop: 4 }}>{item.stepLabel}</div>
                     )}
-                    {hasStep && step?.stepInstruction && (
-                      <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, lineHeight: 1.45, color: 'var(--liora-uva)', opacity: 0.7, marginTop: 4 }}>{step.stepInstruction}</div>
+                    {hasStep && item.stepInstruction && (
+                      <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, lineHeight: 1.45, color: 'var(--liora-uva)', opacity: 0.7, marginTop: 4 }}>{item.stepInstruction}</div>
                     )}
                     {!hasStep && (
                       <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, opacity: 0.65, marginTop: 4 }}>{item.variantName}</div>
                     )}
                     <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 17, color: 'var(--liora-uva)', marginTop: 6 }}>{fmt(item.priceCents)}</div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'var(--liora-crema)', borderRadius: 999, padding: 4, flexShrink: 0 }}>
+                  <div className="liora-cart-item-quantity" style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'var(--liora-crema)', borderRadius: 999, padding: 4, flexShrink: 0 }}>
                     <button onClick={() => updateQuantity(item.variantId, item.quantity - 1)} style={{ width: 30, height: 30, borderRadius: 999, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--liora-uva)' }}><Minus size={14} weight="bold" /></button>
                     <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 14, minWidth: 22, textAlign: 'center', color: 'var(--liora-uva)' }}>{item.quantity}</span>
                     <button onClick={() => updateQuantity(item.variantId, item.quantity + 1)} style={{ width: 30, height: 30, borderRadius: 999, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--liora-uva)' }}><Plus size={14} weight="bold" /></button>
                   </div>
-                  <button onClick={() => removeItem(item.variantId)} aria-label="Quitar" style={{ background: 'transparent', border: 'none', cursor: 'pointer', opacity: 0.5, padding: 4, color: 'var(--liora-uva)', flexShrink: 0 }}>
+                  <button className="liora-cart-item-remove" onClick={() => removeItem(item.variantId)} aria-label={`Quitar ${item.name}`} style={{ background: 'transparent', border: 'none', cursor: 'pointer', opacity: 0.5, padding: 4, color: 'var(--liora-uva)', flexShrink: 0 }}>
                     <X size={20} />
                   </button>
                 </article>
@@ -390,11 +483,11 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
                     Ver más
                   </Link>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+                <div className="liora-kit-suggestions" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
                   {suggestions.map((s) => {
                     const inCart = items.some((i) => i.variantId === s.variantId)
                     return (
-                      <article key={s.variantId} style={{ background: s.categoryColor, borderRadius: 20, padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                      <article className="liora-kit-suggestion-card" key={s.variantId} style={{ background: s.categoryColor, borderRadius: 20, padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
                         <div style={{ aspectRatio: '1 / 1', borderRadius: 16, background: 'rgba(255,255,255,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--liora-uva)' }}>
                           {s.imageUrl
                             ? <img src={s.imageUrl} alt={s.name} style={{ width: '85%', height: '85%', objectFit: 'contain' }} />
@@ -423,7 +516,7 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
             )}
 
             {/* Lía bot */}
-            <div style={{ marginTop: 36, background: 'var(--liora-uva)', borderRadius: 28, overflow: 'hidden' }}>
+            <div className="liora-cart-assistant" style={{ marginTop: 36, background: 'var(--liora-uva)', borderRadius: 28, overflow: 'hidden' }}>
               <div style={{ padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1.5px solid rgba(251,241,226,0.12)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                   <div style={{ width: 44, height: 44, borderRadius: 999, background: 'var(--liora-lima)', color: 'var(--liora-uva)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -445,10 +538,40 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
                 <div>
                   <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 12, maxHeight: 320, overflowY: 'auto' }}>
                     {botThread.map((m, i) => (
-                      <div key={i} style={{ alignSelf: m.who === 'bot' ? 'flex-start' : 'flex-end', maxWidth: '78%' }}>
+                      <div key={i} className="liora-bot-message" style={{ alignSelf: m.who === 'bot' ? 'flex-start' : 'flex-end', maxWidth: m.suggestions?.length ? '96%' : '78%' }}>
                         <div style={{ background: m.who === 'bot' ? 'rgba(251,241,226,0.08)' : 'var(--liora-lima)', color: m.who === 'bot' ? 'var(--liora-crema)' : 'var(--liora-uva)', padding: '12px 18px', borderRadius: 18, fontFamily: 'var(--font-body)', fontSize: 15, lineHeight: 1.4, border: m.who === 'bot' ? '1.5px solid rgba(251,241,226,0.15)' : 'none' }}>
                           {m.text}
                         </div>
+                        {m.suggestions && m.suggestions.length > 0 && (
+                          <div className="liora-bot-suggestions" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10, marginTop: 12 }}>
+                            {m.suggestions.map((suggestion) => {
+                              const sourceStillInCart = items.some((item) => item.variantId === suggestion.sourceVariantId)
+                              return (
+                                <article key={suggestion.id} style={{ minWidth: 0, background: 'var(--liora-crema)', color: 'var(--liora-uva)', borderRadius: 18, padding: 12, display: 'flex', flexDirection: 'column', gap: 9 }}>
+                                  <div style={{ height: 92, borderRadius: 13, background: suggestion.replacement.categoryColor, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                                    {suggestion.replacement.imageUrl
+                                      ? <img src={suggestion.replacement.imageUrl} alt={suggestion.replacement.name} style={{ width: '82%', height: '82%', objectFit: 'contain' }} />
+                                      : <Package size={30} style={{ opacity: 0.5 }} />}
+                                  </div>
+                                  <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 14, lineHeight: 1.15, overflowWrap: 'anywhere' }}>{suggestion.replacement.name}</div>
+                                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, opacity: 0.72, lineHeight: 1.35 }}>{suggestion.reason}</div>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', marginTop: 'auto' }}>
+                                    <strong style={{ fontFamily: 'var(--font-body)', fontSize: 15 }}>{fmt(suggestion.replacement.priceCents)}</strong>
+                                    {suggestion.savingsCents > 0 && <span style={{ fontFamily: 'var(--font-body)', fontSize: 10, fontWeight: 700 }}>−{fmt(suggestion.savingsCents)}</span>}
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => acceptSwap(m, suggestion)}
+                                    disabled={!sourceStillInCart || Boolean(swapLoadingId)}
+                                    style={{ border: 'none', borderRadius: 999, minHeight: 40, padding: '9px 12px', background: sourceStillInCart ? 'var(--liora-uva)' : 'var(--liora-arena)', color: sourceStillInCart ? 'var(--liora-crema)' : 'var(--liora-uva)', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, cursor: sourceStillInCart ? 'pointer' : 'default' }}
+                                  >
+                                    {swapLoadingId === suggestion.id ? 'Cambiando…' : sourceStillInCart ? 'Reemplazar' : 'Reemplazado'}
+                                  </button>
+                                </article>
+                              )
+                            })}
+                          </div>
+                        )}
                       </div>
                     ))}
                     {botLoading && (
@@ -458,7 +581,7 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
                     )}
                     <div ref={chatEndRef} />
                   </div>
-                  <div style={{ padding: '16px 20px', borderTop: '1.5px solid rgba(251,241,226,0.12)', display: 'flex', gap: 10, alignItems: 'center' }}>
+                  <div className="liora-bot-input-row" style={{ padding: '16px 20px', borderTop: '1.5px solid rgba(251,241,226,0.12)', display: 'flex', gap: 10, alignItems: 'center' }}>
                     <input
                       value={botInput}
                       onChange={(e) => setBotInput(e.target.value)}
@@ -480,7 +603,7 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
           </div>
 
           {/* Sidebar */}
-          <aside style={{ background: 'var(--liora-uva)', color: 'var(--liora-crema)', borderRadius: 28, padding: 28, position: 'sticky', top: 100 }}>
+          <aside className="liora-cart-summary" style={{ background: 'var(--liora-uva)', color: 'var(--liora-crema)', borderRadius: 28, padding: 28, position: 'sticky', top: 100 }}>
             <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, color: 'var(--liora-lima)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 10 }}>Resumen del kit</div>
             <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 48, lineHeight: 1, color: 'var(--liora-crema)' }}>{fmt(total)}</div>
             <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, opacity: 0.7, marginTop: 6 }}>
@@ -550,24 +673,24 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
         Tu carrito · <span style={{ fontFamily: 'var(--font-script)' }}>{items.reduce((s, i) => s + i.quantity, 0)} productos</span>
       </h1>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 32, alignItems: 'flex-start' }}>
+      <div className="liora-cart-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 32, alignItems: 'flex-start' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {items.map((item) => (
-            <article key={item.variantId} style={{ background: 'var(--liora-blanco)', borderRadius: 24, border: '1.5px solid var(--liora-arena)', padding: 20, display: 'flex', gap: 20, alignItems: 'center' }}>
-              <div style={{ width: 88, height: 88, borderRadius: 18, background: item.categoryColor ?? 'var(--cat-lavanda)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+            <article className="liora-cart-item" key={item.variantId} style={{ background: 'var(--liora-blanco)', borderRadius: 24, border: '1.5px solid var(--liora-arena)', padding: 20, display: 'flex', gap: 20, alignItems: 'center' }}>
+              <div className="liora-cart-item-image" style={{ width: 88, height: 88, borderRadius: 18, background: item.categoryColor ?? 'var(--cat-lavanda)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
                 {item.imageUrl ? <img src={item.imageUrl} alt={item.name} style={{ width: '90%', height: '90%', objectFit: 'contain' }} /> : <ShoppingBag size={32} style={{ opacity: 0.4, color: 'var(--liora-uva)' }} />}
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
+              <div className="liora-cart-item-content" style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 19, color: 'var(--liora-uva)', lineHeight: 1.15 }}>{item.name}</div>
                 <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, opacity: 0.65, marginTop: 4 }}>{item.variantName}</div>
                 <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 17, color: 'var(--liora-uva)', marginTop: 6 }}>{fmt(item.priceCents)}</div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'var(--liora-crema)', borderRadius: 999, padding: 4 }}>
+              <div className="liora-cart-item-quantity" style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'var(--liora-crema)', borderRadius: 999, padding: 4 }}>
                 <button onClick={() => updateQuantity(item.variantId, item.quantity - 1)} style={{ width: 30, height: 30, borderRadius: 999, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Minus size={14} weight="bold" /></button>
                 <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 14, minWidth: 22, textAlign: 'center' }}>{item.quantity}</span>
                 <button onClick={() => updateQuantity(item.variantId, item.quantity + 1)} style={{ width: 30, height: 30, borderRadius: 999, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Plus size={14} weight="bold" /></button>
               </div>
-              <button onClick={() => removeItem(item.variantId)} aria-label="Quitar" style={{ background: 'transparent', border: 'none', cursor: 'pointer', opacity: 0.5, padding: 4 }}><X size={20} /></button>
+              <button className="liora-cart-item-remove" onClick={() => removeItem(item.variantId)} aria-label={`Quitar ${item.name}`} style={{ background: 'transparent', border: 'none', cursor: 'pointer', opacity: 0.5, padding: 4 }}><X size={20} /></button>
             </article>
           ))}
 
@@ -616,7 +739,7 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
           )}
         </div>
 
-        <aside style={{ background: 'var(--liora-uva)', color: 'var(--liora-crema)', borderRadius: 28, padding: 28, position: 'sticky', top: 100 }}>
+        <aside className="liora-cart-summary" style={{ background: 'var(--liora-uva)', color: 'var(--liora-crema)', borderRadius: 28, padding: 28, position: 'sticky', top: 100 }}>
           <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, color: 'var(--liora-lima)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8 }}>Resumen</div>
           <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 44, lineHeight: 1, color: 'var(--liora-crema)' }}>{fmt(total)}</div>
           <div style={{ marginTop: 24 }}>

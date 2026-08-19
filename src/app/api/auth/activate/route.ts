@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { getResend, FROM_EMAIL } from '@/lib/email/client'
+import { getResend, FROM_EMAIL, REPLY_TO } from '@/lib/email/client'
 import { accountActivationEmail } from '@/lib/email/templates/account-activation'
 import { consumeRateLimit, requestIp } from '@/lib/security/rate-limit'
 
@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
     const html = accountActivationEmail({ activationUrl, siteUrl: SITE_URL, firstName })
     const { error: emailError } = await getResend().emails.send({
       from: FROM_EMAIL,
+      replyTo: REPLY_TO,
       to: email,
       subject: 'Activa tu cuenta LIORA — un solo click ✨',
       html,

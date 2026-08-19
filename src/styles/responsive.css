@@ -254,6 +254,126 @@
     grid-template-columns: 1fr !important;
     gap: 24px !important;
   }
+  .liora-cart-grid > * { min-width: 0 !important; }
+  .liora-cart-summary {
+    position: static !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .liora-kit-suggestions {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* ── Cart and personalized routine on narrow phones ─── */
+@media (max-width: 640px) {
+  .liora-kit-title {
+    font-size: 40px !important;
+    overflow-wrap: anywhere;
+  }
+  .liora-cart-item {
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    display: grid !important;
+    grid-template-columns: 72px minmax(0, 1fr) !important;
+    grid-template-rows: auto auto !important;
+    align-items: start !important;
+    column-gap: 14px !important;
+    row-gap: 14px !important;
+    padding: 16px !important;
+    border-radius: 20px !important;
+  }
+  .liora-cart-item-image {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    width: 72px !important;
+    height: 72px !important;
+    max-width: 72px !important;
+  }
+  .liora-cart-item-image > div {
+    width: 72px !important;
+    height: 72px !important;
+    border-radius: 14px !important;
+  }
+  .liora-cart-item-content {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    overflow-wrap: anywhere;
+  }
+  .liora-cart-item-content > div {
+    max-width: 100% !important;
+    overflow-wrap: anywhere;
+  }
+  .liora-cart-item-quantity {
+    grid-column: 1 / 3 !important;
+    grid-row: 2 !important;
+    justify-self: start !important;
+    min-width: 132px !important;
+    justify-content: space-between !important;
+    box-sizing: border-box !important;
+  }
+  .liora-cart-item-quantity button {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+  }
+  .liora-cart-item-remove {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+    justify-self: end !important;
+    align-self: center !important;
+    width: 44px !important;
+    height: 44px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .liora-kit-suggestions {
+    display: flex !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory;
+    gap: 12px !important;
+    padding: 0 2px 10px !important;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .liora-kit-suggestions::-webkit-scrollbar { display: none; }
+  .liora-kit-suggestion-card {
+    flex: 0 0 min(78vw, 240px) !important;
+    width: min(78vw, 240px) !important;
+    min-width: 0 !important;
+    scroll-snap-align: start;
+    box-sizing: border-box !important;
+  }
+  .liora-cart-assistant {
+    width: 100% !important;
+    min-width: 0 !important;
+    border-radius: 22px !important;
+  }
+  .liora-bot-message {
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+  .liora-bot-suggestions {
+    grid-template-columns: 1fr !important;
+  }
+  .liora-bot-input-row {
+    padding: 14px !important;
+  }
+  .liora-bot-input-row input {
+    width: 0 !important;
+    min-width: 0 !important;
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+  .liora-bot-input-row button {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+  }
 }
 
 /* ── Product / Kit detail grid ───────────────────────── */

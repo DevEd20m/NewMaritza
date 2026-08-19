@@ -8,10 +8,11 @@ import { sanitizeNextPath } from '@/lib/auth/next-path'
 export function LoginClient() {
   const searchParams = useSearchParams()
   const nextPath = sanitizeNextPath(searchParams.get('next'))
+  const signupRequested = searchParams.get('mode') === 'signup'
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [mode, setMode] = useState<'login' | 'signup'>('login')
+  const [mode, setMode] = useState<'login' | 'signup'>(signupRequested ? 'signup' : 'login')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [magicSent, setMagicSent] = useState(false)
@@ -45,10 +46,15 @@ export function LoginClient() {
         }
         window.location.assign(nextPath)
       } else {
-        const supabase = createClient()
-        const callbackUrl = `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`
-        const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: callbackUrl } })
-        if (error) throw error
+        const response = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, next: nextPath }),
+        })
+        if (!response.ok) {
+          const result = await response.json().catch(() => null) as { error?: string } | null
+          throw new Error(result?.error ?? 'No se pudo crear la cuenta')
+        }
         setMagicSent(true)
       }
     } catch (err: unknown) {

@@ -9,7 +9,6 @@ import {
 import type { Icon } from '@phosphor-icons/react'
 import { useQuizStore } from '@/lib/store/quiz'
 import { trackQuizStart, trackQuizStep, trackQuizComplete } from '@/lib/analytics/events'
-import { createClient as createBrowserClient } from '@/lib/supabase/client'
 
 interface QuizOption { id: string; text: string; slug: string; icon_url: string | null; sort_order: number }
 interface QuizQuestion {
@@ -100,16 +99,15 @@ export function QuizClient({ templateId, groups, isLoggedIn = false, userName, u
   const [answers, setAnswers] = useState<Record<string, string[]>>({})
   const [loading, setLoading] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
-  const [leadEmail, setLeadEmail] = useState('')
+  const [leadEmail, setLeadEmail] = useState(userEmail ?? '')
   const [leadPhone, setLeadPhone] = useState('')
-  const [whatsappConsent, setWhatsappConsent] = useState(true)
+  const [whatsappConsent, setWhatsappConsent] = useState(false)
   const [leadStep, setLeadStep] = useState(false)
   const [fading, setFading] = useState(false)
   const validEmail = /\S+@\S+\.\S+/.test(leadEmail)
 
   const quizTopRef = useRef<HTMLDivElement | null>(null)
-
-  useEffect(() => { if (userEmail) setLeadEmail(userEmail) }, [userEmail])
+  const submissionIdRef = useRef<string | null>(null)
 
   useEffect(() => { trackQuizStart() }, [])
 
@@ -287,6 +285,9 @@ export function QuizClient({ templateId, groups, isLoggedIn = false, userName, u
       const payload: Record<string, unknown> = { templateId, answers: answersToSend }
       if (leadEmail) payload.email = leadEmail
       if (leadPhone) payload.phone = leadPhone
+      payload.whatsappConsent = Boolean(leadPhone && whatsappConsent)
+      submissionIdRef.current ??= crypto.randomUUID()
+      payload.submissionId = submissionIdRef.current
       const res = await fetch('/api/quiz/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -298,14 +299,6 @@ export function QuizClient({ templateId, groups, isLoggedIn = false, userName, u
         setProfileId(data.profileId)
         complete()
         trackQuizComplete()
-        if (leadEmail && !isLoggedIn) {
-          const supa = createBrowserClient()
-          const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(`/carrito?profileId=${data.profileId}`)}`
-          supa.auth.signInWithOtp({
-            email: leadEmail,
-            options: { shouldCreateUser: true, emailRedirectTo: redirectTo },
-          }).catch(() => {})
-        }
         router.push(`/carrito?profileId=${data.profileId}`)
       }
     } catch {
@@ -319,7 +312,7 @@ export function QuizClient({ templateId, groups, isLoggedIn = false, userName, u
     const TRUST_SIGNALS = [
       { icon: <ShieldCheck size={18} weight="bold" />, label: 'Nunca compartimos tu data' },
       { icon: <EnvelopeSimple size={18} weight="bold" />, label: 'Te enviamos solo lo que pediste' },
-      { icon: <XCircle size={18} weight="bold" />, label: 'Te desuscribes con un click' },
+      { icon: <XCircle size={18} weight="bold" />, label: 'Sin correos de marketing' },
     ]
     return (
       <section className="liora-cart-outer" style={{ background: 'var(--liora-crema)', minHeight: '78vh', padding: '32px 48px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

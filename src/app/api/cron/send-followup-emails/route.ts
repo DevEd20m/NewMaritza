@@ -13,7 +13,10 @@ export async function GET(req: NextRequest) {
   }
 
   const admin = createAdminClient()
-  await admin.rpc('release_expired_inventory_reservations')
+  await Promise.all([
+    admin.rpc('release_expired_inventory_reservations'),
+    admin.rpc('cleanup_expired_quiz_result_tokens'),
+  ])
 
   const { data: jobs, error: claimError } = await admin.rpc('claim_email_jobs', { p_limit: 25 })
 
