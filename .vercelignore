@@ -4,4 +4,6 @@
 /playwright-report/
 /test-results/
 /coverage/
+/imports/
+*.tsbuildinfo
 *.apk

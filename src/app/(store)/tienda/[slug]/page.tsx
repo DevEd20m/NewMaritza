@@ -10,6 +10,7 @@ import { AddToCartButton } from '@/components/products/AddToCartButton'
 import { ViewerBadge } from '@/components/urgency/ViewerBadge'
 import { ViewItemTracker } from '@/components/products/ViewItemTracker'
 import { StockUrgency } from '@/components/urgency/StockUrgency'
+import { formatPEN } from '@/lib/format/money'
 
 interface Props { params: Promise<{ slug: string }> }
 
@@ -29,6 +30,7 @@ interface DetailProduct {
     name: string
     sku: string | null
     weight_grams: number | null
+    stock_quantity: number | null
     is_active: boolean
     product_prices: Array<{ amount_cents: number; compare_at_cents: number | null; currency: string; effective_to: string | null }>
   }>
@@ -43,7 +45,7 @@ async function getProduct(slug: string): Promise<DetailProduct | null> {
       *,
       categories ( id, name, slug ),
       product_variants (
-        id, name, sku, weight_grams, is_active,
+        id, name, sku, weight_grams, stock_quantity, is_active,
         product_prices ( amount_cents, compare_at_cents, currency, effective_to )
       ),
       reviews ( rating, title, body, is_published, created_at )
@@ -189,18 +191,18 @@ export default async function ProductDetailPage({ params }: Props) {
 
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginTop: 20 }}>
               <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 44, color: 'var(--liora-uva)' }}>
-                S/{((price?.amount_cents ?? 0) / 100).toFixed(0)}
+                {formatPEN(price?.amount_cents ?? 0)}
               </span>
               {price?.compare_at_cents && (
                 <span style={{ fontFamily: 'var(--font-body)', fontSize: 20, color: 'var(--liora-uva)', opacity: 0.5, textDecoration: 'line-through' }}>
-                  S/{(price.compare_at_cents / 100).toFixed(0)}
+                  {formatPEN(price.compare_at_cents)}
                 </span>
               )}
             </div>
 
             {/* Urgency signals */}
             <ViewerBadge baseCount={5 + (product.id.charCodeAt(0) % 10)} />
-            <StockUrgency productId={product.id} />
+            <StockUrgency stockQuantity={activeVariant?.stock_quantity} />
 
             {product.description && (
               <p style={{ fontFamily: 'var(--font-body)', fontSize: 16, lineHeight: 1.6, color: 'var(--liora-uva)', marginTop: 24, opacity: 0.9 }}>

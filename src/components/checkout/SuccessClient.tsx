@@ -6,6 +6,7 @@ import { useCartStore } from '@/lib/store/cart'
 import { trackPurchase } from '@/lib/analytics/events'
 import type { KitGuide } from '@/lib/guides'
 import { trackedWhatsAppHref } from '@/lib/analytics/whatsapp'
+import { formatPEN } from '@/lib/format/money'
 
 export interface ConfirmedOrder {
   id: string
@@ -76,7 +77,7 @@ export function SuccessClient({ order, quizProfileId, trackingToken }: { order: 
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const fmt = (cents: number) => `S/${(cents / 100).toFixed(0)}`
+  const fmt = formatPEN
 
   const waText = guide
     ? `Hola, acabo de comprar el ${guide.kitName} (pedido #${order.order_number}) y tengo una pregunta`

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Heart, Plus } from '@phosphor-icons/react'
 import { useCartStore } from '@/lib/store/cart'
 import { trackAddToCart } from '@/lib/analytics/events'
+import { formatPEN } from '@/lib/format/money'
 
 interface ProductCardProps {
   variantId: string
@@ -131,11 +132,11 @@ export function ProductCard({
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: 'auto', paddingTop: 8 }}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
               <span style={{ fontFamily: 'var(--font-display)', fontSize: 21, fontWeight: 800, color: 'var(--liora-uva)' }}>
-                S/{(priceCents / 100).toFixed(0)}
+                {formatPEN(priceCents)}
               </span>
               {compareAtCents && (
                 <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-uva)', opacity: 0.5, textDecoration: 'line-through' }}>
-                  S/{(compareAtCents / 100).toFixed(0)}
+                  {formatPEN(compareAtCents)}
                 </span>
               )}
             </div>

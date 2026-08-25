@@ -10,6 +10,7 @@ import {
 import { useCartStore } from '@/lib/store/cart'
 import { trackAssistantEvent, trackBeginCheckout } from '@/lib/analytics/events'
 import { createClient } from '@/lib/supabase/client'
+import { formatPEN } from '@/lib/format/money'
 
 interface KitItem {
   variantId: string
@@ -191,7 +192,7 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
   const discount = discountCents
   const shipping = sub >= freeShippingThresholdCents ? 0 : shippingCostCents
   const total = totalCents() + shipping
-  const fmt = (cents: number) => `S/${(cents / 100).toFixed(0)}`
+  const fmt = formatPEN
 
   const applyCoupon = async () => {
     if (!couponInput.trim()) return

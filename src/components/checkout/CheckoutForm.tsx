@@ -7,6 +7,7 @@ import { Lock, User, UserSwitch } from '@phosphor-icons/react'
 import { checkoutSchema, type CheckoutFormData } from '@/lib/validation/checkout'
 import { useCartStore } from '@/lib/store/cart'
 import { trackBeginCheckout, trackCheckoutError } from '@/lib/analytics/events'
+import { formatPEN } from '@/lib/format/money'
 
 export interface PrefillData {
   isLoggedIn: boolean
@@ -34,7 +35,7 @@ export function CheckoutForm({ prefill, shippingCostCents = 1500, freeShippingTh
   const discount = discountCents
   const shipping = sub >= freeShippingThresholdCents ? 0 : shippingCostCents
   const total = totalCents() + shipping
-  const fmt = (cents: number) => `S/${(cents / 100).toFixed(0)}`
+  const fmt = formatPEN
 
   const { register, handleSubmit, watch, reset, formState: { errors } } = useForm<CheckoutFormData>({
     resolver: zodResolver(checkoutSchema),

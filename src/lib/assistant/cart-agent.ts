@@ -1,4 +1,5 @@
 import type { CatalogItem } from '@/lib/recommendation/related'
+import { formatPEN } from '@/lib/format/money'
 
 export interface CurrentCartItem {
   variantId: string
@@ -18,7 +19,7 @@ const SWAP_INTENT = /(cambiar|cambio|reemplaz|sustitu|alternativ|otra opci[oó]n
 const CHEAPER_INTENT = /(econ[oó]mic[oa]?|barat[oa]?|ahorr|menor precio|cuesta menos)/i
 const EXTERNAL_RECOMMENDATION = /(farmacia|tienda local|mercado libre|amazon|retailer|otro comercio)/i
 
-const money = (cents: number) => `S/${(cents / 100).toFixed(0)}`
+const money = formatPEN
 
 export function asksForSwap(message: string): boolean {
   return SWAP_INTENT.test(message)

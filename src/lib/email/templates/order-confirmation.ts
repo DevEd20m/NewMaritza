@@ -1,4 +1,5 @@
 import type { KitGuide } from '@/lib/guides'
+import { formatPEN } from '@/lib/format/money'
 
 interface OrderItem {
   product_name_snapshot: string
@@ -23,7 +24,7 @@ interface OrderConfirmationProps {
   trackingUrl: string
 }
 
-const fmt = (cents: number) => `S/ ${(cents / 100).toFixed(0)}`
+const fmt = (cents: number) => formatPEN(cents, { space: true })
 
 export function orderConfirmationEmail({
   orderNumber,

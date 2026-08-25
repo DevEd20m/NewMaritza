@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { SignOut, Package, ArrowRight, Check } from '@phosphor-icons/react'
+import { formatPEN } from '@/lib/format/money'
 
 // ── Types passed from server ──────────────────────────────────────────────
 export interface AccountOrder {
@@ -79,7 +80,7 @@ const STATUS_TO_STEP: Record<string, number> = {
   paid: 0, processing: 1, shipped: 2, delivered: 3,
 }
 
-function fmt(cents: number) { return `S/${(cents / 100).toFixed(0)}` }
+const fmt = formatPEN
 
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })

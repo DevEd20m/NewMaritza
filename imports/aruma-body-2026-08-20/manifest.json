@@ -1,0 +1,950 @@
+{
+  "generatedAt": "2026-08-21T03:19:31.840Z",
+  "sourceCategoryUrl": "https://www.aruma.pe/corporal-y-spa",
+  "categorySlug": "pies-cuerpo",
+  "products": [
+    {
+      "sourceProductId": "1027183",
+      "sourceItemId": "1030322",
+      "sourceReference": "3030918",
+      "sourceUrl": "https://www.aruma.pe/gel-de-ducha-dr-teals-vit-c/p",
+      "sourceName": "Gel De Ducha Dr Teals Vit C",
+      "name": "Gel de Ducha con Vitamina C Dr Teal's",
+      "slug": "gel-de-ducha-con-vitamina-c-dr-teal-s-1027183",
+      "brand": "DR TEAL'S",
+      "categorySlug": "pies-cuerpo",
+      "tier": "económica",
+      "description": "Gel corporal de Dr Teal's para una limpieza diaria con una experiencia fresca y revitalizante. Su formato generoso permite incorporarlo fácilmente a la ducha de todos los días.",
+      "indications": "Personas que buscan una limpieza corporal diaria, agradable y de precio accesible.",
+      "usageInstructions": "Aplicar sobre la piel húmeda con las manos o una esponja, masajear hasta formar espuma y enjuagar completamente. Puede usarse a diario.",
+      "contraindications": "Uso externo. Evitar el contacto con ojos y mucosas; si ocurre, enjuagar con abundante agua. Suspender si aparece irritación persistente. Mantener fuera del alcance de los niños y revisar los ingredientes si existe alguna sensibilidad conocida.",
+      "presentation": "473 ml",
+      "priceCents": 3690,
+      "compareAtCents": null,
+      "sourceImageUrls": [
+        "https://aruma.vteximg.com.br/arquivos/ids/215848/67_d0cc358f-d65a-46fe-9431-640f4f716e6f.webp?v=638972020919600000"
+      ],
+      "localImages": [
+        "imports/aruma-body-2026-08-20/images/gel-de-ducha-con-vitamina-c-dr-teal-s-1027183/01.webp"
+      ],
+      "tagSlugs": [
+        "objetivo-cuerpo",
+        "uso-rutina-dia",
+        "nivel-principiante",
+        "intensidad-ligero",
+        "momento-uso-diario"
+      ]
+    },
+    {
+      "sourceProductId": "5621",
+      "sourceItemId": "1015837",
+      "sourceReference": "3015710",
+      "sourceUrl": "https://www.aruma.pe/locion-corporal-lavanda-relajante-532ml-dr-teals/p",
+      "sourceName": "Loción Corporal Lavanda Relajante 532ml Dr Teals",
+      "name": "Loción Corporal de Lavanda Dr Teal's",
+      "slug": "locion-corporal-de-lavanda-dr-teal-s-5621",
+      "brand": "DR TEAL'S",
+      "categorySlug": "pies-cuerpo",
+      "tier": "económica",
+      "description": "Loción corporal de rápida incorporación a la rutina nocturna. Combina el aroma relajante de lavanda con manteca de cacao, manteca de karité y vitamina E para dejar la piel confortable.",
+      "indications": "Personas que buscan hidratación corporal y un momento de calma al final del día.",
+      "usageInstructions": "Aplicar sobre la piel limpia y seca con masajes suaves hasta su absorción. Usar diariamente, especialmente después de la ducha o antes de dormir.",
+      "contraindications": "Uso externo. Evitar el contacto con ojos y mucosas; si ocurre, enjuagar con abundante agua. Suspender si aparece irritación persistente. Mantener fuera del alcance de los niños y revisar los ingredientes si existe alguna sensibilidad conocida.",
+      "presentation": "532 ml",
+      "priceCents": 3990,
+      "compareAtCents": null,
+      "sourceImageUrls": [
+        "https://aruma.vteximg.com.br/arquivos/ids/169430/1015710.png?v=637587588168130000",
+        "https://aruma.vteximg.com.br/arquivos/ids/169431/1015710.png?v=637587588181900000"
+      ],
+      "localImages": [
+        "imports/aruma-body-2026-08-20/images/locion-corporal-de-lavanda-dr-teal-s-5621/01.webp",
+        "imports/aruma-body-2026-08-20/images/locion-corporal-de-lavanda-dr-teal-s-5621/02.webp"
+      ],
+      "tagSlugs": [
+        "objetivo-hidratacion",
+        "objetivo-calma",
+        "uso-rutina-noche",
+        "nivel-principiante",
+        "intensidad-ligero",
+        "piel-seca",
+        "momento-antes-dormir",
+        "momento-uso-diario"
+      ]
+    },
+    {
+      "sourceProductId": "1026864",
+      "sourceItemId": "1030003",
+      "sourceReference": "3030794",
+      "sourceUrl": "https://www.aruma.pe/body-wash-vainilla-daise-beauty/p",
+      "sourceName": "Body wash Vainilla Daise Beauty",
+      "name": "Body Wash de Vainilla Daise Beauty",
+      "slug": "body-wash-de-vainilla-daise-beauty-1026864",
+      "brand": "DAISE BEAUTY",
+      "categorySlug": "pies-cuerpo",
+      "tier": "económica",
+      "description": "Limpiador corporal con aroma a vainilla pensado para transformar la ducha diaria en un momento cálido y agradable. Limpia la piel y deja una sensación perfumada.",
+      "indications": "Personas que disfrutan los aromas dulces y buscan un gel corporal para uso cotidiano.",
+      "usageInstructions": "Distribuir sobre la piel húmeda, masajear suavemente hasta generar espuma y enjuagar con abundante agua. Uso diario.",
+      "contraindications": "Uso externo. Evitar el contacto con ojos y mucosas; si ocurre, enjuagar con abundante agua. Suspender si aparece irritación persistente. Mantener fuera del alcance de los niños y revisar los ingredientes si existe alguna sensibilidad conocida.",
+      "presentation": "500 ml",
+      "priceCents": 3190,
+      "compareAtCents": null,
+      "sourceImageUrls": [
+        "https://aruma.vteximg.com.br/arquivos/ids/214987/Foto01_1030794.jpg?v=638962265289930000",
+        "https://aruma.vteximg.com.br/arquivos/ids/214988/Foto02_1030794.png?v=638962265290400000",
+        "https://aruma.vteximg.com.br/arquivos/ids/214989/Foto03_1030794.jpg?v=638962265290400000",
+        "https://aruma.vteximg.com.br/arquivos/ids/214990/Foto03_1030794.png?v=638962265290530000"
+      ],
+      "localImages": [
+        "imports/aruma-body-2026-08-20/images/body-wash-de-vainilla-daise-beauty-1026864/01.webp",
+        "imports/aruma-body-2026-08-20/images/body-wash-de-vainilla-daise-beauty-1026864/02.webp",
+        "imports/aruma-body-2026-08-20/images/body-wash-de-vainilla-daise-beauty-1026864/03.webp",
+        "imports/aruma-body-2026-08-20/images/body-wash-de-vainilla-daise-beauty-1026864/04.webp"
+      ],
+      "tagSlugs": [
+        "objetivo-cuerpo",
+        "uso-rutina-dia",
+        "nivel-principiante",
+        "intensidad-ligero",
+        "momento-uso-diario"
+      ]
+    },
+    {
+      "sourceProductId": "892",
+      "sourceItemId": "892",
+      "sourceReference": "3007436",
+      "sourceUrl": "https://www.aruma.pe/exfoliante-lavanda-454gr-dr-teal-s/p",
+      "sourceName": "Exfoliante Lavanda 454gr Dr Teal's",
+      "name": "Exfoliante Corporal de Lavanda Dr Teal's",
+      "slug": "exfoliante-corporal-de-lavanda-dr-teal-s-892",
+      "brand": "DR TEAL'S",
+      "categorySlug": "pies-cuerpo",
+      "tier": "económica",
+      "description": "Exfoliante corporal de Dr Teal's con sales de Epsom y aroma a lavanda. Ayuda a retirar células muertas mientras aporta una experiencia de spa en casa.",
+      "indications": "Personas que buscan suavizar zonas ásperas y complementar su cuidado corporal semanal.",
+      "usageInstructions": "Con la piel húmeda, masajear una cantidad moderada mediante movimientos circulares suaves y enjuagar. Usar una o dos veces por semana, sin frotar en exceso.",
+      "contraindications": "Uso externo. No aplicar sobre heridas, piel irritada o recién depilada. Evitar combinar el mismo día con otros exfoliantes corporales. Suspender ante irritación y usar protección solar en las zonas expuestas.",
+      "presentation": "454 g",
+      "priceCents": 3990,
+      "compareAtCents": null,
+      "sourceImageUrls": [
+        "https://aruma.vteximg.com.br/arquivos/ids/163922/1007436.jpg?v=637400683766100000"
+      ],
+      "localImages": [
+        "imports/aruma-body-2026-08-20/images/exfoliante-corporal-de-lavanda-dr-teal-s-892/01.webp"
+      ],
+      "tagSlugs": [
+        "objetivo-cuerpo",
+        "objetivo-calma",
+        "uso-hogar",
+        "uso-rutina-noche",
+        "nivel-intermedio",
+        "intensidad-completo",
+        "momento-noche",
+        "momento-uso-ocasional",
+        "alerta-piel-sensible",
+        "alerta-advertencia"
+      ]
+    },
+    {
+      "sourceProductId": "906",
+      "sourceItemId": "906",
+      "sourceReference": "3007442",
+      "sourceUrl": "https://www.aruma.pe/sal-de-baño-lavanda-relajante-450gr-dr-teal-s/p",
+      "sourceName": "Sal de Baño Lavanda Relajante 450gr Dr Teal's",
+      "name": "Sales de Baño de Lavanda Dr Teal's",
+      "slug": "sales-de-bano-de-lavanda-dr-teal-s-906",
+      "brand": "DR TEAL'S",
+      "categorySlug": "pies-cuerpo",
+      "tier": "económica",
+      "description": "Sales de baño con aroma a lavanda para crear un momento de descanso y bienestar en casa. Una opción accesible para acompañar baños relajantes o remojos de pies.",
+      "indications": "Personas que buscan una experiencia de relajación en el baño o un remojo reconfortante para los pies.",
+      "usageInstructions": "Disolver una cantidad moderada en agua tibia y disfrutar el baño o remojo. Enjuagar la piel al terminar y secar bien. Seguir la cantidad indicada en el envase.",
+      "contraindications": "Uso externo; no ingerir. No usar sobre heridas abiertas o piel muy irritada. Tener cuidado con superficies resbalosas y consultar antes de usar si existe una condición cutánea activa.",
+      "presentation": "450 g",
+      "priceCents": 1990,
+      "compareAtCents": null,
+      "sourceImageUrls": [
+        "https://aruma.vteximg.com.br/arquivos/ids/163932/1007442.jpg?v=637400683794100000"
+      ],
+      "localImages": [
+        "imports/aruma-body-2026-08-20/images/sales-de-bano-de-lavanda-dr-teal-s-906/01.webp"
+      ],
+      "tagSlugs": [
+        "objetivo-calma",
+        "objetivo-pies",
+        "uso-hogar",
+        "uso-rutina-noche",
+        "nivel-principiante",
+        "intensidad-ligero",
+        "momento-antes-dormir",
+        "momento-uso-ocasional",
+        "alerta-advertencia"
+      ]
+    },
+    {
+      "sourceProductId": "1025825",
+      "sourceItemId": "1028964",
+      "sourceReference": "3028611",
+      "sourceUrl": "https://www.aruma.pe/crema-corporal-vitamina-c-babaria/p",
+      "sourceName": "Crema Corporal Vitamina C Babaria",
+      "name": "Crema Corporal con Vitamina C Babaria",
+      "slug": "crema-corporal-con-vitamina-c-babaria-1025825",
+      "brand": "BABARIA",
+      "categorySlug": "pies-cuerpo",
+      "tier": "económica",
+      "description": "Crema corporal con vitamina C y textura ligera para hidratar la piel sin una sensación pesada. Adecuada para una rutina diaria sencilla y luminosa.",
+      "indications": "Personas que buscan hidratación cotidiana con una textura cómoda y de rápida absorción.",
+      "usageInstructions": "Aplicar sobre la piel limpia y seca, extendiendo con masajes suaves hasta su absorción. Usar una o dos veces al día según necesidad.",
+      "contraindications": "Uso externo. Evitar el contacto con ojos y mucosas; si ocurre, enjuagar con abundante agua. Suspender si aparece irritación persistente. Mantener fuera del alcance de los niños y revisar los ingredientes si existe alguna sensibilidad conocida.",
+      "presentation": "400 ml",
+      "priceCents": 3390,
+      "compareAtCents": null,
+      "sourceImageUrls": [
+        "https://aruma.vteximg.com.br/arquivos/ids/206337/Foto04_1028611.png?v=638839547395130000"
+      ],
+      "localImages": [
+        "imports/aruma-body-2026-08-20/images/crema-corporal-con-vitamina-c-babaria-1025825/01.webp"
+      ],
+      "tagSlugs": [
+        "objetivo-hidratacion",
+        "objetivo-cuerpo",
+        "uso-rutina-dia",
+        "nivel-principiante",
+        "intensidad-ligero",
+        "piel-normal",
+        "piel-deshidratada",
+        "pref-textura-ligera",
+        "momento-uso-diario"
+      ]
+    },
+    {
+      "sourceProductId": "8072",
+      "sourceItemId": "1018287",
+      "sourceReference": "3019416",
+      "sourceUrl": "https://www.aruma.pe/crema-de-manos-scent-of-the-day-so-fresh-30-ml-tony-moly/p",
+      "sourceName": "Crema de Manos Scent Of The Day So Fresh 30 ml Tony Moly",
+      "name": "Crema de Manos So Fresh Tony Moly",
+      "slug": "crema-de-manos-so-fresh-tony-moly-8072",
+      "brand": "TONY MOLY",
+      "categorySlug": "pies-cuerpo",
+      "tier": "económica",
+      "description": "Crema de manos compacta de Tony Moly, ideal para llevar en la cartera o mochila. Aporta suavidad en cualquier momento sin ocupar demasiado espacio.",
+      "indications": "Personas que necesitan hidratar las manos durante el día y prefieren un formato portátil.",
+      "usageInstructions": "Aplicar una pequeña cantidad sobre manos limpias y masajear hasta su absorción. Reaplicar después del lavado o cuando sea necesario.",
+      "contraindications": "Uso externo. Evitar el contacto con ojos y mucosas; si ocurre, enjuagar con abundante agua. Suspender si aparece irritación persistente. Mantener fuera del alcance de los niños y revisar los ingredientes si existe alguna sensibilidad conocida.",
+      "presentation": "30 ml",
+      "priceCents": 990,
+      "compareAtCents": null,
+      "sourceImageUrls": [
+        "https://aruma.vteximg.com.br/arquivos/ids/179398/1019416.jpg?v=637968670207870000"
+      ],
+      "localImages": [
+        "imports/aruma-body-2026-08-20/images/crema-de-manos-so-fresh-tony-moly-8072/01.webp"
+      ],
+      "tagSlugs": [
+        "objetivo-hidratacion",
+        "objetivo-cuerpo",
+        "uso-viaje",
+        "nivel-principiante",
+        "intensidad-ligero",
+        "piel-seca",
+        "pref-travel-size",
+        "momento-viaje",
+        "momento-uso-diario"
+      ]
+    },
+    {
+      "sourceProductId": "109",
+      "sourceItemId": "109",
+      "sourceReference": "3002890",
+      "sourceUrl": "https://www.aruma.pe/crema-pies-secos-y-agrietados-150ml-babaria/p",
+      "sourceName": "Crema Pies Secos y Agrietados 150ml Babaria",
+      "name": "Crema para Pies Secos y Agrietados Babaria",
+      "slug": "crema-para-pies-secos-y-agrietados-babaria-109",
+      "brand": "BABARIA",
+      "categorySlug": "pies-cuerpo",
+      "tier": "económica",
+      "description": "Crema específica para pies secos y zonas ásperas, formulada con urea, aloe vera y aceite de almendras. Ayuda a mejorar la sensación de suavidad con el uso constante.",
+      "indications": "Personas con pies secos, talones ásperos o sensación de tirantez que buscan cuidado diario.",
+      "usageInstructions": "Aplicar sobre pies limpios y completamente secos, insistiendo en talones y zonas ásperas. Masajear hasta su absorción, preferentemente por la noche.",
+      "contraindications": "Uso externo. No aplicar sobre grietas sangrantes, heridas o signos de infección. Suspender ante irritación. Las personas con diabetes o problemas circulatorios deben consultar antes de tratar lesiones en los pies.",
+      "presentation": "150 ml",
+      "priceCents": 2290,
+      "compareAtCents": null,
+      "sourceImageUrls": [
+        "https://aruma.vteximg.com.br/arquivos/ids/214022/1002890.jpg?v=638938129412170000"
+      ],
+      "localImages": [
+        "imports/aruma-body-2026-08-20/images/crema-para-pies-secos-y-agrietados-babaria-109/01.webp"
+      ],
+      "tagSlugs": [
+        "objetivo-pies",
+        "objetivo-hidratacion",
+        "uso-rutina-noche",
+        "nivel-principiante",
+        "intensidad-completo",
+        "piel-seca",
+        "momento-noche",
+        "momento-uso-diario",
+        "alerta-consulta"
+      ]
+    },
+    {
+      "sourceProductId": "1019224",
+      "sourceItemId": "1019244",
+      "sourceReference": "3021216",
+      "sourceUrl": "https://www.aruma.pe/balsamo-reparador-cicaplast-balm-b5-la-roche-posay-40-ml/p",
+      "sourceName": "Bálsamo Reparador Cicaplast Balm B5 La Roche Posay 40 ml",
+      "name": "Bálsamo Reparador Cicaplast Baume B5 La Roche-Posay",
+      "slug": "balsamo-reparador-cicaplast-baume-b5-la-roche-posay-1019224",
+      "brand": "LA ROCHE POSAY",
+      "categorySlug": "pies-cuerpo",
+      "tier": "media",
+      "description": "Bálsamo multipropósito para calmar y acompañar la reparación de piel sensibilizada o con la barrera alterada. Su formato de 40 ml resulta práctico para llevar y usar en zonas puntuales.",
+      "indications": "Adultos y familias que buscan proteger zonas resecas, irritadas o sensibilizadas del rostro y cuerpo.",
+      "usageInstructions": "Aplicar una capa fina sobre la piel limpia y seca una o dos veces al día. No colocar directamente sobre heridas abiertas. Seguir las indicaciones del envase para cada zona.",
+      "contraindications": "Uso externo. Evitar el contorno inmediato de los ojos y heridas abiertas. Suspender ante una reacción inesperada. Consultar si la irritación es extensa, dolorosa o persistente.",
+      "presentation": "40 ml",
+      "priceCents": 6890,
+      "compareAtCents": null,
+      "sourceImageUrls": [
+        "https://aruma.vteximg.com.br/arquivos/ids/182272/1021216_1.jpg?v=638126062430730000",
+        "https://aruma.vteximg.com.br/arquivos/ids/182273/1021216_2.jpg?v=639198369626600000",
+        "https://aruma.vteximg.com.br/arquivos/ids/182274/1021216_3.jpg?v=639198369626900000",
+        "https://aruma.vteximg.com.br/arquivos/ids/182275/1021216_4.jpg?v=639198369626900000"
+      ],
+      "localImages": [
+        "imports/aruma-body-2026-08-20/images/balsamo-reparador-cicaplast-baume-b5-la-roche-posay-1019224/01.webp",
+        "imports/aruma-body-2026-08-20/images/balsamo-reparador-cicaplast-baume-b5-la-roche-posay-1019224/02.webp",
+        "imports/aruma-body-2026-08-20/images/balsamo-reparador-cicaplast-baume-b5-la-roche-posay-1019224/03.webp",
+        "imports/aruma-body-2026-08-20/images/balsamo-reparador-cicaplast-baume-b5-la-roche-posay-1019224/04.webp"
+      ],
+      "tagSlugs": [
+        "objetivo-barrera",
+        "objetivo-piel",
+        "uso-familia",
+        "uso-rutina-dia",
+        "nivel-principiante",
+        "intensidad-completo",
+        "piel-barrera-alterada",
+        "piel-seca",
+        "piel-sensible",
+        "pref-travel-size",
+        "momento-uso-diario",
+        "alerta-consulta"
+      ]
+    },
+    {
+      "sourceProductId": "1022485",
+      "sourceItemId": "1022098",
+      "sourceReference": "3022855",
+      "sourceUrl": "https://www.aruma.pe/tree-hut-exfoliante-watermelon-510g/p",
+      "sourceName": "TREE HUT Exfoliante Watermelon 510g",
+      "name": "Exfoliante Corporal Watermelon Tree Hut",
+      "slug": "exfoliante-corporal-watermelon-tree-hut-1022485",
+      "brand": "TREE HUT",
+      "categorySlug": "pies-cuerpo",
+      "tier": "media",
+      "description": "Exfoliante corporal de textura granulada y aroma a sandía para pulir la piel y dejarla suave. Su presentación grande funciona bien en una rutina de spa en casa.",
+      "indications": "Personas que buscan mejorar la textura de zonas ásperas y disfrutan aromas frutales.",
+      "usageInstructions": "Aplicar sobre piel húmeda con movimientos circulares suaves y enjuagar bien. Usar una o dos veces por semana y complementar con hidratante corporal.",
+      "contraindications": "Uso externo. No aplicar sobre heridas, piel irritada o recién depilada. Evitar combinar el mismo día con otros exfoliantes corporales. Suspender ante irritación y usar protección solar en las zonas expuestas.",
+      "presentation": "510 g",
+      "priceCents": 7990,
+      "compareAtCents": null,
+      "sourceImageUrls": [
+        "https://aruma.vteximg.com.br/arquivos/ids/188224/1022855_1.png?v=638325687449930000",
+        "https://aruma.vteximg.com.br/arquivos/ids/188225/1022855.jpg?v=638325687653030000",
+        "https://aruma.vteximg.com.br/arquivos/ids/188226/1022855_2.jpg?v=638325688246930000",
+        "https://aruma.vteximg.com.br/arquivos/ids/188227/1022855_3.jpg?v=638325688512070000"
+      ],
+      "localImages": [
+        "imports/aruma-body-2026-08-20/images/exfoliante-corporal-watermelon-tree-hut-1022485/01.webp",
+        "imports/aruma-body-2026-08-20/images/exfoliante-corporal-watermelon-tree-hut-1022485/02.webp",
+        "imports/aruma-body-2026-08-20/images/exfoliante-corporal-watermelon-tree-hut-1022485/03.webp",
+        "imports/aruma-body-2026-08-20/images/exfoliante-corporal-watermelon-tree-hut-1022485/04.webp"
+      ],
+      "tagSlugs": [
+        "objetivo-cuerpo",
+        "objetivo-piel",
+        "uso-hogar",
+        "nivel-intermedio",
+        "intensidad-completo",
+        "momento-uso-ocasional",
+        "alerta-piel-sensible",
+        "alerta-advertencia"
+      ]
+    },
+    {
+      "sourceProductId": "2557",
+      "sourceItemId": "2557",
+      "sourceReference": "3013267",
+      "sourceUrl": "https://www.aruma.pe/crema-corporal-hydroboost-body-x-400-ml-neutrogena/p",
+      "sourceName": "Crema Corporal Hydroboost Body x 400 ml Neutrogena",
+      "name": "Crema Corporal Hydro Boost Neutrogena",
+      "slug": "crema-corporal-hydro-boost-neutrogena-2557",
+      "brand": "NEUTROGENA",
+      "categorySlug": "pies-cuerpo",
+      "tier": "media",
+      "description": "Hidratante corporal de Neutrogena con una textura fresca y ligera, diseñada para aportar confort sin dejar una sensación pesada. Ideal para quienes quieren vestirse poco después de aplicarla.",
+      "indications": "Personas con piel normal o deshidratada que prefieren hidratantes corporales livianos.",
+      "usageInstructions": "Aplicar diariamente sobre la piel limpia, especialmente después de la ducha. Masajear hasta su absorción y reaplicar en zonas que lo necesiten.",
+      "contraindications": "Uso externo. Evitar el contacto con ojos y mucosas; si ocurre, enjuagar con abundante agua. Suspender si aparece irritación persistente. Mantener fuera del alcance de los niños y revisar los ingredientes si existe alguna sensibilidad conocida.",
+      "presentation": "400 ml",
+      "priceCents": 5790,
+      "compareAtCents": null,
+      "sourceImageUrls": [
+        "https://aruma.vteximg.com.br/arquivos/ids/217624/1013267_4.jpg?v=639002776191500000",
+        "https://aruma.vteximg.com.br/arquivos/ids/217625/7702031310914_1.jpg?v=639002776191830000",
+        "https://aruma.vteximg.com.br/arquivos/ids/217626/7702031310914_3.jpg?v=639002776191830000",
+        "https://aruma.vteximg.com.br/arquivos/ids/217627/7702031310914_4.jpg?v=639002776191830000",
+        "https://aruma.vteximg.com.br/arquivos/ids/217628/7702031310914_6.jpg?v=639002776191970000"
+      ],
+      "localImages": [
+        "imports/aruma-body-2026-08-20/images/crema-corporal-hydro-boost-neutrogena-2557/01.webp",
+        "imports/aruma-body-2026-08-20/images/crema-corporal-hydro-boost-neutrogena-2557/02.webp",
+        "imports/aruma-body-2026-08-20/images/crema-corporal-hydro-boost-neutrogena-2557/03.webp",
+        "imports/aruma-body-2026-08-20/images/crema-corporal-hydro-boost-neutrogena-2557/04.webp",
+        "imports/aruma-body-2026-08-20/images/crema-corporal-hydro-boost-neutrogena-2557/05.webp"
+      ],
+      "tagSlugs": [
+        "objetivo-hidratacion",
+        "uso-rutina-dia",
+        "nivel-principiante",
+        "intensidad-ligero",
+        "piel-normal",
+        "piel-deshidratada",
+        "pref-textura-ligera",
+        "momento-uso-diario"
+      ]
+    },
+    {
+      "sourceProductId": "1027080",
+      "sourceItemId": "1030220",
+      "sourceReference": "3030799",
+      "sourceUrl": "https://www.aruma.pe/exfoliante-piña-daise-beauty/p",
+      "sourceName": "Exfoliante Piña Daise Beauty",
+      "name": "Exfoliante Corporal de Piña Daise Beauty",
+      "slug": "exfoliante-corporal-de-pina-daise-beauty-1027080",
+      "brand": "DAISE BEAUTY",
+      "categorySlug": "pies-cuerpo",
+      "tier": "media",
+      "description": "Exfoliante corporal con aroma tropical a piña para retirar células muertas y aportar una sensación de piel renovada. Una alternativa divertida para el spa semanal en casa.",
+      "indications": "Personas que buscan suavizar la textura corporal con una experiencia aromática frutal.",
+      "usageInstructions": "Masajear suavemente sobre piel húmeda mediante movimientos circulares y enjuagar. Usar una o dos veces por semana, evitando zonas sensibles.",
+      "contraindications": "Uso externo. No aplicar sobre heridas, piel irritada o recién depilada. Evitar combinar el mismo día con otros exfoliantes corporales. Suspender ante irritación y usar protección solar en las zonas expuestas.",
+      "presentation": "500 g",
+      "priceCents": 4690,
+      "compareAtCents": null,
+      "sourceImageUrls": [
+        "https://aruma.vteximg.com.br/arquivos/ids/215059/Foto01_1030799.png?v=638962438889830000",
+        "https://aruma.vteximg.com.br/arquivos/ids/215060/Foto02_1030799.png?v=638962438890000000",
+        "https://aruma.vteximg.com.br/arquivos/ids/215061/Foto03_1030799.png?v=638962438890000000",
+        "https://aruma.vteximg.com.br/arquivos/ids/215062/Foto04_1030799.png?v=638962438890170000"
+      ],
+      "localImages": [
+        "imports/aruma-body-2026-08-20/images/exfoliante-corporal-de-pina-daise-beauty-1027080/01.webp",
+        "imports/aruma-body-2026-08-20/images/exfoliante-corporal-de-pina-daise-beauty-1027080/02.webp",
+        "imports/aruma-body-2026-08-20/images/exfoliante-corporal-de-pina-daise-beauty-1027080/03.webp",
+        "imports/aruma-body-2026-08-20/images/exfoliante-corporal-de-pina-daise-beauty-1027080/04.webp"
+      ],
+      "tagSlugs": [
+        "objetivo-cuerpo",
+        "objetivo-piel",
+        "uso-hogar",
+        "nivel-intermedio",
+        "intensidad-completo",
+        "momento-uso-ocasional",
+        "alerta-piel-sensible",
+        "alerta-advertencia"
+      ]
+    },
+    {
+      "sourceProductId": "1020554",
+      "sourceItemId": "1020169",
+      "sourceReference": "3022012",
+      "sourceUrl": "https://www.aruma.pe/manteca-corporal-coco-colada-240-g-tree-hut/p",
+      "sourceName": "Manteca Corporal Coco Colada 240 g Tree Hut",
+      "name": "Manteca Corporal Coco Colada Tree Hut",
+      "slug": "manteca-corporal-coco-colada-tree-hut-1020554",
+      "brand": "TREE HUT",
+      "categorySlug": "pies-cuerpo",
+      "tier": "media",
+      "description": "Manteca corporal de textura rica y aroma tropical a coco para envolver la piel en hidratación. Recomendada para zonas secas o para quienes prefieren acabados más nutritivos.",
+      "indications": "Personas con piel seca o zonas ásperas que buscan una hidratación corporal de mayor intensidad.",
+      "usageInstructions": "Aplicar sobre la piel limpia y seca, concentrándose en codos, rodillas y otras zonas resecas. Masajear hasta su absorción; usar diariamente según necesidad.",
+      "contraindications": "Uso externo. Evitar el contacto con ojos y mucosas; si ocurre, enjuagar con abundante agua. Suspender si aparece irritación persistente. Mantener fuera del alcance de los niños y revisar los ingredientes si existe alguna sensibilidad conocida.",
+      "presentation": "240 g",
+      "priceCents": 7990,
+      "compareAtCents": null,
+      "sourceImageUrls": [
+        "https://aruma.vteximg.com.br/arquivos/ids/185028/1022012.jpg?v=638246063790100000"
+      ],
+      "localImages": [
+        "imports/aruma-body-2026-08-20/images/manteca-corporal-coco-colada-tree-hut-1020554/01.webp"
+      ],
+      "tagSlugs": [
+        "objetivo-hidratacion",
+        "uso-rutina-noche",
+        "nivel-principiante",
+        "intensidad-completo",
+        "piel-seca",
+        "momento-noche",
+        "momento-uso-diario"
+      ]
+    },
+    {
+      "sourceProductId": "1026574",
+      "sourceItemId": "1029713",
+      "sourceReference": "3029022",
+      "sourceUrl": "https://www.aruma.pe/aceite-corporal-beauty-creations-x-barbie-gotta-glow-body-oil/p",
+      "sourceName": "Aceite Corporal Beauty Creations x Barbie Gotta Glow Body Oil",
+      "name": "Aceite Corporal Gotta Glow Beauty Creations x Barbie",
+      "slug": "aceite-corporal-gotta-glow-beauty-creations-x-barbie-1026574",
+      "brand": "BEAUTY CREATIONS",
+      "categorySlug": "pies-cuerpo",
+      "tier": "media",
+      "description": "Aceite corporal de edición Beauty Creations x Barbie para aportar brillo y una apariencia luminosa a la piel. Se puede usar solo o como último paso sobre una crema corporal.",
+      "indications": "Personas que buscan un acabado luminoso y un producto corporal con estética de tendencia.",
+      "usageInstructions": "Aplicar pocas gotas sobre la piel limpia, preferentemente ligeramente húmeda, y masajear. Dejar absorber antes de vestirse. Usar según la intensidad de brillo deseada.",
+      "contraindications": "Uso externo. Evitar ojos, mucosas y piel irritada. Puede dejar superficies resbalosas; lavar las manos después de aplicar. Suspender ante irritación.",
+      "presentation": "100 ml",
+      "priceCents": 4990,
+      "compareAtCents": null,
+      "sourceImageUrls": [
+        "https://aruma.vteximg.com.br/arquivos/ids/211871/Foto02_1029022.jpg?v=638913800572270000",
+        "https://aruma.vteximg.com.br/arquivos/ids/211872/Foto01_1029022.jpg?v=638913800572570000",
+        "https://aruma.vteximg.com.br/arquivos/ids/211873/Foto03_1029022.webp?v=638913800572730000"
+      ],
+      "localImages": [
+        "imports/aruma-body-2026-08-20/images/aceite-corporal-gotta-glow-beauty-creations-x-barbie-1026574/01.webp",
+        "imports/aruma-body-2026-08-20/images/aceite-corporal-gotta-glow-beauty-creations-x-barbie-1026574/02.webp",
+        "imports/aruma-body-2026-08-20/images/aceite-corporal-gotta-glow-beauty-creations-x-barbie-1026574/03.webp"
+      ],
+      "tagSlugs": [
+        "objetivo-hidratacion",
+        "objetivo-cuerpo",
+        "uso-rutina-dia",
+        "nivel-principiante",
+        "intensidad-ligero",
+        "pref-cruelty-free",
+        "pref-textura-ligera",
+        "momento-uso-ocasional"
+      ]
+    },
+    {
+      "sourceProductId": "2638",
+      "sourceItemId": "2638",
+      "sourceReference": "3000472",
+      "sourceUrl": "https://www.aruma.pe/crema-corporal-nivea-milk-nutritiva--piel-extra-seca----frasco-400ml/p",
+      "sourceName": "Crema Corporal NIVEA Milk Nutritiva (Piel Extra Seca) - Frasco 400ml",
+      "name": "Crema Corporal Milk Nutritiva Nivea",
+      "slug": "crema-corporal-milk-nutritiva-nivea-2638",
+      "brand": "NIVEA",
+      "categorySlug": "pies-cuerpo",
+      "tier": "media",
+      "description": "Loción corporal nutritiva de Nivea para piel extra seca. Su formato familiar ofrece una opción rendidora para recuperar confort en brazos, piernas y zonas con tirantez.",
+      "indications": "Personas con piel seca o extra seca que necesitan hidratación corporal diaria.",
+      "usageInstructions": "Aplicar generosamente sobre la piel limpia y masajear hasta su absorción. Repetir a diario, en especial después de la ducha.",
+      "contraindications": "Uso externo. Evitar el contacto con ojos y mucosas; si ocurre, enjuagar con abundante agua. Suspender si aparece irritación persistente. Mantener fuera del alcance de los niños y revisar los ingredientes si existe alguna sensibilidad conocida.",
+      "presentation": "400 ml",
+      "priceCents": 4600,
+      "compareAtCents": null,
+      "sourceImageUrls": [
+        "https://aruma.vteximg.com.br/arquivos/ids/186690/1000472.jpg?v=638289226527300000"
+      ],
+      "localImages": [
+        "imports/aruma-body-2026-08-20/images/crema-corporal-milk-nutritiva-nivea-2638/01.webp"
+      ],
+      "tagSlugs": [
+        "objetivo-hidratacion",
+        "uso-familia",
+        "uso-rutina-dia",
+        "nivel-principiante",
+        "intensidad-completo",
+        "piel-seca",
+        "momento-uso-diario"
+      ]
+    },
+    {
+      "sourceProductId": "1018778",
+      "sourceItemId": "1018803",
+      "sourceReference": "3020575",
+      "sourceUrl": "https://www.aruma.pe/isdin-woman-reafirmante-200-ml/p",
+      "sourceName": "ISDIN Woman Reafirmante 200 ml",
+      "name": "Crema Corporal Reafirmante ISDIN Woman",
+      "slug": "crema-corporal-reafirmante-isdin-woman-1018778",
+      "brand": "ISDIN",
+      "categorySlug": "pies-cuerpo",
+      "tier": "media",
+      "description": "Crema corporal de ISDIN orientada al cuidado de la firmeza y elasticidad de la piel. Se integra a una rutina diaria mediante masaje, especialmente en zonas que necesitan atención localizada.",
+      "indications": "Personas adultas que buscan acompañar el cuidado de la firmeza y elasticidad corporal.",
+      "usageInstructions": "Aplicar una o dos veces al día sobre la piel limpia y seca mediante masajes ascendentes hasta su absorción. La constancia es clave en este tipo de rutina.",
+      "contraindications": "Uso externo. Evitar el contacto con ojos y mucosas; si ocurre, enjuagar con abundante agua. Suspender si aparece irritación persistente. Mantener fuera del alcance de los niños y revisar los ingredientes si existe alguna sensibilidad conocida.",
+      "presentation": "200 ml",
+      "priceCents": 7990,
+      "compareAtCents": 9990,
+      "sourceImageUrls": [
+        "https://aruma.vteximg.com.br/arquivos/ids/182238/1020575_1.jpg?v=638125131491230000",
+        "https://aruma.vteximg.com.br/arquivos/ids/182239/1020575_2.jpg?v=638953585477670000",
+        "https://aruma.vteximg.com.br/arquivos/ids/182240/1020575_3.jpg?v=638953585477800000",
+        "https://aruma.vteximg.com.br/arquivos/ids/182241/1020575_4.jpg?v=638953585477800000"
+      ],
+      "localImages": [
+        "imports/aruma-body-2026-08-20/images/crema-corporal-reafirmante-isdin-woman-1018778/01.webp",
+        "imports/aruma-body-2026-08-20/images/crema-corporal-reafirmante-isdin-woman-1018778/02.webp",
+        "imports/aruma-body-2026-08-20/images/crema-corporal-reafirmante-isdin-woman-1018778/03.webp",
+        "imports/aruma-body-2026-08-20/images/crema-corporal-reafirmante-isdin-woman-1018778/04.webp"
+      ],
+      "tagSlugs": [
+        "objetivo-cuerpo",
+        "objetivo-piel",
+        "uso-rutina-dia",
+        "nivel-intermedio",
+        "intensidad-completo",
+        "piel-normal",
+        "momento-uso-diario"
+      ]
+    },
+    {
+      "sourceProductId": "1024963",
+      "sourceItemId": "1024519",
+      "sourceReference": "3027711",
+      "sourceUrl": "https://www.aruma.pe/eucerin-antipigment-crema-corporal-200ml/p",
+      "sourceName": "EUCERIN Antipigment Crema Corporal 200ml",
+      "name": "Crema Corporal Anti-Pigment Eucerin",
+      "slug": "crema-corporal-anti-pigment-eucerin-1024963",
+      "brand": "EUCERIN",
+      "categorySlug": "pies-cuerpo",
+      "tier": "premium",
+      "description": "Tratamiento corporal de Eucerin enfocado en manchas y tono desigual. Una opción dermocosmética para zonas corporales que requieren cuidado constante y protección frente al sol.",
+      "indications": "Personas adultas que buscan mejorar la apariencia de manchas corporales y unificar visualmente el tono.",
+      "usageInstructions": "Aplicar sobre las zonas corporales indicadas, respetando la frecuencia y el límite de aplicaciones señalado en el envase. Durante el día, proteger del sol las áreas expuestas.",
+      "contraindications": "Uso externo. Evitar ojos, mucosas, heridas y piel irritada. No combinar sin orientación con otros tratamientos despigmentantes en la misma zona. Suspender ante irritación y consultar si existe una condición dermatológica activa.",
+      "presentation": "200 ml",
+      "priceCents": 15990,
+      "compareAtCents": null,
+      "sourceImageUrls": [
+        "https://aruma.vteximg.com.br/arquivos/ids/202987/1027711-1.jpg?v=638701326533170000",
+        "https://aruma.vteximg.com.br/arquivos/ids/202988/1027711-2.jpg?v=638701326533170000",
+        "https://aruma.vteximg.com.br/arquivos/ids/202989/1027711-3.jpg?v=638701326533300000",
+        "https://aruma.vteximg.com.br/arquivos/ids/202990/1027711-4.jpg?v=638701326533300000",
+        "https://aruma.vteximg.com.br/arquivos/ids/202991/1027711-5.jpg?v=638701326533300000"
+      ],
+      "localImages": [
+        "imports/aruma-body-2026-08-20/images/crema-corporal-anti-pigment-eucerin-1024963/01.webp",
+        "imports/aruma-body-2026-08-20/images/crema-corporal-anti-pigment-eucerin-1024963/02.webp",
+        "imports/aruma-body-2026-08-20/images/crema-corporal-anti-pigment-eucerin-1024963/03.webp",
+        "imports/aruma-body-2026-08-20/images/crema-corporal-anti-pigment-eucerin-1024963/04.webp",
+        "imports/aruma-body-2026-08-20/images/crema-corporal-anti-pigment-eucerin-1024963/05.webp"
+      ],
+      "tagSlugs": [
+        "objetivo-piel",
+        "objetivo-cuerpo",
+        "uso-rutina-dia",
+        "nivel-intermedio",
+        "intensidad-completo",
+        "piel-normal",
+        "momento-uso-diario",
+        "alerta-piel-sensible",
+        "alerta-advertencia",
+        "alerta-consulta"
+      ]
+    },
+    {
+      "sourceProductId": "1022915",
+      "sourceItemId": "1022527",
+      "sourceReference": "3024843",
+      "sourceUrl": "https://www.aruma.pe/crema-hidratante-bioderma-atoderm-creme-ultra-500ml/p",
+      "sourceName": "Crema Hidratante Bioderma Atoderm Creme Ultra 500ml",
+      "name": "Crema Hidratante Atoderm Creme Ultra Bioderma",
+      "slug": "crema-hidratante-atoderm-creme-ultra-bioderma-1022915",
+      "brand": "BIODERMA",
+      "categorySlug": "pies-cuerpo",
+      "tier": "premium",
+      "description": "Crema hidratante de Bioderma para el cuidado diario de piel normal a seca y sensible. Su envase de 500 ml es práctico para el uso corporal frecuente o familiar.",
+      "indications": "Personas y familias con piel seca o sensible que necesitan hidratación corporal cotidiana.",
+      "usageInstructions": "Aplicar una o dos veces al día sobre piel limpia y seca. Masajear hasta su absorción, especialmente en las zonas con mayor sequedad.",
+      "contraindications": "Uso externo. Evitar el contacto con ojos y mucosas; si ocurre, enjuagar con abundante agua. Suspender si aparece irritación persistente. Mantener fuera del alcance de los niños y revisar los ingredientes si existe alguna sensibilidad conocida.",
+      "presentation": "500 ml",
+      "priceCents": 10990,
+      "compareAtCents": null,
+      "sourceImageUrls": [
+        "https://aruma.vteximg.com.br/arquivos/ids/190285/1024843_1.jpg?v=638410370871500000",
+        "https://aruma.vteximg.com.br/arquivos/ids/190286/1024843_2.jpg?v=638410371130730000"
+      ],
+      "localImages": [
+        "imports/aruma-body-2026-08-20/images/crema-hidratante-atoderm-creme-ultra-bioderma-1022915/01.webp",
+        "imports/aruma-body-2026-08-20/images/crema-hidratante-atoderm-creme-ultra-bioderma-1022915/02.webp"
+      ],
+      "tagSlugs": [
+        "objetivo-hidratacion",
+        "objetivo-barrera",
+        "uso-familia",
+        "uso-rutina-dia",
+        "nivel-principiante",
+        "intensidad-completo",
+        "piel-seca",
+        "piel-sensible",
+        "piel-barrera-alterada",
+        "momento-uso-diario"
+      ]
+    },
+    {
+      "sourceProductId": "1020055",
+      "sourceItemId": "1019814",
+      "sourceReference": "1021748",
+      "sourceUrl": "https://www.aruma.pe/jabon-bioderma-atoderm-huile-de-douche-fp1l-2/p",
+      "sourceName": "Jabon Bioderma Atoderm Huile De Douche Fp1L",
+      "name": "Aceite de Ducha Atoderm Bioderma",
+      "slug": "aceite-de-ducha-atoderm-bioderma-1020055",
+      "brand": "BIODERMA",
+      "categorySlug": "pies-cuerpo",
+      "tier": "premium",
+      "description": "Aceite limpiador corporal de Bioderma en formato de un litro, pensado para limpiar con suavidad y reducir la sensación de tirantez en piel seca o sensible.",
+      "indications": "Personas y familias con piel seca, muy seca o sensible que buscan una limpieza corporal suave.",
+      "usageInstructions": "Aplicar sobre la piel húmeda, masajear suavemente y enjuagar. Secar sin frotar. Puede incorporarse a la ducha diaria.",
+      "contraindications": "Uso externo. Evitar el contacto con ojos y mucosas; si ocurre, enjuagar con abundante agua. Suspender si aparece irritación persistente. Mantener fuera del alcance de los niños y revisar los ingredientes si existe alguna sensibilidad conocida.",
+      "presentation": "1 L",
+      "priceCents": 17900,
+      "compareAtCents": null,
+      "sourceImageUrls": [
+        "https://aruma.vteximg.com.br/arquivos/ids/194318/1021748.jpg?v=638488941958930000",
+        "https://aruma.vteximg.com.br/arquivos/ids/194319/1021748_1.jpg?v=638772252869600000",
+        "https://aruma.vteximg.com.br/arquivos/ids/194320/1021748_2.jpg?v=638772252869770000",
+        "https://aruma.vteximg.com.br/arquivos/ids/194321/1021748_3.jpg?v=638772252869770000",
+        "https://aruma.vteximg.com.br/arquivos/ids/194322/1021748_4.jpg?v=638772252869770000"
+      ],
+      "localImages": [
+        "imports/aruma-body-2026-08-20/images/aceite-de-ducha-atoderm-bioderma-1020055/01.webp",
+        "imports/aruma-body-2026-08-20/images/aceite-de-ducha-atoderm-bioderma-1020055/02.webp",
+        "imports/aruma-body-2026-08-20/images/aceite-de-ducha-atoderm-bioderma-1020055/03.webp",
+        "imports/aruma-body-2026-08-20/images/aceite-de-ducha-atoderm-bioderma-1020055/04.webp",
+        "imports/aruma-body-2026-08-20/images/aceite-de-ducha-atoderm-bioderma-1020055/05.webp"
+      ],
+      "tagSlugs": [
+        "objetivo-barrera",
+        "objetivo-hidratacion",
+        "objetivo-cuerpo",
+        "uso-familia",
+        "uso-rutina-dia",
+        "nivel-principiante",
+        "intensidad-completo",
+        "piel-seca",
+        "piel-sensible",
+        "piel-barrera-alterada",
+        "momento-uso-diario"
+      ]
+    },
+    {
+      "sourceProductId": "4770",
+      "sourceItemId": "4778",
+      "sourceReference": "3006757",
+      "sourceUrl": "https://www.aruma.pe/isdin-acniben-teen-skin-body-150ml/p",
+      "sourceName": "ISDIN Acniben Body 150 ml",
+      "name": "Spray Corporal Acniben Body ISDIN",
+      "slug": "spray-corporal-acniben-body-isdin-4770",
+      "brand": "ISDIN",
+      "categorySlug": "pies-cuerpo",
+      "tier": "premium",
+      "description": "Spray corporal de ISDIN diseñado para piel con tendencia a imperfecciones en espalda, pecho u otras zonas de difícil acceso. El formato permite una aplicación práctica y uniforme.",
+      "indications": "Personas con piel grasa o tendencia a brotes corporales que buscan un tratamiento específico para espalda y pecho.",
+      "usageInstructions": "Agitar y pulverizar sobre la piel limpia y seca a la distancia indicada en el envase. Dejar secar antes de vestirse. No aplicar en el rostro ni exceder la frecuencia recomendada.",
+      "contraindications": "Uso externo. No aplicar sobre rostro, mucosas, heridas o piel irritada. Puede aumentar la sensibilidad; evitar otros exfoliantes en la misma zona y usar protección solar cuando quede expuesta. Suspender y consultar ante irritación intensa.",
+      "presentation": "150 ml",
+      "priceCents": 8990,
+      "compareAtCents": null,
+      "sourceImageUrls": [
+        "https://aruma.vteximg.com.br/arquivos/ids/205647/Foto01_1006757--2-.jpg.jpg?v=638953574968000000",
+        "https://aruma.vteximg.com.br/arquivos/ids/205648/Foto02_1006757--2-.jpg.jpg?v=638953574968000000",
+        "https://aruma.vteximg.com.br/arquivos/ids/205649/Foto03_1006757--2-.jpg.jpg?v=638953574968170000",
+        "https://aruma.vteximg.com.br/arquivos/ids/205650/Foto04_1006757--2-.jpg.jpg?v=638953574968170000",
+        "https://aruma.vteximg.com.br/arquivos/ids/205651/Foto05_1006757--2-.jpg.jpg?v=638953574968170000"
+      ],
+      "localImages": [
+        "imports/aruma-body-2026-08-20/images/spray-corporal-acniben-body-isdin-4770/01.webp",
+        "imports/aruma-body-2026-08-20/images/spray-corporal-acniben-body-isdin-4770/02.webp",
+        "imports/aruma-body-2026-08-20/images/spray-corporal-acniben-body-isdin-4770/03.webp",
+        "imports/aruma-body-2026-08-20/images/spray-corporal-acniben-body-isdin-4770/04.webp",
+        "imports/aruma-body-2026-08-20/images/spray-corporal-acniben-body-isdin-4770/05.webp"
+      ],
+      "tagSlugs": [
+        "objetivo-piel",
+        "objetivo-cuerpo",
+        "uso-rutina-noche",
+        "nivel-intermedio",
+        "intensidad-completo",
+        "piel-grasa",
+        "piel-brotes",
+        "momento-noche",
+        "momento-uso-diario",
+        "alerta-piel-sensible",
+        "alerta-advertencia",
+        "alerta-consulta"
+      ]
+    },
+    {
+      "sourceProductId": "1599",
+      "sourceItemId": "1599",
+      "sourceReference": "3006675",
+      "sourceUrl": "https://www.aruma.pe/limpiador-lipkar-syndet-ap-para-piel-seca-400ml-la-roche-posay/p",
+      "sourceName": "Limpiador Lipkar Syndet AP para Piel Seca 400ml La Roche Posay",
+      "name": "Limpiador Lipikar Syndet AP+ La Roche-Posay",
+      "slug": "limpiador-lipikar-syndet-ap-la-roche-posay-1599",
+      "brand": "LA ROCHE POSAY",
+      "categorySlug": "pies-cuerpo",
+      "tier": "premium",
+      "description": "Crema limpiadora corporal suave de La Roche-Posay para piel seca, muy seca o sensible. Ayuda a limpiar sin acentuar la sensación de tirantez y encaja en rutinas familiares.",
+      "indications": "Personas y familias con piel seca, sensible o con barrera alterada que necesitan una limpieza gentil.",
+      "usageInstructions": "Aplicar una pequeña cantidad sobre piel húmeda, masajear con suavidad y enjuagar. Secar con toques, sin frotar. Usar en la ducha diaria.",
+      "contraindications": "Uso externo. Evitar el contacto con ojos y mucosas; si ocurre, enjuagar con abundante agua. Suspender si aparece irritación persistente. Mantener fuera del alcance de los niños y revisar los ingredientes si existe alguna sensibilidad conocida.",
+      "presentation": "400 ml",
+      "priceCents": 12690,
+      "compareAtCents": null,
+      "sourceImageUrls": [
+        "https://aruma.vteximg.com.br/arquivos/ids/178295/1006675.jpg?v=637922984421900000",
+        "https://aruma.vteximg.com.br/arquivos/ids/165733/1006675.jpg?v=637401855359570000"
+      ],
+      "localImages": [
+        "imports/aruma-body-2026-08-20/images/limpiador-lipikar-syndet-ap-la-roche-posay-1599/01.webp",
+        "imports/aruma-body-2026-08-20/images/limpiador-lipikar-syndet-ap-la-roche-posay-1599/02.webp"
+      ],
+      "tagSlugs": [
+        "objetivo-barrera",
+        "objetivo-cuerpo",
+        "uso-familia",
+        "uso-rutina-dia",
+        "nivel-principiante",
+        "intensidad-completo",
+        "piel-seca",
+        "piel-sensible",
+        "piel-barrera-alterada",
+        "momento-uso-diario"
+      ]
+    },
+    {
+      "sourceProductId": "7424",
+      "sourceItemId": "1017639",
+      "sourceReference": "3018713",
+      "sourceUrl": "https://www.aruma.pe/locion-hidratante-ureadin-ultra10-plus-reparadora-200ml-isdin/p",
+      "sourceName": "Loción Hidratante Ureadin Ultra10 Plus Reparadora 200ml Isdin",
+      "name": "Loción Reparadora Ureadin Ultra 10 ISDIN",
+      "slug": "locion-reparadora-ureadin-ultra-10-isdin-7424",
+      "brand": "ISDIN",
+      "categorySlug": "pies-cuerpo",
+      "tier": "premium",
+      "description": "Loción corporal de ISDIN con urea y dexpantenol para suavizar piel áspera, engrosada o muy seca. Ofrece un cuidado intensivo para zonas que necesitan más que una hidratante ligera.",
+      "indications": "Personas con piel muy seca, descamación o zonas corporales ásperas que buscan cuidado intensivo.",
+      "usageInstructions": "Aplicar una o dos veces al día sobre piel limpia y seca, insistiendo en las zonas ásperas. Lavar las manos después y respetar las indicaciones del envase.",
+      "contraindications": "Uso externo. Puede producir escozor en piel agrietada o muy irritada. No aplicar sobre heridas, mucosas ni contorno de ojos. Suspender ante irritación persistente y consultar si la descamación es extensa.",
+      "presentation": "200 ml",
+      "priceCents": 11400,
+      "compareAtCents": null,
+      "sourceImageUrls": [
+        "https://aruma.vteximg.com.br/arquivos/ids/177277/1018713.jpg?v=637866044793300000"
+      ],
+      "localImages": [
+        "imports/aruma-body-2026-08-20/images/locion-reparadora-ureadin-ultra-10-isdin-7424/01.webp"
+      ],
+      "tagSlugs": [
+        "objetivo-barrera",
+        "objetivo-hidratacion",
+        "uso-rutina-noche",
+        "nivel-intermedio",
+        "intensidad-completo",
+        "piel-seca",
+        "piel-barrera-alterada",
+        "momento-noche",
+        "momento-uso-diario",
+        "alerta-piel-sensible",
+        "alerta-advertencia"
+      ]
+    },
+    {
+      "sourceProductId": "573",
+      "sourceItemId": "1031415",
+      "sourceReference": "3013539",
+      "sourceUrl": "https://www.aruma.pe/crema-hidratante-453gr-cetaphil/p",
+      "sourceName": "Crema Hidratante 453gr Cetaphil",
+      "name": "Crema Hidratante Cetaphil",
+      "slug": "crema-hidratante-cetaphil-573",
+      "brand": "CETAPHIL",
+      "categorySlug": "pies-cuerpo",
+      "tier": "premium",
+      "description": "Crema hidratante de Cetaphil con textura rica para piel seca y sensible. Su presentación grande permite atender rostro, manos y zonas corporales que necesitan confort duradero.",
+      "indications": "Personas y familias con piel seca o sensible que prefieren una crema nutritiva y versátil.",
+      "usageInstructions": "Aplicar sobre la piel limpia tantas veces como sea necesario, especialmente después del baño y en zonas resecas. Masajear hasta su absorción.",
+      "contraindications": "Uso externo. Evitar el contacto con ojos y mucosas; si ocurre, enjuagar con abundante agua. Suspender si aparece irritación persistente. Mantener fuera del alcance de los niños y revisar los ingredientes si existe alguna sensibilidad conocida.",
+      "presentation": "453 g",
+      "priceCents": 11790,
+      "compareAtCents": null,
+      "sourceImageUrls": [
+        "https://aruma.vteximg.com.br/arquivos/ids/225432/Cetaphil4-1.webp?v=639226716669070000",
+        "https://aruma.vteximg.com.br/arquivos/ids/225433/Cetaphil4-2.webp?v=639226716669230000",
+        "https://aruma.vteximg.com.br/arquivos/ids/225434/Cetaphil4-4.webp?v=639226716669370000",
+        "https://aruma.vteximg.com.br/arquivos/ids/225435/Cetaphil4-5.webp?v=639226716669370000",
+        "https://aruma.vteximg.com.br/arquivos/ids/225436/Cetaphil4-3.webp?v=639226716669370000"
+      ],
+      "localImages": [
+        "imports/aruma-body-2026-08-20/images/crema-hidratante-cetaphil-573/01.webp",
+        "imports/aruma-body-2026-08-20/images/crema-hidratante-cetaphil-573/02.webp",
+        "imports/aruma-body-2026-08-20/images/crema-hidratante-cetaphil-573/03.webp",
+        "imports/aruma-body-2026-08-20/images/crema-hidratante-cetaphil-573/04.webp",
+        "imports/aruma-body-2026-08-20/images/crema-hidratante-cetaphil-573/05.webp"
+      ],
+      "tagSlugs": [
+        "objetivo-hidratacion",
+        "objetivo-barrera",
+        "uso-familia",
+        "uso-rutina-dia",
+        "nivel-principiante",
+        "intensidad-completo",
+        "piel-seca",
+        "piel-sensible",
+        "momento-uso-diario"
+      ]
+    },
+    {
+      "sourceProductId": "1020511",
+      "sourceItemId": "1020126",
+      "sourceReference": "3022098",
+      "sourceUrl": "https://www.aruma.pe/eucerin-unguento-reparador-aquaphor-55ml/p",
+      "sourceName": "Eucerin Ungüento Reparador Aquaphor 55ml",
+      "name": "Ungüento Reparador Aquaphor Eucerin",
+      "slug": "unguento-reparador-aquaphor-eucerin-1020511",
+      "brand": "EUCERIN",
+      "categorySlug": "pies-cuerpo",
+      "tier": "premium",
+      "description": "Ungüento reparador multipropósito para proteger zonas muy secas, agrietadas o sensibilizadas. Su formato compacto es útil para labios, manos, cutículas y puntos localizados del cuerpo.",
+      "indications": "Personas con zonas de piel muy seca o agrietada que buscan una barrera protectora sin fragancia.",
+      "usageInstructions": "Aplicar una capa fina sobre la zona limpia y seca tantas veces como sea necesario. Usar solo en piel ya cerrada, no sobre heridas abiertas o húmedas.",
+      "contraindications": "Uso externo. No aplicar sobre heridas abiertas, infectadas o con secreción. Evitar ojos y mucosas. Consultar si la lesión no mejora o presenta dolor, calor o inflamación.",
+      "presentation": "55 ml",
+      "priceCents": 9990,
+      "compareAtCents": null,
+      "sourceImageUrls": [
+        "https://aruma.vteximg.com.br/arquivos/ids/184649/1022098.jpg?v=638230597760370000"
+      ],
+      "localImages": [
+        "imports/aruma-body-2026-08-20/images/unguento-reparador-aquaphor-eucerin-1020511/01.webp"
+      ],
+      "tagSlugs": [
+        "objetivo-barrera",
+        "objetivo-hidratacion",
+        "uso-viaje",
+        "nivel-principiante",
+        "intensidad-completo",
+        "piel-seca",
+        "piel-barrera-alterada",
+        "piel-sensible",
+        "pref-sin-fragancia",
+        "pref-travel-size",
+        "momento-viaje",
+        "momento-uso-diario",
+        "alerta-consulta"
+      ]
+    }
+  ]
+}

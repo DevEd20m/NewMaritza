@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { X, Minus, Plus, ShoppingBag, Tag } from '@phosphor-icons/react'
 import { useCartStore } from '@/lib/store/cart'
 import { trackAddToCart } from '@/lib/analytics/events'
+import { formatPEN } from '@/lib/format/money'
 
 interface CartDrawerProps {
   shippingThresholdCents: number
@@ -93,8 +94,6 @@ export function CartDrawer({ shippingThresholdCents, shippingCostCents }: CartDr
 
   if (!isOpen) return null
 
-  const formatPrice = (cents: number) => `S/${(cents / 100).toFixed(0)}`
-
   return (
     <>
       {/* Backdrop */}
@@ -170,7 +169,7 @@ export function CartDrawer({ shippingThresholdCents, shippingCostCents }: CartDr
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: 'var(--liora-uva)', lineHeight: 1.2 }}>{item.name}</div>
                   <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, opacity: 0.65, marginTop: 2 }}>{item.variantName}</div>
-                  <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 15, marginTop: 6, color: 'var(--liora-uva)' }}>{formatPrice(item.priceCents)}</div>
+                  <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 15, marginTop: 6, color: 'var(--liora-uva)' }}>{formatPEN(item.priceCents)}</div>
                 </div>
 
                 {/* Qty controls */}
@@ -212,7 +211,7 @@ export function CartDrawer({ shippingThresholdCents, shippingCostCents }: CartDr
                       </div>
                     </Link>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginTop: 'auto' }}>
-                      <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 13, color: 'var(--liora-uva)' }}>{formatPrice(s.priceCents)}</span>
+                      <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 13, color: 'var(--liora-uva)' }}>{formatPEN(s.priceCents)}</span>
                       <button
                         onClick={() => addRelated(s)}
                         aria-label={`Agregar ${s.name}`}
@@ -268,14 +267,14 @@ export function CartDrawer({ shippingThresholdCents, shippingCostCents }: CartDr
             )}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16, fontFamily: 'var(--font-body)', fontSize: 14 }}>
-              <SumRow label="Subtotal" value={formatPrice(sub)} />
-              {discountCents > 0 && <SumRow label={`Cupón ${appliedCouponCode}`} value={`−${formatPrice(discountCents)}`} accent />}
-              <SumRow label="Envío" value={shipping === 0 ? 'Gratis' : formatPrice(shipping)} />
+              <SumRow label="Subtotal" value={formatPEN(sub)} />
+              {discountCents > 0 && <SumRow label={`Cupón ${appliedCouponCode}`} value={`−${formatPEN(discountCents)}`} accent />}
+              <SumRow label="Envío" value={shipping === 0 ? 'Gratis' : formatPEN(shipping)} />
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', paddingTop: 12, borderTop: '1.5px solid var(--liora-arena)', marginBottom: 16 }}>
               <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, color: 'var(--liora-uva)' }}>Total</span>
-              <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 28, color: 'var(--liora-uva)' }}>{formatPrice(total + shipping)}</span>
+              <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 28, color: 'var(--liora-uva)' }}>{formatPEN(total + shipping)}</span>
             </div>
 
             <Link

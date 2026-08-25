@@ -1,0 +1,217 @@
+{
+  "generatedAt": "2026-08-20",
+  "method": "Selección por orden de ventas de Aruma, reconocimiento editorial/viral y cobertura de necesidades y precios.",
+  "products": [
+    {
+      "slug": "shampoo-salon-in-keratin-ultra-force-1000ml-3529",
+      "salesRank": 1,
+      "segment": "más vendido en Aruma",
+      "benefit": "fortalecimiento y limpieza diaria en una presentación de alto rendimiento",
+      "audience": "cabello debilitado o expuesto al peinado frecuente"
+    },
+    {
+      "slug": "lan-therapy-shampoo-anticaida-1026621",
+      "salesRank": 2,
+      "segment": "más vendido en Aruma y accesible",
+      "benefit": "limpieza cotidiana orientada al cabello débil y con tendencia a la caída",
+      "audience": "personas con cabello frágil que buscan una alternativa diaria accesible",
+      "displayName": "Shampoo Lan Therapy Anticaída",
+      "presentation": "300 ml"
+    },
+    {
+      "slug": "shampoo-diario-cantu-weightless-400ml-1025558",
+      "salesRank": 3,
+      "segment": "más vendido en Aruma y tendencia en rizos",
+      "benefit": "limpieza ligera para ondas y rizos sin sensación pesada",
+      "audience": "cabello ondulado o rizado que necesita limpieza frecuente sin perder movimiento",
+      "displayName": "Shampoo Diario Cantu Weightless 400 ml"
+    },
+    {
+      "slug": "shampoo-monday-moisture-354-ml-1024903",
+      "salesRank": 4,
+      "segment": "viral, premiado y accesible",
+      "benefit": "hidratación para cabello seco, opaco o con frizz",
+      "audience": "personas que buscan suavidad e hidratación a un precio accesible"
+    },
+    {
+      "slug": "shampoo-en-gel-scalp-advanced-anti-oiliness-300-ml-l-oreal-professionel-1022025",
+      "salesRank": 5,
+      "segment": "más vendido en Aruma y profesional",
+      "benefit": "limpieza purificante del cuero cabelludo con exceso de grasa",
+      "audience": "cuero cabelludo graso o raíces que pierden frescura rápidamente",
+      "displayName": "Shampoo L'Oréal Professionnel Scalp Advanced Anti-Oiliness 300 ml"
+    },
+    {
+      "slug": "shampoo-cleansing-cream-3oz-cantu-1020346",
+      "salesRank": 6,
+      "segment": "premiado, accesible y travel size",
+      "benefit": "limpieza cremosa para conservar la definición de ondas, rizos y espirales",
+      "audience": "cabello rizado o texturizado que busca una opción compacta para probar o viajar",
+      "displayName": "Shampoo Cantu Cleansing Cream Travel Size 89 g"
+    },
+    {
+      "slug": "shampoo-deep-care-x-300-ml-lan-keratin-7602",
+      "salesRank": 8,
+      "segment": "más vendido en Aruma y accesible",
+      "benefit": "nutrición e hidratación para cabello reseco o sensibilizado",
+      "audience": "cabello seco, áspero o con pérdida de suavidad",
+      "displayName": "Shampoo Lan Keratin Deep Care 300 ml"
+    },
+    {
+      "slug": "shampoo-quinua-negra-500ml-sumaq-4908",
+      "salesRank": 11,
+      "segment": "más vendido en Aruma y marca local",
+      "benefit": "limpieza orientada a conservar el color en una presentación familiar",
+      "audience": "cabello teñido o tratado que busca cuidado cotidiano del color"
+    },
+    {
+      "slug": "shampoo-salon-in-liss-control-1000ml-3531",
+      "salesRank": 14,
+      "segment": "más vendido en Aruma y alto rendimiento",
+      "benefit": "control del frizz y mantenimiento de un acabado más liso",
+      "audience": "cabello lacio, alisado o con frizz que busca una presentación de un litro"
+    },
+    {
+      "slug": "lan-therapy-shampoo-anticaspa-1026622",
+      "salesRank": 17,
+      "segment": "más vendido en Aruma y accesible",
+      "benefit": "limpieza diaria orientada al control de la caspa",
+      "audience": "cuero cabelludo con descamación visible que busca una alternativa accesible",
+      "displayName": "Shampoo Lan Therapy Anticaspa 300 ml"
+    },
+    {
+      "slug": "shampoo-monday-repair-354-ml-1024908",
+      "salesRank": 20,
+      "segment": "marca viral y accesible",
+      "benefit": "cuidado reparador para cabello dañado por calor, coloración o peinado",
+      "audience": "cabello frágil o dañado que busca una rutina reparadora accesible"
+    },
+    {
+      "slug": "shampoo-olaplex-n-4-bond-maintenance-100ml-1024144",
+      "salesRank": 21,
+      "segment": "viral y ganador editorial",
+      "benefit": "mantenimiento cosmético de enlaces para cabello dañado en formato de prueba o viaje",
+      "audience": "cabello decolorado, teñido o expuesto al calor que busca reparación premium"
+    },
+    {
+      "slug": "shampoo-davines-oi-280ml-1023771",
+      "salesRank": 23,
+      "segment": "favorito premium",
+      "benefit": "limpieza suave con énfasis en brillo, suavidad y manejabilidad",
+      "audience": "cabello opaco o áspero que busca un acabado premium más sedoso"
+    },
+    {
+      "slug": "shampoo-kativa-total-plex-x-250-ml-1022527",
+      "salesRank": 24,
+      "segment": "más vendido en Aruma y accesible",
+      "benefit": "fortalecimiento cosmético para cabello dañado o quebradizo",
+      "audience": "cabello debilitado que busca una opción de reparación económica"
+    },
+    {
+      "slug": "shampoo-en-crema-scalp-advanced-anti-dandruff-dermo-clarifier-300-ml-l-oreal-professionel-1022027",
+      "salesRank": 25,
+      "segment": "premiado y profesional",
+      "benefit": "limpieza del cuero cabelludo con caspa y descamación visible",
+      "audience": "cuero cabelludo con caspa que busca una alternativa profesional",
+      "displayName": "Shampoo L'Oréal Professionnel Scalp Advanced Anti-Dandruff 300 ml"
+    },
+    {
+      "slug": "shampo-acidic-bonding-concentrate-300ml-21-v805-redken-6932",
+      "salesRank": 33,
+      "segment": "viral, premiado y profesional",
+      "benefit": "reparación y fortalecimiento cosmético del cabello sensibilizado",
+      "audience": "cabello decolorado, teñido, quebradizo o dañado por herramientas térmicas",
+      "displayName": "Shampoo Redken Acidic Bonding Concentrate 300 ml"
+    },
+    {
+      "slug": "isdin-shampoo-lambdapil-anticaida-200-ml-5944",
+      "salesRank": 36,
+      "segment": "especializado",
+      "benefit": "higiene capilar complementaria para rutinas enfocadas en la caída del cabello",
+      "audience": "personas adultas preocupadas por la caída capilar que buscan una opción especializada",
+      "displayName": "Shampoo ISDIN Lambdapil Anticaída 200 ml"
+    },
+    {
+      "slug": "shampoo-be-natural-repair-argan-reparacion-extrema-350-ml-placenta-life-be-natural-3178",
+      "salesRank": 42,
+      "segment": "accesible",
+      "benefit": "nutrición y suavidad para cabello reseco o maltratado",
+      "audience": "cabello seco o dañado que busca una alternativa nutritiva económica",
+      "displayName": "Shampoo Be Natural Repair Argán 350 ml"
+    },
+    {
+      "slug": "shampoo-be-natural-curly-monoi-para-rizos-definidos-350-ml-placenta-life-be-natural-3170",
+      "salesRank": 44,
+      "segment": "accesible para rizos",
+      "benefit": "hidratación y elasticidad para ayudar a mantener rizos definidos",
+      "audience": "cabello ondulado o rizado que busca una opción económica de uso frecuente",
+      "displayName": "Shampoo Be Natural Curly Monoi 350 ml"
+    },
+    {
+      "slug": "shampoo-lola-cosmetics-morte-subita-250-ml-1023145",
+      "salesRank": 52,
+      "segment": "culto en redes y accesible",
+      "benefit": "brillo y suavidad para cabello reseco o dañado",
+      "audience": "cabello opaco, áspero o sensibilizado que busca suavidad"
+    },
+    {
+      "slug": "isdin-shampoo-nutradeica-anticaspa-grasa-200-ml-1019863",
+      "salesRank": 55,
+      "segment": "especializado",
+      "benefit": "higiene específica para caspa grasa y exceso de sebo",
+      "audience": "personas adultas con cuero cabelludo graso y descamación recurrente"
+    },
+    {
+      "slug": "shampoo-dry-summer-breeze-342-ml-re-fresh-1019364",
+      "salesRank": 56,
+      "segment": "shampoo en seco accesible",
+      "benefit": "absorción del exceso de grasa y refresco de las raíces sin agua",
+      "audience": "personas que necesitan espaciar lavados o refrescar el cabello entre rutinas",
+      "displayName": "Shampoo en Seco Re Fresh Summer Breeze 342 ml",
+      "dryShampoo": true
+    },
+    {
+      "slug": "shampoo-de-hidratacion-intensa-para-cabello-con-rulos-curl-expression-300-ml-loreal-professionne-8158",
+      "salesRank": 57,
+      "segment": "profesional para rizos",
+      "benefit": "hidratación intensa para rizos y ondas",
+      "audience": "cabello rizado, muy rizado u ondulado que necesita hidratación profesional",
+      "displayName": "Shampoo L'Oréal Professionnel Curl Expression 300 ml"
+    },
+    {
+      "slug": "shampoo-olaplex-n-4p-blonde-enhancer-toning-250ml-6620",
+      "salesRank": 63,
+      "segment": "viral y especializado",
+      "benefit": "matización de reflejos amarillos no deseados en cabellos rubios, grises o decolorados",
+      "audience": "cabello rubio, gris o decolorado que necesita mantenimiento del tono"
+    },
+    {
+      "slug": "shampoo-lola-cosmetics-meu-cacho-minha-vida-500-ml-1029043",
+      "salesRank": 72,
+      "segment": "tendencia para rizos",
+      "benefit": "limpieza e hidratación para conservar la forma y flexibilidad de los rizos",
+      "audience": "cabello ondulado, rizado o muy rizado que busca una presentación de 500 ml"
+    },
+    {
+      "slug": "shampoo-redken-acidic-color-gloss-300ml-1023693",
+      "salesRank": 84,
+      "segment": "ganador editorial 2025",
+      "benefit": "cuidado del color y brillo para cabello teñido",
+      "audience": "cabello coloreado que busca conservar luminosidad y apariencia brillante"
+    },
+    {
+      "slug": "shampoo-metal-detox-300ml-l-oreal-professionnel-6235",
+      "salesRank": 101,
+      "segment": "ganador editorial 2025",
+      "benefit": "limpieza de depósitos metálicos que pueden afectar el color y la fibra capilar",
+      "audience": "cabello teñido, decolorado o expuesto a agua con alta carga de metales"
+    },
+    {
+      "slug": "shampoo-all-soft-300ml-redken-5781",
+      "salesRank": 104,
+      "segment": "favorito de lectores 2025",
+      "benefit": "hidratación y suavidad para cabello seco o quebradizo",
+      "audience": "cabello seco, áspero o difícil de manejar que busca hidratación premium"
+    }
+  ]
+}

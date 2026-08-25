@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { Gift, DeviceMobile, X } from '@phosphor-icons/react'
 import Link from 'next/link'
+import { formatPEN } from '@/lib/format/money'
 
 const STORAGE_KEY  = 'liora-abandoned-kit'
 const DISMISS_KEY  = 'liora_cart_banner_dismissed'
@@ -25,7 +26,7 @@ function timeAgo(savedAt: number): string {
   return 'hace un momento'
 }
 
-function fmt(cents: number) { return `S/${(cents / 100).toFixed(0)}` }
+const fmt = formatPEN
 
 export function AbandonedCartBanner() {
   const [data, setData] = useState<CartData | null>(null)
