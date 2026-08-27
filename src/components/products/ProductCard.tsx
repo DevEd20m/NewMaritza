@@ -97,15 +97,11 @@ export function ProductCard({
           overflow: 'hidden',
           position: 'relative',
         }}>
-          {/* Soft floor shadow under the product */}
-          <div style={{
-            position: 'absolute', bottom: '8%', left: '50%', transform: 'translateX(-50%)',
-            width: '55%', height: 14,
-            background: 'radial-gradient(ellipse at center, rgba(61,26,58,0.16) 0%, transparent 70%)',
-            pointerEvents: 'none',
-          }} />
+          {/* La sombra de contacto viene horneada en el PNG recortado
+              (scripts/product-images-process.mjs), no se dibuja aquí.
+              El PNG ya reserva un 15% de margen, por eso ocupa el 92%. */}
           {imageUrl ? (
-            <img src={imageUrl} alt={name} style={{ width: '78%', height: '78%', objectFit: 'contain', position: 'relative' }} />
+            <img src={imageUrl} alt={name} style={{ width: '92%', height: '92%', objectFit: 'contain', position: 'relative' }} />
           ) : (
             <div style={{
               background: 'var(--liora-blanco)', padding: '12px 14px', borderRadius: 12,

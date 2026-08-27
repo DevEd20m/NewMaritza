@@ -161,7 +161,7 @@ export function CartDrawer({ shippingThresholdCents, shippingCostCents }: CartDr
                 {/* Image / color swatch */}
                 <div style={{ width: 72, height: 72, borderRadius: 14, background: item.categoryColor ?? 'var(--cat-lavanda)', flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {item.imageUrl
-                    ? <img src={item.imageUrl} alt={item.name} style={{ width: '90%', height: '90%', objectFit: 'contain' }} />
+                    ? <img src={item.imageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                     : <ShoppingBag size={28} style={{ color: 'var(--liora-uva)', opacity: 0.4 }} />
                   }
                 </div>
@@ -202,7 +202,7 @@ export function CartDrawer({ shippingThresholdCents, shippingCostCents }: CartDr
                     <Link href={`/tienda/${s.productSlug}`} onClick={() => setIsOpen(false)} style={{ textDecoration: 'none' }}>
                       <div style={{ aspectRatio: '1 / 1', borderRadius: 12, background: s.categoryColor ?? 'var(--cat-lavanda)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                         {s.imageUrl
-                          ? <img src={s.imageUrl} alt={s.name} style={{ width: '85%', height: '85%', objectFit: 'contain' }} />
+                          ? <img src={s.imageUrl} alt={s.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                           : <ShoppingBag size={24} style={{ color: 'var(--liora-uva)', opacity: 0.4 }} />
                         }
                       </div>

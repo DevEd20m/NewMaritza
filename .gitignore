@@ -45,3 +45,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# rembg local venv (background removal pipeline)
+/.venv-rembg/
+
+# caché local del pipeline de imágenes
+/.image-cache/

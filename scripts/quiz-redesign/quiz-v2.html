@@ -1,0 +1,738 @@
+<title>Cuestionario LIORA v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=DM+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --uva:#3D1A3A; --uva-deep:#2C1129; --uva-soft:#5B3458;
+  --crema:#FBF1E2; --crema-deep:#F2E4CB; --arena:#E8DDC5;
+  --tinta:#1A0A18; --lima:#C9F048; --lima-deep:#A8D02E;
+  --h-coral:#E0654A; --h-rosa:#D95C7E; --h-lavanda:#7A5BBF; --h-menta:#2E8B5F;
+  --h-mostaza:#C7920A; --h-durazno:#E8853C; --h-cielo:#2E7FA8; --h-uva-clara:#8E5A89;
+  --h-compuesta:#8A7F72;
+
+  --ground:var(--crema); --panel:#FFFFFF; --panel-2:var(--crema-deep);
+  --ink:var(--tinta); --ink-2:#5C4A59; --ink-3:#8B7A87;
+  --rule:#DFD2BC; --rule-soft:#EBE0CC;
+  --accent:var(--uva); --mark:var(--lima);
+  --shadow:0 1px 2px rgba(61,26,58,.05), 0 8px 24px -16px rgba(61,26,58,.22);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#241020; --panel:#31182D; --panel-2:#3B1F36;
+    --ink:#F6EBDD; --ink-2:#CBB4C5; --ink-3:#9C8799;
+    --rule:#4B2C45; --rule-soft:#3E2439;
+    --accent:var(--lima); --mark:var(--lima);
+    --h-coral:#FFB5A8; --h-rosa:#FFC3D0; --h-lavanda:#D4C2F0; --h-menta:#B4E5C9;
+    --h-mostaza:#FFD66B; --h-durazno:#FFD2B0; --h-cielo:#BFE0F0; --h-uva-clara:#E8D5E6;
+    --h-compuesta:#B5A79A;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 28px -18px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#241020; --panel:#31182D; --panel-2:#3B1F36;
+  --ink:#F6EBDD; --ink-2:#CBB4C5; --ink-3:#9C8799;
+  --rule:#4B2C45; --rule-soft:#3E2439;
+  --accent:var(--lima); --mark:var(--lima);
+  --h-coral:#FFB5A8; --h-rosa:#FFC3D0; --h-lavanda:#D4C2F0; --h-menta:#B4E5C9;
+  --h-mostaza:#FFD66B; --h-durazno:#FFD2B0; --h-cielo:#BFE0F0; --h-uva-clara:#E8D5E6;
+  --h-compuesta:#B5A79A;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 28px -18px rgba(0,0,0,.6);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:'DM Sans',system-ui,sans-serif; font-size:16px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:56rem; margin:0 auto; padding:0 1.5rem 6rem}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.82em; letter-spacing:-.01em}
+
+/* ── Cabecera ───────────────────────────────────────── */
+header.top{padding:5rem 0 3rem; border-bottom:1px solid var(--rule)}
+.eyebrow{
+  font-size:.72rem; font-weight:700; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--ink-3); margin:0 0 1.25rem;
+}
+h1{
+  font-family:'Fraunces',Georgia,serif; font-weight:600; font-size:clamp(2.4rem,6vw,3.9rem);
+  line-height:1.02; letter-spacing:-.022em; margin:0 0 1.25rem; text-wrap:balance;
+}
+h1 em{font-style:normal; color:var(--accent); position:relative; white-space:nowrap}
+h1 em::after{
+  content:""; position:absolute; left:-.06em; right:-.06em; bottom:.06em; height:.34em;
+  background:var(--mark); opacity:.5; z-index:-1; border-radius:2px;
+}
+.lede{font-size:1.16rem; line-height:1.62; color:var(--ink-2); max-width:44rem; margin:0 0 2rem}
+.lede strong{color:var(--ink); font-weight:600}
+
+.stats{display:flex; flex-wrap:wrap; gap:2.5rem; margin-top:2.5rem}
+.stat{display:flex; flex-direction:column; gap:.2rem}
+.stat b{
+  font-family:'Fraunces',Georgia,serif; font-size:2rem; font-weight:600;
+  line-height:1; font-variant-numeric:tabular-nums; letter-spacing:-.02em;
+}
+.stat span{font-size:.8rem; color:var(--ink-3); letter-spacing:.01em}
+
+/* ── Secciones ──────────────────────────────────────── */
+section.blk{padding-top:4.5rem}
+h2{
+  font-family:'Fraunces',Georgia,serif; font-weight:600; font-size:1.85rem;
+  letter-spacing:-.016em; margin:0 0 .5rem; text-wrap:balance;
+}
+.sublede{color:var(--ink-2); margin:0 0 2rem; max-width:42rem}
+h3{font-family:'Fraunces',Georgia,serif; font-weight:600; font-size:1.2rem; margin:0; letter-spacing:-.01em}
+
+/* ── Hallazgos ──────────────────────────────────────── */
+.finds{display:grid; gap:0; border-top:1px solid var(--rule)}
+.find{
+  display:grid; grid-template-columns:1fr auto; gap:1rem 2rem; align-items:baseline;
+  padding:1.05rem 0; border-bottom:1px solid var(--rule-soft);
+}
+.find p{margin:0; color:var(--ink-2); font-size:.95rem}
+.find p b{color:var(--ink); font-weight:600}
+.find .val{
+  font-family:'Fraunces',Georgia,serif; font-size:1.05rem; font-weight:600;
+  white-space:nowrap; font-variant-numeric:tabular-nums;
+}
+
+/* ── Tablas ─────────────────────────────────────────── */
+.tbox{overflow-x:auto; border:1px solid var(--rule); border-radius:10px; background:var(--panel)}
+table{width:100%; border-collapse:collapse; font-size:.9rem; min-width:34rem}
+th{
+  text-align:left; font-size:.7rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--ink-3); padding:.85rem 1rem; border-bottom:1px solid var(--rule); white-space:nowrap;
+}
+td{padding:.8rem 1rem; border-bottom:1px solid var(--rule-soft); vertical-align:top; color:var(--ink-2)}
+tr:last-child td{border-bottom:0}
+td.num{text-align:right; font-variant-numeric:tabular-nums; font-weight:600; color:var(--ink); width:1%; white-space:nowrap}
+.tarea{font-weight:600; color:var(--ink); white-space:nowrap}
+.tpreg{color:var(--ink); font-style:italic}
+.rtext{color:var(--ink); font-weight:500}
+
+/* ── Pregunta ───────────────────────────────────────── */
+.q{
+  background:var(--panel); border:1px solid var(--rule); border-radius:12px;
+  padding:1.4rem 1.5rem 1.5rem; margin-bottom:1rem; box-shadow:var(--shadow);
+  border-left:3px solid var(--hue,var(--uva-soft));
+}
+.badges{display:flex; flex-wrap:wrap; gap:.4rem; margin-bottom:.85rem}
+.tag{
+  font-size:.66rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+  padding:.24rem .5rem; border-radius:4px; background:var(--panel-2); color:var(--ink-3);
+  border:1px solid var(--rule-soft);
+}
+.tag-tipo{color:var(--hue,var(--ink-2)); border-color:currentColor}
+.tag-opt,.tag-cond,.tag-keep{background:transparent}
+.qtext{
+  font-family:'Fraunces',Georgia,serif; font-weight:600; font-size:1.22rem; line-height:1.3;
+  margin:0 0 .35rem; color:var(--ink); letter-spacing:-.012em; text-wrap:balance;
+}
+.qsub{margin:0 0 .5rem; font-size:.92rem; color:var(--ink-2)}
+.cond{
+  margin:.5rem 0 0; font-size:.8rem; color:var(--ink-3);
+}
+.cond code{color:var(--hue,var(--ink-2))}
+
+.opts{list-style:none; margin:1rem 0 0; padding:0; display:grid; gap:.3rem}
+.opts li{
+  display:flex; justify-content:space-between; align-items:baseline; gap:1.25rem;
+  padding:.5rem .7rem; border-radius:7px; background:var(--panel-2);
+}
+.opts li.sec{background:transparent; border:1px dashed var(--rule)}
+.otext{color:var(--ink); font-size:.94rem}
+.oslug{color:var(--ink-3); font-size:.72rem; white-space:nowrap; flex-shrink:0}
+
+.textfield{
+  margin-top:1rem; padding:.9rem 1rem; border:1px dashed var(--rule); border-radius:8px;
+  display:flex; justify-content:space-between; align-items:flex-end; gap:1rem; min-height:5.5rem;
+}
+.ph{color:var(--ink-3); font-size:.92rem; font-style:italic}
+.cnt{color:var(--ink-3); font-size:.75rem; font-variant-numeric:tabular-nums; flex-shrink:0}
+
+.note{
+  margin:1.1rem 0 0; padding:.75rem 0 0; border-top:1px solid var(--rule-soft);
+  display:grid; grid-template-columns:auto 1fr; gap:.75rem; align-items:baseline;
+}
+.nlabel{
+  font-size:.65rem; font-weight:700; letter-spacing:.11em; text-transform:uppercase;
+  color:var(--hue,var(--ink-3));
+}
+.note p{margin:0; font-size:.88rem; line-height:1.55; color:var(--ink-2)}
+
+/* ── Rama ───────────────────────────────────────────── */
+.branch{margin-bottom:2.75rem}
+.bhead{
+  display:flex; align-items:center; gap:.7rem; flex-wrap:wrap;
+  padding-bottom:.8rem; margin-bottom:1rem; border-bottom:1px solid var(--rule);
+}
+.bdot{width:9px; height:9px; border-radius:50%; background:var(--hue); flex-shrink:0}
+.btrigger{font-size:.78rem; color:var(--ink-3)}
+.btrigger code{color:var(--hue)}
+.bcount{
+  margin-left:auto; font-size:.72rem; font-weight:700; letter-spacing:.09em;
+  text-transform:uppercase; color:var(--ink-3);
+}
+.compuesta{
+  margin:0 0 1rem; padding:.7rem .9rem; border-radius:8px; font-size:.86rem;
+  color:var(--ink-2); background:var(--panel-2); border-left:3px solid var(--hue);
+}
+
+.hue-coral{--hue:var(--h-coral)} .hue-rosa{--hue:var(--h-rosa)}
+.hue-lavanda{--hue:var(--h-lavanda)} .hue-menta{--hue:var(--h-menta)}
+.hue-mostaza{--hue:var(--h-mostaza)} .hue-durazno{--hue:var(--h-durazno)}
+.hue-cielo{--hue:var(--h-cielo)} .hue-uva-clara{--hue:var(--h-uva-clara)}
+.hue-compuesta{--hue:var(--h-compuesta)}
+.branch.hue-compuesta .q{border-left-style:dashed}
+
+/* ── Aviso ──────────────────────────────────────────── */
+.flag{
+  border:1px solid var(--rule); border-left:3px solid var(--h-mostaza);
+  background:var(--panel); border-radius:10px; padding:1.25rem 1.4rem; margin:1.5rem 0;
+}
+.flag h4{
+  font-family:'Fraunces',Georgia,serif; font-size:1.02rem; font-weight:600;
+  margin:0 0 .45rem; color:var(--ink);
+}
+.flag p{margin:0 0 .6rem; font-size:.93rem; color:var(--ink-2)}
+.flag p:last-child{margin-bottom:0}
+
+ul.plain{margin:0; padding-left:1.15rem; color:var(--ink-2)}
+ul.plain li{margin-bottom:.5rem}
+ul.plain li b{color:var(--ink); font-weight:600}
+
+.ask{
+  margin-top:4.5rem; padding:1.75rem; border-radius:12px;
+  background:var(--uva); color:var(--crema); border:1px solid var(--uva);
+}
+:root[data-theme="dark"] .ask,
+:root:not([data-theme="light"]) .ask{}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ask{background:var(--panel-2); border-color:var(--rule)}}
+:root[data-theme="dark"] .ask{background:var(--panel-2); border-color:var(--rule)}
+.ask h2{color:inherit; margin-bottom:.6rem}
+.ask p{color:inherit; opacity:.86; margin:0 0 .8rem; max-width:42rem}
+.ask ul{margin:0; padding-left:1.15rem; opacity:.86}
+.ask li{margin-bottom:.4rem}
+.ask code{opacity:1}
+</style>
+
+<div class="wrap">
+
+<header class="top">
+  <p class="eyebrow">Rediseño del cuestionario · para revisión de copy</p>
+  <h1>El cuestionario deja de preguntar por el <em>estante</em></h1>
+  <p class="lede">Hoy cada respuesta existe para sumar puntos a una de ocho categorías del catálogo y terminar eligiendo un kit. Por eso se siente impreciso: <strong>toda la profundidad que aporta el cliente se colapsa en un solo slug de categoría</strong>. La versión nueva describe a la persona y le entrega ese retrato a la IA, que es quien busca los productos.</p>
+  <p class="lede">Esto es el guion completo, pantalla por pantalla, con el texto exacto que verá el cliente. <strong>Revísalo antes de que lo escriba en la base de datos.</strong></p>
+  <div class="stats">
+    <div class="stat"><b>43</b><span>preguntas</span></div>
+    <div class="stat"><b>213</b><span>opciones</span></div>
+    <div class="stat"><b>10</b><span>ramas</span></div>
+    <div class="stat"><b>22</b><span>preguntas se retiran</span></div>
+  </div>
+</header>
+
+<section class="blk">
+  <h2>Qué encontramos</h2>
+  <p class="sublede">Medido sobre la base de datos de producción y el código, no sobre supuestos.</p>
+  <div class="finds">
+    <div class="find"><p><b>El cuestionario tiene menos resolución de la que parece.</b> Doscientas variantes simuladas producen ocho salidas distintas.</p><span class="val">200 → 8</span></div>
+    <div class="find"><p><b>La IA elige entre 248 productos leyendo solo el nombre.</b> El catálogo ya carga descripción e indicaciones de cada producto, y ninguna llega al prompt.</p><span class="val">0 atributos</span></div>
+    <div class="find"><p><b>La rama «guíame» es un callejón sin salida.</b> Sus opciones no disparan ninguna pregunta de profundidad: quien más ayuda necesita entrega menos información que nadie.</p><span class="val">sin rama</span></div>
+    <div class="find"><p><b>Cabello es invisible para el motor.</b> Tiene productos vendibles pero ninguna respuesta puede llegar a ellos.</p><span class="val">28 productos</span></div>
+    <div class="find"><p><b>La profundidad está muy mal repartida.</b> Piel y gym tienen cuatro preguntas; cabello, solar, digestión, pies y hogar tienen una.</p><span class="val">4 vs 1</span></div>
+    <div class="find"><p><b>Nunca se pregunta lo que más determina el producto:</b> edad, sexo, qué usa hoy, formato preferido, para quién es, alimentación ni cafeína.</p><span class="val">7 vacíos</span></div>
+    <div class="find"><p><b>Dos preguntas ocupan pantalla sin informar nada.</b> «¿Qué tan importante que sean naturales?» solo cambia el resultado en una de sus tres opciones; «¿Qué tipo de rutina prefieres?» duplica la del nivel del ritual.</p><span class="val">2 de más</span></div>
+  </div>
+</section>
+
+<section class="blk">
+  <h2>Bloque 1 · Qué te trae</h2>
+  <p class="sublede">La primera pantalla sigue siendo el gancho. Cambian dos cosas: piel y cabello se separan, y las dos salidas de escape se fusionan en una que lleva al campo abierto.</p>
+  <article class="q">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Una respuesta</span></div></div>
+  <h4 class="qtext">¿Qué quieres cuidar hoy?</h4>
+  <p class="qsub">Elige lo que más se parece a lo que necesitas ahora.</p>
+  
+  <ol class="opts"><li><span class="otext">Mi piel y mi rostro</span><code class="oslug">obj-piel</code></li><li><span class="otext">Mi cabello</span><code class="oslug">obj-cabello</code></li><li><span class="otext">Mi descanso, calma o energía</span><code class="oslug">obj-bienestar</code></li><li><span class="otext">Gym y rendimiento</span><code class="oslug">obj-rendimiento</code></li><li><span class="otext">Mi digestión</span><code class="oslug">obj-digestivo</code></li><li><span class="otext">Vitaminas y nutrición de base</span><code class="oslug">obj-nutricion</code></li><li><span class="otext">Protección solar</span><code class="oslug">obj-solar</code></li><li><span class="otext">Mis pies o mi cuerpo</span><code class="oslug">obj-pies-cuerpo</code></li><li><span class="otext">Mi hogar, familia o primeros auxilios</span><code class="oslug">obj-hogar</code></li><li><span class="otext">Un viaje, playa u outdoor</span><code class="oslug">obj-viaje</code></li><li class="sec"><span class="otext">No estoy seguro/a — prefiero contarles con mis palabras</span><code class="oslug">obj-texto-libre</code></li></ol>
+  <aside class="note"><span class="nlabel">Por qué</span><p>Reemplaza la Q1 actual. Dos cambios: piel y cabello se separan (hoy «Mi piel, rostro o cabello» esconde 28 productos de cabello que el motor no puede alcanzar), y las dos salidas de escape se fusionan en una. Antes «guíame» y «prefiero escribir» iban por separado pero llevaban al mismo sitio: ahora es una sola opción que deja claro que lo siguiente es escribir.</p></aside>
+</article><article class="q">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Varias respuestas</span><span class="tag tag-opt">Se puede saltar</span><span class="tag">Máx. 3</span></div></div>
+  <h4 class="qtext">¿Algo más que quieras trabajar?</h4>
+  <p class="qsub">Opcional. No alarga el cuestionario: solo nos ayuda a que tu rutina cubra todo lo tuyo.</p>
+  <p class="cond">Aparece si antes eligió <code>obj-piel</code> o <code>obj-cabello</code> o <code>obj-bienestar</code> o <code>obj-rendimiento</code> o <code>obj-digestivo</code> o <code>obj-nutricion</code> o <code>obj-solar</code> o <code>obj-pies-cuerpo</code> o <code>obj-hogar</code> o <code>obj-viaje</code></p>
+  <ol class="opts"><li><span class="otext">Mi piel y mi rostro</span><code class="oslug">extra-piel</code></li><li><span class="otext">Mi cabello</span><code class="oslug">extra-cabello</code></li><li><span class="otext">Mi descanso, calma o energía</span><code class="oslug">extra-bienestar</code></li><li><span class="otext">Gym y rendimiento</span><code class="oslug">extra-rendimiento</code></li><li><span class="otext">Mi digestión</span><code class="oslug">extra-digestivo</code></li><li><span class="otext">Vitaminas y nutrición de base</span><code class="oslug">extra-nutricion</code></li><li><span class="otext">Protección solar</span><code class="oslug">extra-solar</code></li><li><span class="otext">Mis pies o mi cuerpo</span><code class="oslug">extra-pies-cuerpo</code></li><li><span class="otext">Nada más por ahora</span><code class="oslug">sin-extras</code></li></ol>
+  <aside class="note"><span class="nlabel">Por qué</span><p>No abre ramas — solo alimenta el índice como objetivos secundarios. No aparece en la ruta de texto libre, y la opción del objetivo ya elegido se oculta.</p></aside>
+</article>
+</section>
+
+<section class="blk">
+  <h2>Bloque 2 · Profundidad por área</h2>
+  <p class="sublede">Cada rama llega ahora a un nivel comparable. Las preguntas de autodiagnóstico llevan siempre una salida «no estoy seguro/a», y detrás una pregunta que lo deduce por comportamiento observable. Las dos ramas con borde punteado no tienen inventario propio: se componen desde otras categorías.</p>
+  <section class="branch hue-coral" id="rama-piel">
+  <header class="bhead">
+    <span class="bdot"></span>
+    <h3>Piel</h3>
+    <span class="btrigger">se abre con <code>obj-piel</code></span>
+    <span class="bcount">3 pantallas</span>
+  </header>
+  
+  <article class="q hue-coral">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Una respuesta</span></div></div>
+  <h4 class="qtext">¿Cómo describirías tu piel?</h4>
+  <p class="qsub">Si no estás seguro/a, no pasa nada — te ayudamos en la siguiente.</p>
+  <p class="cond">Aparece si antes eligió <code>obj-piel</code></p>
+  <ol class="opts"><li><span class="otext">Grasa: brilla y los poros se notan</span><code class="oslug">piel-grasa</code></li><li><span class="otext">Mixta: brilla en frente y nariz, normal en las mejillas</span><code class="oslug">piel-mixta</code></li><li><span class="otext">Seca: la siento áspera o tirante</span><code class="oslug">piel-seca</code></li><li><span class="otext">Sensible: se irrita o enrojece con facilidad</span><code class="oslug">piel-sensible</code></li><li><span class="otext">Normal: sin mayores problemas</span><code class="oslug">piel-normal</code></li><li><span class="otext">No estoy seguro/a</span><code class="oslug">piel-no-se</code></li></ol>
+  <aside class="note"><span class="nlabel">Por qué</span><p>Responde a «¿cómo sé si mi piel es seca, grasa o mixta?». La salida «no estoy seguro/a» es obligatoria: hoy quien no sabe tiene que adivinar.</p></aside>
+</article><article class="q hue-coral">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Una respuesta</span><span class="tag tag-cond">Solo a veces</span></div></div>
+  <h4 class="qtext">A media tarde, sin retocarte, ¿cómo sientes la cara?</h4>
+  <p class="qsub">Con esto lo deducimos nosotros.</p>
+  <p class="cond">Aparece si antes eligió <code>piel-no-se</code></p>
+  <ol class="opts"><li><span class="otext">Brillosa en frente y nariz, el resto normal</span><code class="oslug">piel-mixta</code></li><li><span class="otext">Brillosa en toda la cara</span><code class="oslug">piel-grasa</code></li><li><span class="otext">Tirante o con zonas ásperas</span><code class="oslug">piel-seca</code></li><li><span class="otext">Brillosa y tirante a la vez</span><code class="oslug">piel-deshidratada</code></li><li><span class="otext">Cómoda, ni brillo ni tirantez</span><code class="oslug">piel-normal</code></li><li><span class="otext">Con rojeces o ardor</span><code class="oslug">piel-sensible</code></li></ol>
+  <aside class="note"><span class="nlabel">Por qué</span><p>Pregunta proxy: infiere el tipo de piel por comportamiento observable en vez de pedir un autodiagnóstico. La cuarta opción captura el caso «tengo piel grasa pero se me reseca» = deshidratada, que hoy no existe en el cuestionario.</p></aside>
+</article><article class="q hue-coral">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Varias respuestas</span></div></div>
+  <h4 class="qtext">¿Qué te gustaría mejorar?</h4>
+  <p class="qsub">Puedes elegir varias.</p>
+  <p class="cond">Aparece si antes eligió <code>obj-piel</code></p>
+  <ol class="opts"><li><span class="otext">Granitos o brotes</span><code class="oslug">piel-brotes</code></li><li><span class="otext">Puntos negros y poros abiertos</span><code class="oslug">piel-poros</code></li><li><span class="otext">Manchas o tono desigual</span><code class="oslug">piel-manchas</code></li><li><span class="otext">Líneas de expresión y falta de firmeza</span><code class="oslug">piel-arrugas</code></li><li><span class="otext">Falta de luminosidad</span><code class="oslug">piel-luminosidad</code></li><li><span class="otext">Rojeces o irritación</span><code class="oslug">piel-rojeces</code></li><li><span class="otext">Falta de hidratación</span><code class="oslug">piel-hidratacion</code></li><li><span class="otext">Marcas de granitos pasados</span><code class="oslug">piel-marcas</code></li></ol>
+  <aside class="note"><span class="nlabel">Por qué</span><p>Añade brotes, luminosidad, hidratación y marcas — cuatro de las consultas más frecuentes que hoy no tienen dónde caer.</p></aside>
+</article><article class="q hue-coral">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Una respuesta</span></div></div>
+  <h4 class="qtext">¿Cómo es tu rutina hoy?</h4>
+  <p class="qsub">Para no recomendarte algo demasiado fuerte de entrada.</p>
+  <p class="cond">Aparece si antes eligió <code>obj-piel</code></p>
+  <ol class="opts"><li><span class="otext">No tengo rutina, quiero empezar</span><code class="oslug">rutina-piel-ninguna</code></li><li><span class="otext">Limpio e hidrato, nada más</span><code class="oslug">rutina-piel-basica</code></li><li><span class="otext">Ya uso activos (vitamina C, ácidos, retinol)</span><code class="oslug">rutina-piel-activos</code></li><li><span class="otext">Probé activos y me irritaron</span><code class="oslug">rutina-piel-intolerancia</code></li></ol>
+  <aside class="note"><span class="nlabel">Por qué</span><p>Decide si es responsable proponer retinol o ácidos. Responde a «¿necesito sérum?», «¿retinol, vitamina C o ácido hialurónico?» y «quiero empezar una rutina, ¿qué compro?».</p></aside>
+</article>
+</section><section class="branch hue-rosa" id="rama-cabello">
+  <header class="bhead">
+    <span class="bdot"></span>
+    <h3>Cabello</h3>
+    <span class="btrigger">se abre con <code>obj-cabello</code></span>
+    <span class="bcount">4 pantallas</span>
+  </header>
+  
+  <article class="q hue-rosa">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Una respuesta</span></div></div>
+  <h4 class="qtext">¿Cómo es tu cabello?</h4>
+  
+  <p class="cond">Aparece si antes eligió <code>obj-cabello</code></p>
+  <ol class="opts"><li><span class="otext">Liso</span><code class="oslug">cabello-liso</code></li><li><span class="otext">Ondulado</span><code class="oslug">cabello-ondulado</code></li><li><span class="otext">Rizado o afro</span><code class="oslug">cabello-rizado</code></li><li><span class="otext">No estoy seguro/a</span><code class="oslug">cabello-tipo-no-se</code></li></ol>
+  <aside class="note"><span class="nlabel">Por qué</span><p>Rama nueva completa. Hoy cabello es un subcaso de belleza con una sola pregunta, y sus 28 productos vendibles son inalcanzables para el motor.</p></aside>
+</article><article class="q hue-rosa">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Una respuesta</span></div></div>
+  <h4 class="qtext">¿Y tu cuero cabelludo?</h4>
+  
+  <p class="cond">Aparece si antes eligió <code>obj-cabello</code></p>
+  <ol class="opts"><li><span class="otext">Se engrasa rápido</span><code class="oslug">cuero-graso</code></li><li><span class="otext">Seco o con picazón</span><code class="oslug">cuero-seco</code></li><li><span class="otext">Con caspa</span><code class="oslug">cuero-caspa</code></li><li><span class="otext">Normal</span><code class="oslug">cuero-normal</code></li></ol>
+  
+</article><article class="q hue-rosa">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Varias respuestas</span></div></div>
+  <h4 class="qtext">¿Qué quieres resolver?</h4>
+  <p class="qsub">Puedes elegir varias.</p>
+  <p class="cond">Aparece si antes eligió <code>obj-cabello</code></p>
+  <ol class="opts"><li><span class="otext">Caída o poco volumen</span><code class="oslug">cabello-caida</code></li><li><span class="otext">Sequedad, quiebre o puntas abiertas</span><code class="oslug">cabello-sequedad</code></li><li><span class="otext">Frizz y falta de brillo</span><code class="oslug">cabello-frizz</code></li><li><span class="otext">Crecimiento lento</span><code class="oslug">cabello-crecimiento</code></li><li><span class="otext">Exceso de grasa</span><code class="oslug">cabello-grasa</code></li><li><span class="otext">Caspa</span><code class="oslug">cabello-caspa</code></li></ol>
+  
+</article><article class="q hue-rosa">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Varias respuestas</span></div></div>
+  <h4 class="qtext">¿Tu cabello pasa por alguno de estos?</h4>
+  
+  <p class="cond">Aparece si antes eligió <code>obj-cabello</code></p>
+  <ol class="opts"><li><span class="otext">Lo tiño o me hago mechas</span><code class="oslug">cabello-tenido</code></li><li><span class="otext">Está decolorado</span><code class="oslug">cabello-decolorado</code></li><li><span class="otext">Uso plancha o secadora seguido</span><code class="oslug">cabello-calor</code></li><li><span class="otext">Ninguno, lo llevo natural</span><code class="oslug">sin-tratamiento-capilar</code></li></ol>
+  <aside class="note"><span class="nlabel">Por qué</span><p>Teñido y decolorado cambian por completo qué producto conviene; hoy no se pregunta.</p></aside>
+</article>
+</section><section class="branch hue-lavanda" id="rama-bienestar">
+  <header class="bhead">
+    <span class="bdot"></span>
+    <h3>Descanso y estrés</h3>
+    <span class="btrigger">se abre con <code>obj-bienestar</code></span>
+    <span class="bcount">3 pantallas</span>
+  </header>
+  
+  <article class="q hue-lavanda">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Una respuesta</span></div></div>
+  <h4 class="qtext">¿Qué se parece más a lo que te pasa?</h4>
+  
+  <p class="cond">Aparece si antes eligió <code>obj-bienestar</code></p>
+  <ol class="opts"><li><span class="otext">Me cuesta quedarme dormido/a</span><code class="oslug">sueno-conciliar</code></li><li><span class="otext">Me despierto durante la noche</span><code class="oslug">sueno-mantener</code></li><li><span class="otext">Duermo, pero amanezco cansado/a</span><code class="oslug">sueno-no-repara</code></li><li><span class="otext">Mi mente no para durante el día</span><code class="oslug">estres-mental</code></li><li><span class="otext">Me falta energía todo el día</span><code class="oslug">foco-energia</code></li><li><span class="otext">Paso muchas horas frente a pantallas</span><code class="oslug">foco-pantallas</code></li></ol>
+  <aside class="note"><span class="nlabel">Por qué</span><p>Hoy «no puedo dormir bien» junta tres problemas distintos con soluciones distintas. Separar conciliar / mantener / sueño no reparador es lo que permite elegir entre melatonina, magnesio o adaptógenos.</p></aside>
+</article><article class="q hue-lavanda">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Una respuesta</span><span class="tag tag-cond">Solo a veces</span></div></div>
+  <h4 class="qtext">¿Con qué frecuencia?</h4>
+  
+  <p class="cond">Aparece si antes eligió <code>sueno-conciliar</code> o <code>sueno-mantener</code> o <code>sueno-no-repara</code> o <code>estres-mental</code></p>
+  <ol class="opts"><li><span class="otext">Casi todos los días</span><code class="oslug">frecuencia-diaria</code></li><li><span class="otext">Varias veces a la semana</span><code class="oslug">frecuencia-semanal</code></li><li><span class="otext">Solo en épocas de carga</span><code class="oslug">frecuencia-ocasional</code></li></ol>
+  
+</article><article class="q hue-lavanda">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Una respuesta</span></div></div>
+  <h4 class="qtext">¿Cómo va tu café o tus energizantes?</h4>
+  
+  <p class="cond">Aparece si antes eligió <code>obj-bienestar</code></p>
+  <ol class="opts"><li><span class="otext">No tomo</span><code class="oslug">cafeina-nada</code></li><li><span class="otext">Uno o dos, en la mañana</span><code class="oslug">cafeina-manana</code></li><li><span class="otext">Varios a lo largo del día</span><code class="oslug">cafeina-varios</code></li><li><span class="otext">También en la tarde o noche</span><code class="oslug">cafeina-tarde</code></li></ol>
+  <aside class="note"><span class="nlabel">Por qué</span><p>La cafeína después de las 4 pm suele ser la causa real del mal sueño. Sin este dato la rutina ataca el síntoma y no el origen.</p></aside>
+</article><article class="q hue-lavanda">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Una respuesta</span></div></div>
+  <h4 class="qtext">Durante el día, ¿necesitas estar bien despierto/a?</h4>
+  <p class="qsub">Para no recomendarte nada que te dé sueño cuando no toca.</p>
+  <p class="cond">Aparece si antes eligió <code>obj-bienestar</code></p>
+  <ol class="opts"><li><span class="otext">Sí, necesito estar alerta y concentrado/a</span><code class="oslug">requiere-alerta</code></li><li><span class="otext">No, puedo permitirme estar más relajado/a</span><code class="oslug">sin-requerir-alerta</code></li></ol>
+  <aside class="note"><span class="nlabel">Por qué</span><p>Responde directamente a «¿qué puedo usar sin que me dé sueño durante el día?» y separa melatonina de magnesio.</p></aside>
+</article>
+</section><section class="branch hue-menta" id="rama-digestivo">
+  <header class="bhead">
+    <span class="bdot"></span>
+    <h3>Digestión</h3>
+    <span class="btrigger">se abre con <code>obj-digestivo</code></span>
+    <span class="bcount">3 pantallas</span>
+  </header>
+  
+  <article class="q hue-menta">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Varias respuestas</span></div></div>
+  <h4 class="qtext">¿Qué es lo que más te incomoda?</h4>
+  <p class="qsub">Puedes elegir varias.</p>
+  <p class="cond">Aparece si antes eligió <code>obj-digestivo</code></p>
+  <ol class="opts"><li><span class="otext">Hinchazón y gases</span><code class="oslug">digestivo-hinchazon</code></li><li><span class="otext">Estreñimiento o tránsito lento</span><code class="oslug">digestivo-estrenimiento</code></li><li><span class="otext">Reflujo o acidez</span><code class="oslug">digestivo-reflujo</code></li><li><span class="otext">Pesadez después de comer</span><code class="oslug">digestivo-pesadez</code></li><li><span class="otext">Digestión irregular, cambia de un día a otro</span><code class="oslug">digestivo-irregular</code></li><li><span class="otext">Nada puntual, quiero cuidar mi digestión</span><code class="oslug">digestivo-reset</code></li></ol>
+  <aside class="note"><span class="nlabel">Por qué</span><p>Añade pesadez e irregularidad. Nota de contenido: el copy habla de bienestar digestivo y apoyo, nunca de tratar o curar.</p></aside>
+</article><article class="q hue-menta">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Una respuesta</span></div></div>
+  <h4 class="qtext">¿Cuándo lo sientes más?</h4>
+  
+  <p class="cond">Aparece si antes eligió <code>obj-digestivo</code></p>
+  <ol class="opts"><li><span class="otext">Justo después de comer</span><code class="oslug">digestivo-postcomida</code></li><li><span class="otext">A lo largo de todo el día</span><code class="oslug">digestivo-continuo</code></li><li><span class="otext">Solo con ciertas comidas</span><code class="oslug">digestivo-gatillos</code></li><li><span class="otext">Por temporadas, sobre todo con estrés</span><code class="oslug">digestivo-estres</code></li></ol>
+  <aside class="note"><span class="nlabel">Por qué</span><p>El momento distingue enzimas (con la comida) de probióticos (rutina sostenida) — hoy no se pregunta y la IA tiene que adivinar.</p></aside>
+</article><article class="q hue-menta">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Una respuesta</span></div></div>
+  <h4 class="qtext">¿Has tomado algo para esto?</h4>
+  <p class="qsub">Para no recomendarte lo que ya probaste.</p>
+  <p class="cond">Aparece si antes eligió <code>obj-digestivo</code></p>
+  <ol class="opts"><li><span class="otext">Nunca he tomado nada</span><code class="oslug">digestivo-sin-experiencia</code></li><li><span class="otext">Tomo o he tomado probióticos</span><code class="oslug">digestivo-probioticos</code></li><li><span class="otext">Tomo fibra</span><code class="oslug">digestivo-fibra</code></li><li><span class="otext">Probé algo y no me funcionó</span><code class="oslug">digestivo-sin-resultado</code></li></ol>
+  
+</article>
+</section><section class="branch hue-compuesta" id="rama-nutricion">
+  <header class="bhead">
+    <span class="bdot"></span>
+    <h3>Vitaminas</h3>
+    <span class="btrigger">se abre con <code>obj-nutricion</code></span>
+    <span class="bcount">3 pantallas</span>
+  </header>
+  <p class="compuesta">No existe una categoría «nutrición» en el catálogo. Esta rutina se compone desde bienestar y digestivo.</p>
+  <article class="q hue-compuesta">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Varias respuestas</span></div></div>
+  <h4 class="qtext">¿Qué sientes que te falta?</h4>
+  <p class="qsub">Puedes elegir varias.</p>
+  <p class="cond">Aparece si antes eligió <code>obj-nutricion</code></p>
+  <ol class="opts"><li><span class="otext">Energía, me canso rápido</span><code class="oslug">nutricion-energia</code></li><li><span class="otext">Defensas, me enfermo seguido</span><code class="oslug">nutricion-inmune</code></li><li><span class="otext">Concentración y claridad mental</span><code class="oslug">nutricion-concentracion</code></li><li><span class="otext">Piel, cabello y uñas fuertes</span><code class="oslug">nutricion-belleza</code></li><li><span class="otext">Huesos y articulaciones</span><code class="oslug">nutricion-huesos</code></li><li><span class="otext">Ánimo estable</span><code class="oslug">nutricion-animo</code></li><li><span class="otext">No sé qué me falta, oriéntenme</span><code class="oslug">nutricion-no-se</code></li></ol>
+  <aside class="note"><span class="nlabel">Por qué</span><p>La salida «no sé qué me falta» es la consulta más común de esta categoría y hoy no existe.</p></aside>
+</article><article class="q hue-compuesta">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Una respuesta</span></div></div>
+  <h4 class="qtext">¿Cómo es tu alimentación?</h4>
+  
+  <p class="cond">Aparece si antes eligió <code>obj-nutricion</code></p>
+  <ol class="opts"><li><span class="otext">Como de todo</span><code class="oslug">dieta-omnivora</code></li><li><span class="otext">Vegetariana</span><code class="oslug">dieta-vegetariana</code></li><li><span class="otext">Vegana</span><code class="oslug">dieta-vegana</code></li><li><span class="otext">Como poca carne o lácteos</span><code class="oslug">dieta-baja-animal</code></li><li><span class="otext">Irregular, como a deshoras</span><code class="oslug">dieta-irregular</code></li></ol>
+  <aside class="note"><span class="nlabel">Por qué</span><p>Determina B12 y hierro. Cruzada con edad y sexo responde «¿qué vitaminas recomiendan para hombres / para mujeres / según la edad?».</p></aside>
+</article><article class="q hue-compuesta">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Una respuesta</span></div></div>
+  <h4 class="qtext">¿Cuánto sol y aire libre te da al día?</h4>
+  <p class="qsub">Nos dice si conviene reforzar la vitamina D.</p>
+  <p class="cond">Aparece si antes eligió <code>obj-nutricion</code></p>
+  <ol class="opts"><li><span class="otext">Casi nada, paso el día en interiores</span><code class="oslug">sol-nada</code></li><li><span class="otext">Un rato, al ir y volver</span><code class="oslug">sol-poco</code></li><li><span class="otext">Bastante, estoy fuera varias horas</span><code class="oslug">sol-mucho</code></li></ol>
+  
+</article>
+</section><section class="branch hue-mostaza" id="rama-solar">
+  <header class="bhead">
+    <span class="bdot"></span>
+    <h3>Protección solar</h3>
+    <span class="btrigger">se abre con <code>obj-solar</code></span>
+    <span class="bcount">4 pantallas</span>
+  </header>
+  
+  <article class="q hue-mostaza">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Una respuesta</span></div></div>
+  <h4 class="qtext">¿Cómo reacciona tu piel al sol?</h4>
+  <p class="qsub">Nos dice qué SPF necesitas de verdad.</p>
+  <p class="cond">Aparece si antes eligió <code>obj-solar</code></p>
+  <ol class="opts"><li><span class="otext">Me quemo siempre, casi no bronceo</span><code class="oslug">fototipo-muy-claro</code></li><li><span class="otext">Me quemo primero y luego bronceo</span><code class="oslug">fototipo-claro</code></li><li><span class="otext">Bronceo con facilidad, rara vez me quemo</span><code class="oslug">fototipo-medio</code></li><li><span class="otext">Casi nunca me quemo</span><code class="oslug">fototipo-oscuro</code></li></ol>
+  <aside class="note"><span class="nlabel">Por qué</span><p>Fototipo preguntado por comportamiento, no por escalas técnicas. Responde a «¿SPF 30 o SPF 50?».</p></aside>
+</article><article class="q hue-mostaza">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Una respuesta</span></div></div>
+  <h4 class="qtext">¿Para qué lo necesitas?</h4>
+  
+  <p class="cond">Aparece si antes eligió <code>obj-solar</code></p>
+  <ol class="opts"><li><span class="otext">Cara, todos los días en la ciudad</span><code class="oslug">solar-diario</code></li><li><span class="otext">Cuerpo</span><code class="oslug">solar-cuerpo</code></li><li><span class="otext">Playa, piscina o deporte en el agua</span><code class="oslug">solar-playa</code></li><li><span class="otext">Montaña, running u outdoor intenso</span><code class="oslug">solar-outdoor</code></li><li><span class="otext">Todo lo anterior</span><code class="oslug">solar-completo</code></li></ol>
+  
+</article><article class="q hue-mostaza">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Varias respuestas</span></div></div>
+  <h4 class="qtext">¿Algo importante sobre cómo se siente en la piel?</h4>
+  <p class="qsub">Puedes elegir varias.</p>
+  <p class="cond">Aparece si antes eligió <code>obj-solar</code></p>
+  <ol class="opts"><li><span class="otext">Lo uso debajo del maquillaje</span><code class="oslug">solar-bajo-maquillaje</code></li><li><span class="otext">No quiero que me deje la cara blanca</span><code class="oslug">solar-sin-blanco</code></li><li><span class="otext">Mi piel es grasa, busco algo ligero</span><code class="oslug">solar-ligero</code></li><li><span class="otext">Necesito que resista agua y sudor</span><code class="oslug">solar-resistente</code></li><li><span class="otext">Me da igual, que proteja bien</span><code class="oslug">solar-indiferente</code></li></ol>
+  <aside class="note"><span class="nlabel">Por qué</span><p>Las tres objeciones que más hacen abandonar un protector: deja blanco, no va bajo el maquillaje, es pesado en piel grasa. Hoy no se preguntan.</p></aside>
+</article><article class="q hue-mostaza">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Una respuesta</span></div></div>
+  <h4 class="qtext">¿En qué momento estás?</h4>
+  
+  <p class="cond">Aparece si antes eligió <code>obj-solar</code></p>
+  <ol class="opts"><li><span class="otext">Quiero prevenir, para el uso diario</span><code class="oslug">solar-prevenir</code></li><li><span class="otext">Estoy expuesto/a ahora (verano, viaje, playa)</span><code class="oslug">solar-expuesto</code></li><li><span class="otext">Vengo de una quemadura o exposición fuerte</span><code class="oslug">solar-post</code></li></ol>
+  <aside class="note"><span class="nlabel">Por qué</span><p>Abre el eje antes / durante / después del sol: quien viene de una quemadura necesita after-sun y calmantes, no solo SPF.</p></aside>
+</article>
+</section><section class="branch hue-durazno" id="rama-rendimiento">
+  <header class="bhead">
+    <span class="bdot"></span>
+    <h3>Gym</h3>
+    <span class="btrigger">se abre con <code>obj-rendimiento</code></span>
+    <span class="bcount">4 pantallas</span>
+  </header>
+  
+  <article class="q hue-durazno">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Una respuesta</span></div></div>
+  <h4 class="qtext">¿Qué buscas principalmente?</h4>
+  
+  <p class="cond">Aparece si antes eligió <code>obj-rendimiento</code></p>
+  <ol class="opts"><li><span class="otext">Ganar fuerza o masa muscular</span><code class="oslug">gym-fuerza</code></li><li><span class="otext">Recuperarme mejor</span><code class="oslug">gym-recuperacion</code></li><li><span class="otext">Tener más energía para entrenar</span><code class="oslug">gym-energia</code></li><li><span class="otext">Mejorar mi resistencia</span><code class="oslug">gym-resistencia</code></li><li><span class="otext">Cuidar mis articulaciones</span><code class="oslug">gym-articulaciones</code></li><li><span class="otext">Hidratarme mejor</span><code class="oslug">gym-hidratacion</code></li></ol>
+  
+</article><article class="q hue-durazno">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Una respuesta</span></div></div>
+  <h4 class="qtext">¿Cómo y cuánto entrenas?</h4>
+  
+  <p class="cond">Aparece si antes eligió <code>obj-rendimiento</code></p>
+  <ol class="opts"><li><span class="otext">Fuerza, 4 o más veces por semana</span><code class="oslug">gym-fuerza-alto</code></li><li><span class="otext">Fuerza, 2 o 3 veces por semana</span><code class="oslug">gym-fuerza-medio</code></li><li><span class="otext">Cardio o resistencia (running, ciclismo, natación)</span><code class="oslug">gym-cardio</code></li><li><span class="otext">HIIT o funcional</span><code class="oslug">tipo-hiit</code></li><li><span class="otext">Yoga, pilates o movilidad</span><code class="oslug">tipo-yoga</code></li><li><span class="otext">Recién estoy empezando</span><code class="oslug">nivel-principiante</code></li></ol>
+  <aside class="note"><span class="nlabel">Por qué</span><p>Fusiona las dos preguntas actuales (tipo y nivel) en una. Ahorra una pantalla sin perder información.</p></aside>
+</article><article class="q hue-durazno">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Una respuesta</span></div></div>
+  <h4 class="qtext">¿Qué tomas hoy?</h4>
+  <p class="qsub">Para no recomendarte lo que ya tienes.</p>
+  <p class="cond">Aparece si antes eligió <code>obj-rendimiento</code></p>
+  <ol class="opts"><li><span class="otext">Nada todavía</span><code class="oslug">gym-sin-suplementos</code></li><li><span class="otext">Proteína</span><code class="oslug">gym-toma-proteina</code></li><li><span class="otext">Proteína y creatina</span><code class="oslug">gym-toma-varios</code></li><li><span class="otext">Probé varios y no sé cuáles valen la pena</span><code class="oslug">gym-confundido</code></li></ol>
+  <aside class="note"><span class="nlabel">Por qué</span><p>Responde a «¿necesito creatina si recién estoy empezando?» y «¿qué suplementos sirven realmente y cuáles no necesito?».</p></aside>
+</article><article class="q hue-durazno">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Una respuesta</span></div></div>
+  <h4 class="qtext">¿Qué se te hace más cuesta arriba?</h4>
+  
+  <p class="cond">Aparece si antes eligió <code>obj-rendimiento</code></p>
+  <ol class="opts"><li><span class="otext">Arrancar el entrenamiento con energía</span><code class="oslug">gym-friccion-energia</code></li><li><span class="otext">El día siguiente: quedo adolorido/a</span><code class="oslug">gym-friccion-dolor</code></li><li><span class="otext">Me deshidrato o me dan calambres</span><code class="oslug">gym-friccion-hidratacion</code></li><li><span class="otext">Las articulaciones me molestan</span><code class="oslug">dolor-frecuente</code></li><li><span class="otext">Nada en particular</span><code class="oslug">gym-sin-friccion</code></li></ol>
+  <aside class="note"><span class="nlabel">Por qué</span><p>Absorbe la pregunta actual de molestias articulares y añade el problema más citado: «¿cómo evito sentirme destruido al día siguiente?».</p></aside>
+</article>
+</section><section class="branch hue-cielo" id="rama-pies-cuerpo">
+  <header class="bhead">
+    <span class="bdot"></span>
+    <h3>Pies y cuerpo</h3>
+    <span class="btrigger">se abre con <code>obj-pies-cuerpo</code></span>
+    <span class="bcount">3 pantallas</span>
+  </header>
+  
+  <article class="q hue-cielo">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Varias respuestas</span></div></div>
+  <h4 class="qtext">¿Qué quieres resolver?</h4>
+  <p class="qsub">Puedes elegir varias.</p>
+  <p class="cond">Aparece si antes eligió <code>obj-pies-cuerpo</code></p>
+  <ol class="opts"><li><span class="otext">Durezas o callos</span><code class="oslug">pies-durezas</code></li><li><span class="otext">Talones agrietados</span><code class="oslug">pies-talones</code></li><li><span class="otext">Pies muy secos</span><code class="oslug">pies-secos</code></li><li><span class="otext">Pies cansados o hinchados</span><code class="oslug">pies-cansados</code></li><li><span class="otext">Mal olor</span><code class="oslug">pies-olor</code></li><li><span class="otext">Rozaduras o ampollas</span><code class="oslug">cuerpo-rozaduras</code></li><li><span class="otext">Piel del cuerpo seca</span><code class="oslug">cuerpo-seco</code></li><li><span class="otext">Recuperación muscular</span><code class="oslug">cuerpo-muscular</code></li></ol>
+  <aside class="note"><span class="nlabel">Por qué</span><p>Pasa de 1 pregunta a 3 en una categoría con 32 productos. Talones agrietados, pies cansados y mal olor son consultas frecuentes que hoy no tienen dónde caer.</p></aside>
+</article><article class="q hue-cielo">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Una respuesta</span></div></div>
+  <h4 class="qtext">¿Cuántas horas pasas de pie al día?</h4>
+  
+  <p class="cond">Aparece si antes eligió <code>obj-pies-cuerpo</code></p>
+  <ol class="opts"><li><span class="otext">Menos de 2</span><code class="oslug">pies-poco-tiempo</code></li><li><span class="otext">Entre 2 y 6</span><code class="oslug">pies-medio-tiempo</code></li><li><span class="otext">Más de 6</span><code class="oslug">pies-mucho-tiempo</code></li></ol>
+  <aside class="note"><span class="nlabel">Por qué</span><p>Responde a «¿qué puedo usar después de estar todo el día parado?» y calibra la intensidad del tratamiento.</p></aside>
+</article><article class="q hue-cielo">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Una respuesta</span></div></div>
+  <h4 class="qtext">¿Qué necesitas ahora?</h4>
+  
+  <p class="cond">Aparece si antes eligió <code>obj-pies-cuerpo</code></p>
+  <ol class="opts"><li><span class="otext">Un tratamiento intensivo, está bastante marcado</span><code class="oslug">pies-intensivo</code></li><li><span class="otext">Mantenimiento, que no empeore</span><code class="oslug">pies-mantenimiento</code></li><li><span class="otext">Una rutina completa de cuidado en casa</span><code class="oslug">pies-rutina-completa</code></li></ol>
+  
+</article>
+</section><section class="branch hue-uva-clara" id="rama-hogar">
+  <header class="bhead">
+    <span class="bdot"></span>
+    <h3>Hogar</h3>
+    <span class="btrigger">se abre con <code>obj-hogar</code></span>
+    <span class="bcount">3 pantallas</span>
+  </header>
+  
+  <article class="q hue-uva-clara">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Varias respuestas</span></div></div>
+  <h4 class="qtext">¿Quiénes viven en casa?</h4>
+  <p class="qsub">Importa para elegir productos seguros para todos.</p>
+  <p class="cond">Aparece si antes eligió <code>obj-hogar</code></p>
+  <ol class="opts"><li><span class="otext">Solo adultos</span><code class="oslug">hogar-adultos</code></li><li><span class="otext">Niños pequeños</span><code class="oslug">hogar-ninos</code></li><li><span class="otext">Adolescentes</span><code class="oslug">hogar-adolescentes</code></li><li><span class="otext">Adultos mayores</span><code class="oslug">hogar-mayores</code></li><li><span class="otext">Alguien embarazada o dando de lactar</span><code class="oslug">hogar-embarazo</code></li></ol>
+  <aside class="note"><span class="nlabel">Por qué</span><p>BRECHA DE SEGURIDAD ACTUAL: hoy se arma un botiquín familiar sin saber si hay niños pequeños, adultos mayores o alguien embarazada.</p></aside>
+</article><article class="q hue-uva-clara">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Una respuesta</span></div></div>
+  <h4 class="qtext">¿Dónde va a estar?</h4>
+  
+  <p class="cond">Aparece si antes eligió <code>obj-hogar</code></p>
+  <ol class="opts"><li><span class="otext">En casa</span><code class="oslug">hogar-familiar</code></li><li><span class="otext">En el auto</span><code class="oslug">hogar-auto</code></li><li><span class="otext">En la oficina o la mochila</span><code class="oslug">hogar-movil</code></li><li><span class="otext">Uno compacto para llevar a todos lados</span><code class="oslug">hogar-compacto</code></li></ol>
+  
+</article><article class="q hue-uva-clara">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Varias respuestas</span></div></div>
+  <h4 class="qtext">¿Qué sueles necesitar?</h4>
+  <p class="qsub">Puedes elegir varias.</p>
+  <p class="cond">Aparece si antes eligió <code>obj-hogar</code></p>
+  <ol class="opts"><li><span class="otext">Curaciones: cortes, raspones, ampollas</span><code class="oslug">hogar-curaciones</code></li><li><span class="otext">Dolor de cabeza o fiebre</span><code class="oslug">hogar-dolor</code></li><li><span class="otext">Golpes, esguinces o dolor muscular</span><code class="oslug">hogar-golpes</code></li><li><span class="otext">Quemaduras leves o picaduras</span><code class="oslug">hogar-quemaduras</code></li><li><span class="otext">Malestar estomacal</span><code class="oslug">hogar-estomago</code></li><li><span class="otext">Lo básico, por si acaso</span><code class="oslug">hogar-basico</code></li></ol>
+  
+</article>
+</section><section class="branch hue-compuesta" id="rama-viaje">
+  <header class="bhead">
+    <span class="bdot"></span>
+    <h3>Viaje</h3>
+    <span class="btrigger">se abre con <code>obj-viaje</code></span>
+    <span class="bcount">3 pantallas</span>
+  </header>
+  <p class="compuesta">La categoría «viaje» existe pero tiene cero productos activos. Esta rutina se compone desde solar, digestivo y hogar.</p>
+  <article class="q hue-compuesta">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Una respuesta</span></div></div>
+  <h4 class="qtext">¿A dónde vas?</h4>
+  
+  <p class="cond">Aparece si antes eligió <code>obj-viaje</code></p>
+  <ol class="opts"><li><span class="otext">Playa o destino tropical</span><code class="oslug">viaje-playa</code></li><li><span class="otext">Ciudad, trabajo o negocios</span><code class="oslug">viaje-ciudad</code></li><li><span class="otext">Montaña, senderismo o aventura</span><code class="oslug">viaje-aventura</code></li><li><span class="otext">Varios destinos o vuelo largo</span><code class="oslug">viaje-largo</code></li></ol>
+  <aside class="note"><span class="nlabel">Por qué</span><p>No existe ninguna categoría «viaje» con productos: esta rama se resuelve componiendo solar, digestivo y hogar. Por eso pregunta por preocupaciones, no por tipo de producto.</p></aside>
+</article><article class="q hue-compuesta">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Una respuesta</span></div></div>
+  <h4 class="qtext">¿Cuánto tiempo?</h4>
+  
+  <p class="cond">Aparece si antes eligió <code>obj-viaje</code></p>
+  <ol class="opts"><li><span class="otext">Un fin de semana</span><code class="oslug">viaje-corto</code></li><li><span class="otext">Una o dos semanas</span><code class="oslug">viaje-medio</code></li><li><span class="otext">Más de dos semanas</span><code class="oslug">viaje-largo-estadia</code></li></ol>
+  
+</article><article class="q hue-compuesta">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Varias respuestas</span></div></div>
+  <h4 class="qtext">¿Qué te preocupa del viaje?</h4>
+  <p class="qsub">Puedes elegir varias.</p>
+  <p class="cond">Aparece si antes eligió <code>obj-viaje</code></p>
+  <ol class="opts"><li><span class="otext">El sol</span><code class="oslug">viaje-preocupa-sol</code></li><li><span class="otext">Que me caiga mal la comida</span><code class="oslug">viaje-preocupa-digestivo</code></li><li><span class="otext">Dormir bien o el cambio de horario</span><code class="oslug">viaje-preocupa-sueno</code></li><li><span class="otext">Cortes, ampollas o picaduras</span><code class="oslug">viaje-preocupa-botiquin</code></li><li><span class="otext">Mantener mi rutina de piel</span><code class="oslug">viaje-preocupa-piel</code></li></ol>
+  
+</article>
+</section>
+</section>
+
+<section class="blk">
+  <h2>El campo abierto</h2>
+  <p class="sublede">Una sola pantalla con dos usos. Es el canal que recoge lo que ninguna opción cerrada anticipó — y es como los clientes se expresan de verdad.</p>
+  <article class="q">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Texto libre</span><span class="tag tag-opt">Se puede saltar</span></div></div>
+  <h4 class="qtext">Cuéntanos con tus palabras</h4>
+  <p class="qsub">Cómo te sientes, qué has probado, qué te gustaría mejorar. Opcional, pero es lo que más nos ayuda a acertar.</p>
+  
+  <div class="textfield"><span class="ph">Ej: tengo la piel grasa pero se me reseca en las mejillas, probé retinol y me irritó…</span><span class="cnt">0 / 500</span></div>
+  <aside class="note"><span class="nlabel">Por qué</span><p>Una sola fila con dos usos. Sin condición, aparece siempre al final del bloque 2. Para quien eligió la salida de escape en Q1 todas las ramas quedan ocultas, así que esta pasa a ser su única pantalla del bloque: el atajo funciona sin lógica extra, y es también el destino de quien no sabe qué necesita. Para el resto es un añadido opcional al final. Requiere ampliar el CHECK de quiz_questions.type para admitir «text».</p></aside>
+</article>
+  <div class="flag">
+    <h4>Cuatro reglas que van con este campo</h4>
+    <p><b>El texto no manda.</b> Va al prompt encapsulado como descripción del cliente, nunca como instrucción, con el tope de longitud aplicado en el servidor y no solo en el navegador.</p>
+    <p><b>Solo suma banderas de seguridad, nunca las quita.</b> Si alguien escribe que está embarazada pero marcó «Nada de lo siguiente» en la pantalla de salud, la bandera se activa igual. La contradicción se resuelve siempre del lado seguro.</p>
+    <p><b>Sin promesas médicas.</b> Ante una condición nombrada por la persona, la respuesta habla de apoyo y bienestar y deriva a consulta profesional; nunca de tratar ni curar.</p>
+    <p><b>Va a recoger datos de salud sensibles</b> y quedan guardados con el perfil. Conviene que la política de privacidad lo diga.</p>
+  </div>
+</section>
+
+<section class="blk">
+  <h2>Bloque 3 · Seguridad</h2>
+  <p class="sublede">Hoy cinco banderas médicas comparten una lista de trece con ocho preferencias alimentarias, con «Ninguna» de primera y «Embarazo o lactancia» en la posición nueve. Separarlas es lo que evita que se subreporten.</p>
+  <article class="q">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Varias respuestas</span></div></div>
+  <h4 class="qtext">¿Hay algo de tu salud que debamos considerar?</h4>
+  <p class="qsub">Tu seguridad es lo primero. Marca todo lo que aplique.</p>
+  
+  <ol class="opts"><li><span class="otext">Nada de lo siguiente</span><code class="oslug">sin-condicion</code></li><li><span class="otext">Estoy embarazada o dando de lactar</span><code class="oslug">cond-embarazo</code></li><li><span class="otext">Tomo medicamentos con receta</span><code class="oslug">cond-medicamentos</code></li><li><span class="otext">Tengo una condición médica diagnosticada</span><code class="oslug">cond-medica</code></li><li><span class="otext">He tenido reacciones fuertes a productos</span><code class="oslug">cond-reacciones</code></li><li><span class="otext">Tengo síntomas intensos o que no se van</span><code class="oslug">cond-sintomas</code></li></ol>
+  <aside class="note"><span class="nlabel">Por qué</span><p>Hoy estas 5 banderas médicas comparten pantalla con 8 preferencias alimentarias, con «Ninguna» de primera y «Embarazo» en la posición 9. Separarlas es lo que evita que se subreporten.</p></aside>
+</article><article class="q">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Varias respuestas</span></div></div>
+  <h4 class="qtext">¿Alguna restricción o preferencia?</h4>
+  
+  
+  <ol class="opts"><li><span class="otext">Ninguna</span><code class="oslug">sin-restriccion</code></li><li><span class="otext">Intolerancia a la lactosa</span><code class="oslug">alerg-lactosa</code></li><li><span class="otext">Sin gluten / celiaquía</span><code class="oslug">alerg-gluten</code></li><li><span class="otext">Alergia a la soya</span><code class="oslug">alerg-soya</code></li><li><span class="otext">Alergia a frutos secos</span><code class="oslug">alerg-frutos-secos</code></li><li><span class="otext">Vegano/a</span><code class="oslug">pref-vegano</code></li><li><span class="otext">Sin azúcar</span><code class="oslug">alerg-azucar</code></li><li><span class="otext">Sin cafeína</span><code class="oslug">alerg-cafeina</code></li><li><span class="otext">Sin fragancia</span><code class="oslug">pref-sin-fragancia</code></li><li><span class="otext">Prefiero productos naturales u orgánicos</span><code class="oslug">pref-organico</code></li></ol>
+  <aside class="note"><span class="nlabel">Por qué</span><p>Absorbe la pregunta de «¿qué tan importante que sean naturales?», que hoy gasta una pantalla entera para una señal binaria. Añade frutos secos, que faltaba.</p></aside>
+</article>
+</section>
+
+<section class="blk">
+  <h2>Bloque 4 · Cómo lo vas a usar</h2>
+  <p class="sublede">Dos preguntas nuevas y una que se mantiene sin tocar. Van al final, cuando la persona ya está comprometida, y las dos nuevas se pueden saltar.</p>
+  <article class="q">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Una respuesta</span><span class="tag tag-opt">Se puede saltar</span></div></div>
+  <h4 class="qtext">¿En qué rango de edad estás?</h4>
+  
+  
+  <ol class="opts"><li><span class="otext">18 a 24</span><code class="oslug">edad-18-24</code></li><li><span class="otext">25 a 34</span><code class="oslug">edad-25-34</code></li><li><span class="otext">35 a 44</span><code class="oslug">edad-35-44</code></li><li><span class="otext">45 a 54</span><code class="oslug">edad-45-54</code></li><li><span class="otext">55 o más</span><code class="oslug">edad-55-mas</code></li></ol>
+  <aside class="note"><span class="nlabel">Por qué</span><p>Nunca se ha preguntado. Determina antiedad, colágeno, vitamina D y las necesidades que cambian con la edad.</p></aside>
+</article><article class="q">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Una respuesta</span><span class="tag tag-opt">Se puede saltar</span></div></div>
+  <h4 class="qtext">¿Con cuál te identificas?</h4>
+  <p class="qsub">Algunas necesidades nutricionales cambian.</p>
+  
+  <ol class="opts"><li><span class="otext">Mujer</span><code class="oslug">sexo-mujer</code></li><li><span class="otext">Hombre</span><code class="oslug">sexo-hombre</code></li><li><span class="otext">Prefiero no decirlo</span><code class="oslug">sexo-no-decir</code></li></ol>
+  <aside class="note"><span class="nlabel">Por qué</span><p>El motor ya tiene lógica de género escrita (route.ts:137-139) que nunca se activa porque la pregunta se eliminó hace tiempo: hoy siempre resuelve «no especificado».</p></aside>
+</article><article class="q">
+  <div class="qhead"><div class="badges"><span class="tag tag-tipo">Una respuesta</span><span class="tag tag-keep">Se mantiene igual</span></div></div>
+  <h4 class="qtext">¿Cómo quieres armar tu kit?</h4>
+  <p class="qsub">Nos adaptamos a ti: elige el nivel de tu ritual.</p>
+  
+  <ol class="opts"><li><span class="otext">Lo esencial — solo lo que necesito</span><code class="oslug">presupuesto-bajo</code></li><li><span class="otext">Un ritual equilibrado</span><code class="oslug">presupuesto-medio</code></li><li><span class="otext">Una rutina completa</span><code class="oslug">presupuesto-alto</code></li><li><span class="otext">La experiencia LIORA — lo mejor de lo mejor</span><code class="oslug">presupuesto-premium</code></li></ol>
+  <aside class="note"><span class="nlabel">Por qué</span><p>Se mantiene sin tocar. Los tiers son de intención y no muestran montos: los rangos en S/ son guía interna para la IA, nunca una cifra prometida.</p></aside>
+</article>
+</section>
+
+<section class="blk">
+  <h2>Cuánto dura</h2>
+  <p class="sublede">Hoy son entre 6 y 9 pantallas. Este es el dato que hay que mirar con más cuidado del documento.</p>
+  <div class="tbox">
+    <table>
+      <thead><tr><th>Ruta</th><th class="num">Obligatorias</th><th class="num">Si responde todo</th></tr></thead>
+      <tbody><tr><td>Piel</td><td class="num">7</td><td class="num">11</td></tr><tr><td>Cabello</td><td class="num">8</td><td class="num">12</td></tr><tr><td>Descanso y estrés</td><td class="num">7</td><td class="num">11</td></tr><tr><td>Digestión</td><td class="num">7</td><td class="num">11</td></tr><tr><td>Vitaminas</td><td class="num">7</td><td class="num">11</td></tr><tr><td>Protección solar</td><td class="num">8</td><td class="num">12</td></tr><tr><td>Gym</td><td class="num">8</td><td class="num">12</td></tr><tr><td>Pies y cuerpo</td><td class="num">7</td><td class="num">11</td></tr><tr><td>Hogar</td><td class="num">7</td><td class="num">11</td></tr><tr><td>Viaje</td><td class="num">7</td><td class="num">11</td></tr></tbody>
+    </table>
+  </div>
+  <div class="flag">
+    <h4>El cuestionario se alarga, y eso tiene un costo real</h4>
+    <p>Siete u ocho pantallas son obligatorias; cuatro más se pueden saltar de un toque. Aun así, cualquier pantalla adicional se paga en abandono, y todavía falta la captura de correo al final.</p>
+    <p>Tres cosas lo compensan: la salida de escape en la primera pantalla permite saltarse el árbol entero, las preguntas del bloque 4 llevan un «Saltar» visible, y hay que <b>guardar el progreso</b> — hoy el cuestionario vive solo en memoria y recargar la página lo pierde todo, que con once pantallas es abandono asegurado.</p>
+    <p>Ya recortamos dos pantallas respecto del primer borrador: se quitó la pregunta de formatos preferidos y la de orientación para indecisos, que era la primera pregunta reformulada. Si hiciera falta recortar más, el siguiente lugar es la pregunta de objetivos secundarios.</p>
+  </div>
+</section>
+
+<section class="blk">
+  <h2>¿Responde lo que la gente pregunta de verdad?</h2>
+  <p class="sublede">Este es el criterio de aceptación: tomamos las consultas reales de clientes y verificamos que el nuevo cuestionario capture lo necesario para responder cada una. Muestra representativa.</p>
+  <div class="tbox">
+    <table>
+      <thead><tr><th>Área</th><th>Lo que pregunta el cliente</th><th>Qué lo captura ahora</th></tr></thead>
+      <tbody><tr><td class="tarea">Piel</td><td class="tpreg">«¿Cómo sé si mi piel es seca, grasa o mixta?»</td><td class="tdonde">Salida «No estoy seguro/a» + la pregunta proxy de media tarde</td></tr><tr><td class="tarea">Piel</td><td class="tpreg">«Tengo piel grasa pero se me reseca, ¿qué hago?»</td><td class="tdonde">Opción «Brillosa y tirante a la vez» → <code>piel-deshidratada</code></td></tr><tr><td class="tarea">Piel</td><td class="tpreg">«¿Retinol, vitamina C o ácido hialurónico?»</td><td class="tdonde">«¿Cómo es tu rutina hoy?» — distingue quien nunca usó activos de quien ya los tolera</td></tr><tr><td class="tarea">Piel</td><td class="tpreg">«Quiero una rutina completa, ¿qué compro?»</td><td class="tdonde">Rutina actual + nivel del ritual</td></tr><tr><td class="tarea">Digestión</td><td class="tpreg">«Me siento muy hinchado después de comer»</td><td class="tdonde">Síntoma <code>digestivo-hinchazon</code> + momento <code>digestivo-postcomida</code></td></tr><tr><td class="tarea">Digestión</td><td class="tpreg">«¿Probióticos o prebióticos?» / «¿Cuándo debo tomarlos?»</td><td class="tdonde">Momento del síntoma + qué ya tomó</td></tr><tr><td class="tarea">Vitaminas</td><td class="tpreg">«No sé qué necesito, ¿me recomiendan según mis objetivos?»</td><td class="tdonde">Opción <code>nutricion-no-se</code>, y la salida de texto libre en la primera pantalla</td></tr><tr><td class="tarea">Vitaminas</td><td class="tpreg">«¿Qué vitaminas para hombres? ¿Y para mujeres? ¿Según la edad?»</td><td class="tdonde">Las preguntas de edad y sexo, que hoy no existen</td></tr><tr><td class="tarea">Vitaminas</td><td class="tpreg">«¿Para qué sirve la vitamina D?»</td><td class="tdonde">Cuánto sol y aire libre recibe al día</td></tr><tr><td class="tarea">Sueño</td><td class="tpreg">«Duermo pero sigo cansado»</td><td class="tdonde">Opción <code>sueno-no-repara</code>, hoy indistinguible de «no puedo dormir»</td></tr><tr><td class="tarea">Sueño</td><td class="tpreg">«¿Magnesio o melatonina?»</td><td class="tdonde">Patrón de sueño + «¿necesitas estar alerta de día?»</td></tr><tr><td class="tarea">Sueño</td><td class="tpreg">«Quiero dormir mejor sin depender del café al día siguiente»</td><td class="tdonde">La pregunta de cafeína, incluida la franja de la tarde</td></tr><tr><td class="tarea">Sol</td><td class="tpreg">«¿SPF 30 o SPF 50?»</td><td class="tdonde">Fototipo por reacción al sol + tipo de exposición</td></tr><tr><td class="tarea">Sol</td><td class="tpreg">«¿Hay protector que no deje la cara blanca?»</td><td class="tdonde">Opción <code>solar-sin-blanco</code> en la pregunta de textura</td></tr><tr><td class="tarea">Sol</td><td class="tpreg">«Me quemé con el sol, ¿qué uso para calmar la piel?»</td><td class="tdonde">Eje antes / durante / después → <code>solar-post</code></td></tr><tr><td class="tarea">Gym</td><td class="tpreg">«¿Necesito creatina si recién estoy empezando?»</td><td class="tdonde">«¿Qué tomas hoy?» cruzado con cómo y cuánto entrena</td></tr><tr><td class="tarea">Gym</td><td class="tpreg">«¿Whey protein o proteína vegetal?»</td><td class="tdonde">Objetivo de gym cruzado con lactosa y con la preferencia vegana</td></tr><tr><td class="tarea">Gym</td><td class="tpreg">«¿Cómo evito sentirme destruido al día siguiente?»</td><td class="tdonde">Opción <code>gym-friccion-dolor</code></td></tr><tr><td class="tarea">Pies</td><td class="tpreg">«¿Qué uso después de estar todo el día parado?»</td><td class="tdonde">Horas de pie al día + <code>pies-cansados</code></td></tr><tr><td class="tarea">Pies</td><td class="tpreg">«¿Cómo quito la piel dura?» / «¿Talones agrietados?»</td><td class="tdonde">Opciones separadas para durezas y talones, más intensivo vs mantenimiento</td></tr><tr><td class="tarea">Pies</td><td class="tpreg">«¿Cómo evitar el mal olor de los pies?»</td><td class="tdonde">Opción <code>pies-olor</code>, que hoy no tiene dónde caer</td></tr></tbody>
+    </table>
+  </div>
+</section>
+
+<section class="blk">
+  <h2>Lo que se retira</h2>
+  <p class="sublede">Ninguna pregunta se borra: los perfiles históricos referencian sus identificadores y el motor los resuelve por ahí. Se ocultan con una condición que nunca se cumple, igual que se hizo antes con la pregunta de restricciones.</p>
+  <div class="tbox">
+    <table>
+      <thead><tr><th>Pregunta</th><th>Por qué</th></tr></thead>
+      <tbody><tr><td class="rtext">¿Qué quieres cuidar hoy?</td><td>Reemplazada: obj-belleza se divide en piel y cabello, y se añade la salida de texto libre.</td></tr><tr><td class="rtext">¿En qué quieres enfocarte?</td><td>Innecesaria: piel y cabello ya son puertas separadas en Q1.</td></tr><tr><td class="rtext">¿Qué tan importante es que sean productos naturales u orgánicos?</td><td>Ocupa una pantalla para una señal binaria. Pasa a ser una opción en Restricciones.</td></tr><tr><td class="rtext">¿Qué tipo de rutina prefieres?</td><td>Duplica «¿Cómo quieres armar tu kit?»; su opción «No sé» mapea al mismo hint que «balanceada».</td></tr><tr><td class="rtext">¿Tienes piel o cuero cabelludo sensible?</td><td>Absorbida por el nuevo tipo de piel y las preocupaciones de piel.</td></tr><tr><td class="rtext">Antes de recomendarte, ¿hay algo que debamos saber?</td><td>Se divide en dos pantallas: salud por un lado, restricciones y preferencias por otro.</td></tr><tr><td class="rtext">¿Cuál de estas se parece más a lo que necesitas?</td><td>Era la Q1 reformulada: a quien acaba de decir «no estoy seguro» no lo ayuda la misma lista con otras palabras. Su lugar lo toma el campo de texto abierto.</td></tr><tr><td class="rtext">¿Cuál es tu nivel de entrenamiento?</td><td>Fusionada con el tipo de entrenamiento en una sola pregunta.</td></tr><tr><td class="rtext">¿Sientes molestias en articulaciones o rodillas?</td><td>Absorbida por «¿Qué se te hace más cuesta arriba?».</td></tr><tr><td class="rtext">¿Qué tipo de entrenamiento haces?</td><td>Fusionada con el nivel de entrenamiento.</td></tr><tr><td class="rtext">¿Cuál es tu tipo de piel?</td><td>Reemplazada por una versión con salida «no estoy seguro/a» y pregunta proxy.</td></tr><tr><td class="rtext">¿Qué te preocupa más de tu piel?</td><td>Reemplazada: faltaban brotes, luminosidad, hidratación y marcas.</td></tr><tr><td class="rtext">¿Cuál es tu problema capilar principal?</td><td>Reemplazada por la rama de cabello completa.</td></tr><tr><td class="rtext">¿Qué es lo que más te afecta en tu día a día?</td><td>Reemplazada: no distinguía conciliar / mantener / sueño no reparador.</td></tr><tr><td class="rtext">¿Cuál es tu síntoma principal?</td><td>Reemplazada: faltaban pesadez e irregularidad.</td></tr><tr><td class="rtext">¿Cuál es tu prioridad?</td><td>Reemplazada: faltaban concentración, belleza, huesos, ánimo y la salida «no sé».</td></tr><tr><td class="rtext">¿Cómo es tu exposición al sol normalmente?</td><td>Reemplazada por la rama solar completa (fototipo, uso, textura, momento).</td></tr><tr><td class="rtext">¿Qué tipo de destino es tu viaje?</td><td>Se mantiene el contenido pero pasa a la rama de viaje ampliada.</td></tr><tr><td class="rtext">¿Qué tipo de kit buscas para casa?</td><td>Reemplazada: no preguntaba para quién es, que es una brecha de seguridad.</td></tr><tr><td class="rtext">¿Qué te preocupa principalmente?</td><td>Reemplazada por la rama de pies y cuerpo ampliada.</td></tr><tr><td class="rtext">¿Qué buscas principalmente con tu entrenamiento?</td><td>Se mantiene el contenido dentro de la rama de gym reordenada.</td></tr><tr><td class="rtext">¿Con qué frecuencia lo sientes?</td><td>Se recrea con condiciones sobre los nuevos slugs de sueño y estrés.</td></tr></tbody>
+    </table>
+  </div>
+</section>
+
+<section class="blk">
+  <h2>Del lado del catálogo</h2>
+  <p class="sublede">El cuestionario tiene un techo que no depende de las preguntas. Esto es lo que se hace del otro lado.</p>
+  <ul class="plain">
+    <li><b>La descripción y las indicaciones ya se van al prompt.</b> Estaban cargadas en prácticamente todos los productos y no llegaban a la IA: ese era el techo real de la personalización. Queda una salvedad — el campo de indicaciones está sucio: en varios productos contiene la lista de ingredientes en vez del «indicado para», así que hay que detectarlo antes de inyectarlo o se mete ruido.</li>
+    <li><b>Las etiquetas van al prompt, pero nunca como filtro.</b> Decisión tomada: el catálogo cambia todo el tiempo — se añaden y se retiran productos — así que nada puede quedar amarrado a un producto concreto. Las 74 etiquetas curadas (objetivo, uso, tipo de piel, preferencias, momento y alertas) se envían como texto junto a cada producto para que la IA las use como señal, y las 399 etiquetas de ruido generadas por los importadores se excluyen. Un producto nuevo sin etiquetas sigue funcionando: solo aporta menos señal. Las opciones del cuestionario, en cambio, apuntan a etiquetas que se borraron en junio y se recrearon con otros identificadores — ese mapeo muerto se retira del flujo en vez de repararse.</li>
+    <li><b>Los kits curados son mejor material del que estamos usando.</b> Sus 58 pasos están escritos a mano y son buenos. Meter dos o tres en el prompt como ejemplo de referencia es barato y probablemente sube más la calidad percibida que cualquier otro cambio suelto.</li>
+  </ul>
+</section>
+
+<section class="ask">
+  <h2>Qué necesito de ti</h2>
+  <p>El copy de arriba es lo que verá el cliente, palabra por palabra. Antes de escribirlo en la base de datos:</p>
+  <ul>
+    <li>Marca cualquier pregunta u opción cuyo texto quieras cambiar.</li>
+    <li>Dime si falta alguna opción en tu experiencia con clientes — sobre todo en las ramas nuevas de cabello, pies y hogar.</li>
+    <li>Decide sobre la longitud: 12 pantallas frente a las 6–9 de hoy.</li>
+    <li>Confirma si quieres las preguntas de edad y sexo. Son las que más ayudan en vitaminas y antiedad, y también las más personales.</li>
+    <li>Revisa la salida de escape de la primera pantalla: ahora es una sola opción para quien no sabe y para quien prefiere escribir.</li>
+  </ul>
+</section>
+
+</div>

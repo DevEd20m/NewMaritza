@@ -117,7 +117,7 @@ export function KitCard({ kit }: KitCardProps) {
                 alt={kit.name}
                 style={hasOwnCover
                   ? { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }
-                  : { width: '82%', height: '82%', objectFit: 'contain' }}
+                  : { width: '100%', height: '100%', objectFit: 'contain' }}
               />
             ) : (
               <span style={{ fontSize: 48, opacity: 0.3 }}>🌿</span>

@@ -255,7 +255,7 @@ export function SearchOverlay({ onClose }: Props) {
                     <Link href={`/tienda/${p.slug}`} onClick={onClose} style={{ display: 'flex', alignItems: 'center', gap: 14, flex: 1, minWidth: 0, textDecoration: 'none' }}>
                       <div style={{ width: 52, height: 52, borderRadius: 12, background: p.categoryColor, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
                         {p.imageUrl
-                          ? <img src={p.imageUrl} alt={p.name} style={{ width: '82%', height: '82%', objectFit: 'contain' }} />
+                          ? <img src={p.imageUrl} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                           : <Package size={20} color="var(--liora-uva)" style={{ opacity: 0.5 }} />}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>

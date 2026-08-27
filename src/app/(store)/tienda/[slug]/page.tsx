@@ -153,7 +153,8 @@ export default async function ProductDetailPage({ params }: Props) {
           <div style={{ position: 'sticky', top: 120 }}>
             <div style={{ background: catColor, borderRadius: 32, aspectRatio: '1/1', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
               {product.cover_image_url ? (
-                <img src={product.cover_image_url} alt={product.name} style={{ width: '80%', height: '80%', objectFit: 'contain' }} />
+                /* El PNG recortado ya trae 15% de margen y la sombra de contacto horneada */
+                <img src={product.cover_image_url} alt={product.name} style={{ width: '94%', height: '94%', objectFit: 'contain' }} />
               ) : (
                 <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 48, color: 'var(--liora-uva)', textAlign: 'center', padding: 32 }}>{product.name}</div>
               )}

@@ -330,7 +330,7 @@ function MiKitTab({ data, onReorder }: { data: AccountData; onReorder: () => voi
                 <div key={item.variantId} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px 24px', borderBottom: idx < data.kitItems.length - 1 ? '1px solid var(--liora-arena)' : 'none' }}>
                   <div style={{ width: 52, height: 52, borderRadius: 14, background: item.categoryColor, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                     {item.imageUrl
-                      ? <img src={item.imageUrl} alt={item.name} style={{ width: '85%', height: '85%', objectFit: 'contain' }} />
+                      ? <img src={item.imageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                       : <Package size={22} style={{ color: 'var(--liora-uva)', opacity: 0.5 }} />
                     }
                   </div>

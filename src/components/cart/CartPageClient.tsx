@@ -433,7 +433,7 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
                     )}
                     <div style={{ width: 88, height: 88, borderRadius: 18, background: item.categoryColor ?? 'var(--cat-lavanda)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                       {item.imageUrl
-                        ? <img src={item.imageUrl} alt={item.name} style={{ width: '90%', height: '90%', objectFit: 'contain' }} />
+                        ? <img src={item.imageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                         : <Package size={32} style={{ opacity: 0.4, color: 'var(--liora-uva)' }} />
                       }
                     </div>
@@ -491,7 +491,7 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
                       <article className="liora-kit-suggestion-card" key={s.variantId} style={{ background: s.categoryColor, borderRadius: 20, padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
                         <div style={{ aspectRatio: '1 / 1', borderRadius: 16, background: 'rgba(255,255,255,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--liora-uva)' }}>
                           {s.imageUrl
-                            ? <img src={s.imageUrl} alt={s.name} style={{ width: '85%', height: '85%', objectFit: 'contain' }} />
+                            ? <img src={s.imageUrl} alt={s.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                             : <Package size={36} style={{ opacity: 0.6 }} />
                           }
                         </div>
@@ -551,7 +551,7 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
                                 <article key={suggestion.id} style={{ minWidth: 0, background: 'var(--liora-crema)', color: 'var(--liora-uva)', borderRadius: 18, padding: 12, display: 'flex', flexDirection: 'column', gap: 9 }}>
                                   <div style={{ height: 92, borderRadius: 13, background: suggestion.replacement.categoryColor, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                                     {suggestion.replacement.imageUrl
-                                      ? <img src={suggestion.replacement.imageUrl} alt={suggestion.replacement.name} style={{ width: '82%', height: '82%', objectFit: 'contain' }} />
+                                      ? <img src={suggestion.replacement.imageUrl} alt={suggestion.replacement.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                                       : <Package size={30} style={{ opacity: 0.5 }} />}
                                   </div>
                                   <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 14, lineHeight: 1.15, overflowWrap: 'anywhere' }}>{suggestion.replacement.name}</div>
@@ -679,7 +679,7 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
           {items.map((item) => (
             <article className="liora-cart-item" key={item.variantId} style={{ background: 'var(--liora-blanco)', borderRadius: 24, border: '1.5px solid var(--liora-arena)', padding: 20, display: 'flex', gap: 20, alignItems: 'center' }}>
               <div className="liora-cart-item-image" style={{ width: 88, height: 88, borderRadius: 18, background: item.categoryColor ?? 'var(--cat-lavanda)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
-                {item.imageUrl ? <img src={item.imageUrl} alt={item.name} style={{ width: '90%', height: '90%', objectFit: 'contain' }} /> : <ShoppingBag size={32} style={{ opacity: 0.4, color: 'var(--liora-uva)' }} />}
+                {item.imageUrl ? <img src={item.imageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <ShoppingBag size={32} style={{ opacity: 0.4, color: 'var(--liora-uva)' }} />}
               </div>
               <div className="liora-cart-item-content" style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 19, color: 'var(--liora-uva)', lineHeight: 1.15 }}>{item.name}</div>
@@ -714,7 +714,7 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
                     <article key={s.variantId} style={{ flex: '0 0 200px', width: 200, scrollSnapAlign: 'start', background: s.categoryColor, borderRadius: 20, padding: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
                       <div style={{ aspectRatio: '1 / 1', borderRadius: 14, background: 'rgba(255,255,255,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--liora-uva)', overflow: 'hidden' }}>
                         {s.imageUrl
-                          ? <img src={s.imageUrl} alt={s.name} style={{ width: '85%', height: '85%', objectFit: 'contain' }} />
+                          ? <img src={s.imageUrl} alt={s.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                           : <Package size={32} style={{ opacity: 0.6 }} />
                         }
                       </div>
