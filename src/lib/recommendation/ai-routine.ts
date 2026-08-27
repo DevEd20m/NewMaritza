@@ -72,7 +72,37 @@ const GENERIC_TOKENS = new Set([
   'aceite', 'crema', 'locion', 'serum', 'spray', 'gotas', 'jabon', 'shampoo',
   'protector', 'solar', 'facial', 'corporal', 'natural', 'organico',
   'vitamina', 'suplemento', 'premium',
+  // Descriptores de rol cosmético, no ingredientes. Sin esto, una crema
+  // hidratante y un sérum hidratante "compartían ingrediente" y el validador
+  // mataba el segundo paso — una rutina de piel no podía tener ambos.
+  'hidratante', 'limpiador', 'limpiadora', 'espumoso', 'espumosa', 'reparador',
+  'reparadora', 'control', 'diario', 'diaria', 'nocturno', 'nocturna',
+  'intensivo', 'intensiva', 'suave', 'ligero', 'ligera', 'gel',
 ])
+
+// Rol funcional de un producto cosmético. Una rutina no repite rol — jamás
+// dos shampoos o dos protectores solares — aunque el nombre, la marca y los
+// ingredientes difieran. El primer patrón que calza define el rol; los
+// suplementos (sin rol cosmético) siguen deduplicándose por ingrediente.
+const ROLE_PATTERNS: Array<[RegExp, string]> = [
+  [/\bshampoo en seco\b/i, 'shampoo-seco'],
+  [/\b(shampoo|champ[uú])\b/i, 'shampoo'],
+  [/\b(acondicionador|conditioner)\b/i, 'acondicionador'],
+  [/\b(mascarilla|mask|masque)\b/i, 'mascarilla'],
+  [/\bprotector solar|spf|fps\b/i, 'protector-solar'],
+  [/\bs[eé]rum\b/i, 'serum'],
+  [/\b(limpiador|cleanser|limpiadora)\b/i, 'limpiador'],
+  [/\bt[oó]nico\b/i, 'tonico'],
+  [/\b(parche|patch)\b/i, 'parche'],
+  [/\bdesodorante\b/i, 'desodorante'],
+  [/\bjab[oó]n|gel de ducha|gel ducha\b/i, 'jabon'],
+  [/\bbálsamo labial|balsamo labial\b/i, 'labial'],
+]
+
+export function roleToken(name: string): string | null {
+  for (const [re, role] of ROLE_PATTERNS) if (re.test(name)) return role
+  return null
+}
 
 export function ingredientTokens(name: string, brand?: string | null): string[] {
   const brandTokens = new Set(norm(brand ?? '').split(' '))
@@ -102,6 +132,15 @@ export function validateAiRoutine(raw: unknown, catalog: CatalogRef[]): Validate
   const usedProducts = new Set<string>()
   const usedIdentities = new Set<string>()
   const usedIngredients = new Set<string>()
+  const usedRoles = new Set<string>()
+
+  const takesRole = (ref: CatalogRef): boolean => {
+    const role = roleToken(ref.name)
+    if (!role) return true
+    if (usedRoles.has(role)) return false
+    usedRoles.add(role)
+    return true
+  }
 
   const takesIngredients = (ref: CatalogRef): boolean => {
     const tokens = ingredientTokens(ref.name, ref.brand)
@@ -117,6 +156,7 @@ export function validateAiRoutine(raw: unknown, catalog: CatalogRef[]): Validate
     // La IA puede citar el nombre con o sin marca: se compara contra ambos
     if (!nameMatches(s.product_name, `${ref.name} ${ref.brand ?? ''}`)) continue
     if (usedProducts.has(ref.productId) || usedIdentities.has(identityKey(ref))) continue
+    if (!takesRole(ref)) continue
     if (!takesIngredients(ref)) continue
     usedProducts.add(ref.productId)
     usedIdentities.add(identityKey(ref))
@@ -136,6 +176,7 @@ export function validateAiRoutine(raw: unknown, catalog: CatalogRef[]): Validate
     const ref = catalog[item - 1]
     if (!ref) continue
     if (usedProducts.has(ref.productId) || usedIdentities.has(identityKey(ref))) continue
+    if (!takesRole(ref)) continue
     if (!takesIngredients(ref)) continue
     usedProducts.add(ref.productId)
     usedIdentities.add(identityKey(ref))

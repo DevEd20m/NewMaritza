@@ -1,4 +1,5 @@
 import type { CatalogItem } from '@/lib/recommendation/related'
+import { roleToken } from '@/lib/recommendation/ai-routine'
 import { formatPEN } from '@/lib/format/money'
 
 export interface CurrentCartItem {
@@ -73,6 +74,10 @@ export function buildCartSwapSuggestions(
     for (const candidate of catalog) {
       if (candidate.variantId === source.variantId || candidate.productId === source.productId) continue
       if (candidate.categorySlug !== source.categorySlug) continue
+      // Una alternativa reemplaza al producto en su FUNCIÓN, no solo en su
+      // categoría: la alternativa a un sérum es otro sérum, nunca un bálsamo
+      // labial que casualmente vive en «piel».
+      if (roleToken(source.name) !== roleToken(candidate.name)) continue
       if (cartProducts.has(candidate.productId)) continue
       if (!availableFor(candidate, line.quantity)) continue
       const savings = source.priceCents - candidate.priceCents

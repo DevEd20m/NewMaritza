@@ -76,3 +76,20 @@ describe('Lía cart alternatives', () => {
   })
 })
 
+
+describe('las alternativas respetan el rol del producto', () => {
+  it('la alternativa a un sérum es otro sérum, no un bálsamo labial', () => {
+    const serum = item({ name: 'Sérum Hidratante CeraVe con Ácido Hialurónico', brand: 'CeraVe', priceCents: 9000 })
+    const otroSerum = item({ name: 'Sérum Facial Niacinamida The Ordinary', brand: 'The Ordinary', priceCents: 6000 })
+    const balsamo = item({ name: 'Bálsamo Labial Vaseline Lip Therapy', brand: 'Vaseline', priceCents: 1600 })
+    const sugerencias = buildCartSwapSuggestions(
+      [serum, otroSerum, balsamo],
+      [{ variantId: serum.variantId, quantity: 1 }],
+      'quiero una alternativa más económica al sérum',
+      () => crypto.randomUUID(),
+    )
+    const ids = sugerencias.map(s => s.replacementVariantId)
+    expect(ids).toContain(otroSerum.variantId)
+    expect(ids).not.toContain(balsamo.variantId)
+  })
+})

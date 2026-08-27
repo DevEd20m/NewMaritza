@@ -155,12 +155,17 @@ export async function GET(request: NextRequest) {
       const prefersNatural = allSlugs.includes('prefiere-natural')
       const activeSafetyFlags = perfil.seguridad
 
-      const routineSizeSlug = allSlugs.find((s) => s.startsWith('rutina-'))
+      // La pregunta rutina-* se retiró: el tamaño sale del nivel del ritual.
+      const routineSizeSlug = allSlugs.find((s) => s.startsWith('rutina-')) ?? budgetSlug
       const routineSizeHint: Record<string, string> = {
         'rutina-simple':     'Prefiere una rutina MUY simple: usa 3-4 pasos.',
         'rutina-balanceada': 'Prefiere una rutina balanceada: usa 4-5 pasos.',
         'rutina-completa':   'Quiere una rutina completa: usa 5-6 pasos.',
         'rutina-guiada':     'Pidió ser guiada/o: usa 4-5 pasos.',
+        'presupuesto-bajo':    'Eligió lo esencial: usa 3-4 pasos.',
+        'presupuesto-medio':   'Eligió un ritual equilibrado: usa 4-5 pasos.',
+        'presupuesto-alto':    'Eligió una rutina completa: usa 5-6 pasos.',
+        'presupuesto-premium': 'Eligió la experiencia completa: usa 5-6 pasos, lo mejor del catálogo.',
       }
 
       const systemPrompt = `Eres el motor de recomendaciones de LIORA, una marca peruana de bienestar natural.
@@ -186,7 +191,9 @@ Reglas estrictas:
 - item: el número EXACTO del catálogo (#N). product_name: copia EXACTA del nombre de ese mismo item. Si no coinciden, el paso se descarta — verifica que el número y el nombre sean de la MISMA línea del catálogo.
 - USA EL PERFIL: cada paso debe poder justificarse con un dato concreto del perfil. Si dice que su piel es grasa, no elijas algo formulado para piel seca; si ya toma proteína, no se la repitas; si viene de una quemadura, incluye algo que calme y no solo que proteja.
 - COHERENCIA (lo más importante): TODOS los productos deben servir directamente al objetivo principal de la persona. Nunca incluyas productos de otras áreas solo para llenar (ej: jamás desodorante o proteína de gym en una rutina digestiva). Respeta las características que la persona indicó (ej: si su piel es grasa, no elijas productos formulados para piel seca).
-- VARIEDAD: máximo UN producto por rol e ingrediente activo — nunca dos energizantes, dos probióticos ni el mismo activo en marcas distintas. Cada paso debe cubrir una necesidad DIFERENTE de la rutina.${sunExposure ? '\n- SOL: la persona estará expuesta al sol (viaje, playa u outdoor). La rutina DEBE incluir un protector solar del catálogo como uno de sus pasos.' : ''}
+- VARIEDAD: máximo UN producto por rol e ingrediente activo — jamás dos shampoos, dos protectores solares, dos hidratantes ni dos probióticos. Cada paso debe cubrir una necesidad DIFERENTE de la rutina.
+- FUNDAMENTOS DE PIEL: si el objetivo principal es la piel y la persona no tiene rutina, los básicos van primero: limpiador adecuado a su tipo de piel, hidratante y protector solar diario. Los extras (sérums, suplementos) van después de cubrirlos.
+- OBJETIVO SECUNDARIO: merece a lo sumo UN paso; nunca desplaza a los básicos del objetivo principal.${sunExposure ? '\n- SOL: la persona estará expuesta al sol (viaje, playa u outdoor). La rutina DEBE incluir un protector solar del catálogo como uno de sus pasos.' : ''}
 - Orden cronológico de uso: mañana → noche. step_when corto con emoji y momento, coherente con el tipo de producto (suplementos: en ayunas o con comidas; cosméticos: "🌅 Mañana" / "🌙 Noche" — un sérum no se toma "en ayunas"). Un producto energizante (cafeína, maca, guaraná) JAMÁS va en un paso de noche.
 - step_label: el ROL del producto en la rutina, 2-4 palabras (ej: "Probiótico vivo intensivo") — NO repitas el nombre del producto.
 - step_instruction: 1-2 oraciones concretas: cómo tomarlo/aplicarlo, cantidad, y qué logra en la rutina.

@@ -1,5 +1,5 @@
 import type { createAdminClient } from '@/lib/supabase/admin'
-import { ingredientTokens } from './ai-routine'
+import { ingredientTokens, roleToken } from './ai-routine'
 
 // Sugerencias determinísticas (sin IA) compartidas por el motor del quiz,
 // el endpoint /api/related y las secciones de cross-sell del sitio.
@@ -155,8 +155,13 @@ export function buildSuggestions({
   const excludedProductIds = new Set(exclude.map((e) => e.productId))
   const excludedIdentities = new Set(exclude.map(identity))
   const usedIngredients = new Set<string>()
+  // El rol funcional también cuenta: si el kit ya trae un shampoo, sugerir
+  // tres shampoos más no complementa nada.
+  const usedRoles = new Set<string>()
   for (const e of exclude) {
     ingredientTokens(e.name, e.brand).forEach((t) => usedIngredients.add(t))
+    const role = roleToken(e.name)
+    if (role) usedRoles.add(role)
   }
 
   const suggestions: CatalogItem[] = []
@@ -168,10 +173,13 @@ export function buildSuggestions({
       if (item.categorySlug !== cat) continue
       if (excludedProductIds.has(item.productId) || excludedIdentities.has(identity(item))) continue
       if (dedupeIngredients && ingredientTokens(item.name, item.brand).some((t) => usedIngredients.has(t))) continue
+      const itemRole = dedupeIngredients ? roleToken(item.name) : null
+      if (itemRole && usedRoles.has(itemRole)) continue
       if (suggestions.some((s) => s.productId === item.productId || identity(s) === identity(item))) continue
       suggestions.push(item)
       fromCat++
       ingredientTokens(item.name, item.brand).forEach((t) => usedIngredients.add(t))
+      if (itemRole) usedRoles.add(itemRole)
     }
   }
   return suggestions

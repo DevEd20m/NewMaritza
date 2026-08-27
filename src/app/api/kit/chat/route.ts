@@ -4,7 +4,8 @@ import { z } from 'zod'
 import { consumeRateLimit, requestIp } from '@/lib/security/rate-limit'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
-import { loadCatalog, type CatalogItem } from '@/lib/recommendation/related'
+import { loadCatalog, describeForPrompt, type CatalogItem } from '@/lib/recommendation/related'
+import { loadProfileIndexById } from '@/lib/recommendation/profile-loader'
 import {
   buildCartSwapSuggestions,
   containsExternalRecommendation,
@@ -132,9 +133,15 @@ export async function POST(request: NextRequest) {
     try {
       const { default: OpenAI } = await import('openai')
       const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY, timeout: 15000, maxRetries: 1 })
+
+      // Lía conoce el cuestionario de la persona y para quién es cada producto
+      // del kit. Sin esto no podía responder «¿por qué me diste esto?» — solo
+      // veía nombres y precios.
+      const loaded = await loadProfileIndexById(admin, profileId)
       const currentText = resolvedCart.map((line) => {
         const item = catalogByVariant.get(line.variantId)!
-        return `- ${item.name} · ${item.brand ?? 'sin marca'} (${item.variantName}), ${item.categoryName}, S/${(item.priceCents / 100).toFixed(0)}`
+        const para = describeForPrompt(item)
+        return `- ${item.name} · ${item.brand ?? 'sin marca'} (${item.variantName}), ${item.categoryName}, S/${(item.priceCents / 100).toFixed(0)}${para ? `\n  Para quién es: ${para}` : ''}`
       }).join('\n')
       const optionText = suggestions.map((suggestion, index) => {
         const item = catalogByVariant.get(suggestion.replacementVariantId)!
@@ -143,14 +150,29 @@ export async function POST(request: NextRequest) {
 
       const completion = await openai.chat.completions.create({
         model: process.env.OPENAI_MODEL ?? 'gpt-4o-mini',
-        temperature: 0.2,
-        max_tokens: 140,
+        temperature: 0.3,
+        max_tokens: 260,
         messages: [
           {
             role: 'system',
-            content: 'Eres Lía, asistente de compras de LIORA. Responde en español y máximo 2 oraciones. Solo puedes hablar del carrito y de las alternativas LIORA enumeradas. Nunca recomiendes farmacias, tiendas externas ni productos que no estén enumerados. No inventes precios, stock, efectos médicos ni dosificaciones. Si no hay alternativas validadas, pregunta qué producto quiere revisar y qué prioriza.',
+            content: `Eres Lía, la asistente de bienestar de LIORA. Este kit se armó a partir del cuestionario de la persona; tu trabajo es que entienda su rutina y confíe en ella.
+
+Puedes:
+- Explicar POR QUÉ cada producto del kit encaja con su perfil (cruza el perfil con el «para quién es» de cada producto).
+- Explicar cómo y cuándo usar cada producto del kit.
+- Ofrecer las alternativas LIORA enumeradas si pregunta por cambios, precio o preferencias.
+
+Reglas estrictas:
+- Responde en español, cálida y concreta, en 2 a 4 oraciones.
+- Solo hablas de los productos del kit y de las alternativas enumeradas. Jamás recomiendes farmacias, tiendas externas ni productos no enumerados.
+- No inventes precios, stock, efectos médicos ni dosificaciones; no prometas tratar ni curar condiciones.
+- Si la persona menciona embarazo, medicamentos o una condición médica, sugiere consultar a su médico.
+- Si preguntan algo fuera del kit o del cuestionario, redirige con amabilidad a la rutina.`,
           },
-          { role: 'user', content: `Carrito actual:\n${currentText}\n\nAlternativas validadas:\n${optionText}\n\nPregunta: ${message}` },
+          {
+            role: 'user',
+            content: `PERFIL DEL CUESTIONARIO:\n${loaded?.perfilTexto ?? 'sin datos del cuestionario'}\n\nKIT ACTUAL:\n${currentText}\n\nALTERNATIVAS VALIDADAS:\n${optionText}\n\nPregunta de la persona: ${message}`,
+          },
         ],
       })
       const candidateReply = completion.choices[0]?.message?.content?.trim()
