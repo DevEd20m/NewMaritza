@@ -13,6 +13,7 @@ const MANIFEST_PATH = join(OUTPUT_DIR, 'manifest.json')
 const BUCKET = 'product-images'
 const SOURCE_CATEGORY_URL = 'https://www.aruma.pe/cuidado-de-la-piel'
 const MAX_IMAGES = 5
+const KNOWN_EXISTING_SOURCE_IDS = new Set(['7013', '1019612', '5004', '4466'])
 
 dotenv.config({ path: process.env.IMPORT_ENV_PATH || join(ROOT, '.env.local'), quiet: true })
 
@@ -220,9 +221,33 @@ async function context(admin) {
 }
 
 function duplicateOf(product, existing) {
-  return existing.find((row) => row.slug === product.slug || (normalize(row.brand) === normalize(product.brand) && (
-    normalize(row.name) === normalize(product.name) || tokenSimilarity(row.name, product.name) >= 0.86
-  )))
+  const exact = existing.find((row) => row.slug === product.slug || (
+    normalize(row.brand) === normalize(product.brand) && normalize(row.name) === normalize(product.name)
+  ))
+  if (exact) return exact
+  if (!KNOWN_EXISTING_SOURCE_IDS.has(product.sourceProductId)) return null
+  return existing
+    .filter((row) => normalize(row.brand) === normalize(product.brand))
+    .map((row) => ({ row, score: tokenSimilarity(row.name, product.name) }))
+    .sort((left, right) => right.score - left.score)[0]?.row ?? null
+}
+
+async function syncExistingPrice(admin, product, existingProduct) {
+  if (!KNOWN_EXISTING_SOURCE_IDS.has(product.sourceProductId)) return false
+  const variants = await admin.from('product_variants').select('id,product_prices(id,amount_cents,compare_at_cents,effective_to)').eq('product_id', existingProduct.id).eq('is_active', true).limit(1)
+  if (variants.error) throw variants.error
+  const variant = variants.data[0]
+  if (!variant) throw new Error(`Producto existente sin variante: ${existingProduct.slug}`)
+  const current = variant.product_prices?.find((price) => price.effective_to === null)
+  if (current?.amount_cents === product.priceCents && current?.compare_at_cents === product.compareAtCents) return false
+  const now = new Date().toISOString()
+  if (current) {
+    const close = await admin.from('product_prices').update({ effective_to: now }).eq('id', current.id)
+    if (close.error) throw close.error
+  }
+  const insert = await admin.from('product_prices').insert({ variant_id: variant.id, currency: 'PEN', amount_cents: product.priceCents, compare_at_cents: product.compareAtCents, effective_from: now, effective_to: null })
+  if (insert.error) throw insert.error
+  return true
 }
 
 async function apply() {
@@ -230,9 +255,17 @@ async function apply() {
   const admin = adminClient()
   const ctx = await context(admin)
   const created = []; const skipped = []; const errors = []
-  for (const [index, product] of manifest.products.entries()) {
+  await mapLimit(manifest.products, 4, async (product, index) => {
     const duplicate = duplicateOf(product, ctx.existing)
-    if (duplicate) { skipped.push({ source: product.name, existing: duplicate.name, slug: duplicate.slug }); continue }
+    if (duplicate) {
+      try {
+        const priceUpdated = await syncExistingPrice(admin, product, duplicate)
+        skipped.push({ source: product.name, existing: duplicate.name, slug: duplicate.slug, priceUpdated })
+      } catch (error) {
+        errors.push({ name: product.name, error: error instanceof Error ? error.message : String(error) })
+      }
+      return
+    }
     const categoryId = ctx.categoryBySlug.get(product.categorySlug)
     if (!categoryId) throw new Error(`Categoría ausente: ${product.categorySlug}`)
     let productId = null; const uploaded = []
@@ -264,7 +297,7 @@ async function apply() {
       errors.push({ name: product.name, error: error instanceof Error ? error.message : String(error) })
       console.error(`ERROR ${product.name}: ${errors.at(-1).error}`)
     }
-  }
+  })
   const report = { mode: 'apply', expected: manifest.products.length, created: created.length, skipped: skipped.length, errors, createdProducts: created, skippedProducts: skipped }
   await writeFile(join(OUTPUT_DIR, 'apply-report.json'), `${JSON.stringify(report, null, 2)}\n`)
   console.log(JSON.stringify({ ...report, createdProducts: undefined, skippedProducts: undefined }, null, 2))
@@ -277,17 +310,21 @@ async function audit() {
   const ctx = await context(admin)
   const matched = manifest.products.map((product) => ({ product, row: duplicateOf(product, ctx.existing) })).filter((entry) => entry.row)
   const ids = matched.map((entry) => entry.row.id)
-  const variants = await admin.from('product_variants').select('id,product_id,sku,is_active,stock_quantity,product_prices(amount_cents,compare_at_cents,currency,effective_to)').in('product_id', ids).range(0, 1999)
-  if (variants.error) throw variants.error
+  const variantRows = []
+  for (let start = 0; start < ids.length; start += 100) {
+    const variants = await admin.from('product_variants').select('id,product_id,sku,is_active,stock_quantity,product_prices(amount_cents,compare_at_cents,currency,effective_to)').in('product_id', ids.slice(start, start + 100)).range(0, 499)
+    if (variants.error) throw variants.error
+    variantRows.push(...variants.data)
+  }
   const errors = []
   for (const { product, row } of matched) {
-    const variant = variants.data.find((candidate) => candidate.product_id === row.id)
+    const variant = variantRows.find((candidate) => candidate.product_id === row.id)
     const price = variant?.product_prices?.find((candidate) => candidate.effective_to === null)
     if (!variant?.sku?.startsWith('LIO-')) errors.push(`${row.slug}: SKU inválido`)
     if (!variant?.is_active || variant.stock_quantity !== null) errors.push(`${row.slug}: variante o stock inválido`)
     if (price?.amount_cents !== product.priceCents || price?.currency !== 'PEN') errors.push(`${row.slug}: precio incorrecto`)
   }
-  console.log(JSON.stringify({ mode: 'audit', expected: manifest.products.length, matched: matched.length, variants: variants.data.length, errors }, null, 2))
+  console.log(JSON.stringify({ mode: 'audit', expected: manifest.products.length, matched: matched.length, variants: variantRows.length, errors }, null, 2))
   if (errors.length || matched.length !== manifest.products.length) process.exitCode = 1
 }
 

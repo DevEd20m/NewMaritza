@@ -51,3 +51,17 @@ next-env.d.ts
 
 # caché local del pipeline de imágenes
 /.image-cache/
+
+# datos y herramientas locales del pipeline de catálogo — no se versionan:
+# exports/ e imports/ son datos (xlsx, imágenes de productos) y los scripts
+# son tooling de un solo uso que se corre a mano
+/exports/
+/imports/
+/scripts/lib/
+/scripts/export-products-xlsx.mjs
+/scripts/import-aruma-skin.mjs
+/scripts/product-images-*.mjs
+/scripts/product-images-progress.json
+
+# informe generado del rediseño del quiz (se regenera con build-report.mjs)
+/scripts/quiz-redesign/quiz-v2.html
