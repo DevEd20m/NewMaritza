@@ -104,6 +104,7 @@ test.describe('Envío del cuestionario', () => {
   test.skip(!runSubmit, 'exportar RUN_QUIZ_E2E=1 para correr el envío real')
 
   test('la ruta de texto libre llega al carrito', async ({ page }) => {
+    test.setTimeout(240000)
     await page.goto('/cuestionario')
     await elegir(page, /prefiero contarles con mis palabras/)
     await page.locator('textarea').fill('Prueba e2e: piel grasa que se reseca en las mejillas, probé retinol y me irritó.')
@@ -113,10 +114,17 @@ test.describe('Envío del cuestionario', () => {
     await avanzar(page)   // edad: se puede saltar
     await avanzar(page)   // sexo: se puede saltar
     await page.getByRole('button', { name: 'Un ritual equilibrado' }).click()
-    await page.getByRole('button', { name: 'Ver mi kit' }).click()
+    await avanzar(page)
+    // Interstitial «Buenas noticias antes de seguir» — su botón dice «Continuar»
+    await page.getByRole('button', { name: 'Continuar' }).click()
     // Pantalla de captura de correo
     await page.getByPlaceholder(/correo|email/i).fill(`e2e+${Date.now()}@liora.test`)
     await page.getByRole('button', { name: /Ver mi kit|kit/i }).last().click()
     await page.waitForURL(/\/carrito\?profileId=/, { timeout: 30000 })
+    // La rutina renderizada prueba que /api/kit/recommend resolvió el perfil
+    // (con IA o con el fallback curado) y persistió las recomendaciones.
+    // Margen amplio: en frío el dev server compila la ruta y la IA puede
+    // reintentar hasta 2 veces por presupuesto (~25s por llamada).
+    await expect(page.getByText('Hicimos esto para ti')).toBeVisible({ timeout: 150000 })
   })
 })
