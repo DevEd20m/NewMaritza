@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { ALLERGY_LABELS, SAFETY_FLAG_TEXTS } from '@/lib/recommendation/slug-weights'
+import { buildProfileIndex, renderProfile } from '@/lib/recommendation/profile-index'
+import { detectarBanderasEnTexto, bloqueTextoLibre, MAX_TEXTO_LIBRE } from '@/lib/recommendation/free-text'
 import { calculateCategoryScores, scoresSortedDesc } from '@/lib/recommendation/score'
 import { selectRoutineKit, FALLBACK_DIAGNOSIS, FALLBACK_TAGS } from '@/lib/recommendation/kit-routes'
 import { validateAiRoutine } from '@/lib/recommendation/ai-routine'
-import { loadCatalog, buildSuggestions, type CatalogItem } from '@/lib/recommendation/related'
+import { loadCatalog, buildSuggestions, describeForPrompt, type CatalogItem } from '@/lib/recommendation/related'
 
 // Rangos internos de presupuesto. Desde la migración
 // 20260718170000_quiz_intent_tiers_merge_safety el cliente elige intención
@@ -64,11 +65,11 @@ export async function GET(request: NextRequest) {
   // Get human-readable Q&A + slugs. El hint !question_id es obligatorio:
   // quiz_question_options tiene dos FKs hacia quiz_questions (question_id y
   // next_question_id) y sin él PostgREST rechaza el embed por ambigüedad.
-  type QuizQ = { id: string; text: string; quiz_question_options: { id: string; text: string; slug: string }[] }
+  type QuizQ = { id: string; text: string; type: string; quiz_question_options: { id: string; text: string; slug: string }[] }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: questionsRaw, error: questionsError } = await (admin as any)
     .from('quiz_questions')
-    .select('id, text, quiz_question_options!question_id(id, text, slug)')
+    .select('id, text, type, quiz_question_options!question_id(id, text, slug)')
     .in('id', questionIds)
   const questions = (questionsRaw ?? []) as QuizQ[]
 
@@ -77,17 +78,24 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'No pudimos leer tus respuestas. Intenta de nuevo.' }, { status: 500 })
   }
 
-  const qaLines: string[] = []
   const allSlugs: string[] = []
+  let textoLibre = ''
 
   for (const q of questions) {
-    const selected = q.quiz_question_options
-      .filter((o) => (answers[q.id] ?? []).includes(o.id))
-    if (selected.length) {
-      qaLines.push(`${q.text}: ${selected.map((o) => o.text).join(', ')}`)
-      allSlugs.push(...selected.map((o) => o.slug))
+    // Las preguntas de texto no tienen opciones: la respuesta es lo escrito.
+    if (q.type === 'text') {
+      textoLibre = String((answers[q.id] ?? [])[0] ?? '').trim().slice(0, MAX_TEXTO_LIBRE)
+      continue
     }
+    const selected = q.quiz_question_options.filter((o) => (answers[q.id] ?? []).includes(o.id))
+    allSlugs.push(...selected.map((o) => o.slug))
   }
+
+  // Lo que la persona escribió solo puede AÑADIR banderas de salud, nunca
+  // quitarlas: si menciona un embarazo pero marcó «nada de lo siguiente», la
+  // contradicción se resuelve del lado seguro.
+  const slugsConTexto = [...allSlugs, ...detectarBanderasEnTexto(textoLibre)]
+  const perfil = buildProfileIndex({ slugs: slugsConTexto, texto: textoLibre })
 
   const scores = calculateCategoryScores(allSlugs)
 
@@ -116,8 +124,19 @@ export async function GET(request: NextRequest) {
       // y se ordena por categoría para que los productos afines queden juntos.
       const promptCatalog = [...catalog].sort((a, b) =>
         a.categoryName.localeCompare(b.categoryName) || a.name.localeCompare(b.name))
+      // Hasta ahora la línea solo llevaba nombre, marca, categoría y precio: la
+      // IA tenía que deducir de "Crema Esthederm Intensive Hyaluronic+ 50 ml"
+      // si servía para piel grasa. Añadir para quién es cada producto y sus
+      // etiquetas curadas es lo que convierte el retrato de la persona en una
+      // elección informada. Las etiquetas son señal, nunca filtro: el catálogo
+      // cambia y nada puede quedar amarrado a un producto concreto.
       const catalogText = promptCatalog
-        .map((c, i) => `#${i + 1} | ${c.name}${c.brand ? ` · ${c.brand}` : ''} (${c.variantName}) | ${c.categoryName} | S/${(c.priceCents / 100).toFixed(0)}`)
+        .map((c, i) => {
+          const cabecera = `#${i + 1} | ${c.name}${c.brand ? ` · ${c.brand}` : ''} (${c.variantName}) | ${c.categoryName} | S/${(c.priceCents / 100).toFixed(0)}`
+          const para = describeForPrompt(c)
+          const etiquetas = c.tags.length ? ` | ${c.tags.slice(0, 8).join(', ')}` : ''
+          return para ? `${cabecera}${etiquetas}\n     ${para}` : `${cabecera}${etiquetas}`
+        })
         .join('\n')
 
       const budgetSlug = allSlugs.find((s) => s in BUDGET_RANGES)
@@ -130,13 +149,11 @@ export async function GET(request: NextRequest) {
         (s) => ['obj-viaje', 'obj-solar', 'viaje-playa', 'viaje-aventura', 'vacaciones-playa', 'exposicion-solar'].includes(s) || s.startsWith('solar-'),
       )
 
-      const restrictions = allSlugs.filter((s) => s in ALLERGY_LABELS).map((s) => ALLERGY_LABELS[s])
+      // Todo sale del índice de perfil: una sola fuente, ya normalizada, que
+      // resuelve igual los cuestionarios viejos y el nuevo.
+      const restrictions = perfil.restricciones
       const prefersNatural = allSlugs.includes('prefiere-natural')
-      const activeSafetyFlags = allSlugs.filter((s) => SAFETY_FLAG_TEXTS[s]).map((s) => SAFETY_FLAG_TEXTS[s])
-
-      const genderSlug = allSlugs.find((s) => s.startsWith('genero-'))
-      const genderLabel = genderSlug === 'genero-femenino' ? 'mujer' : genderSlug === 'genero-masculino' ? 'hombre' : null
-      const pronoun = genderSlug === 'genero-masculino' ? 'él' : 'ella'
+      const activeSafetyFlags = perfil.seguridad
 
       const routineSizeSlug = allSlugs.find((s) => s.startsWith('rutina-'))
       const routineSizeHint: Record<string, string> = {
@@ -148,8 +165,10 @@ export async function GET(request: NextRequest) {
 
       const systemPrompt = `Eres el motor de recomendaciones de LIORA, una marca peruana de bienestar natural.
 
-CATÁLOGO COMPLETO (#item | producto · marca (presentación) | categoría | precio):
-Nota: puede haber productos con el mismo nombre en marcas distintas y precios distintos — son productos diferentes; elige la marca que mejor convenga al perfil y presupuesto.
+CATÁLOGO COMPLETO. Cada producto ocupa dos líneas:
+  #item | producto · marca (presentación) | categoría | precio | etiquetas
+       para quién es
+Las etiquetas y el «para quién es» son la señal principal para acertar: úsalas para cruzar el perfil con el producto. Puede haber productos con el mismo nombre en marcas distintas y precios distintos — son productos diferentes; elige la marca que mejor convenga al perfil y al presupuesto.
 ${catalogText}
 
 Tu tarea: a partir del cuestionario de la persona, ARMA UNA RUTINA PERSONALIZADA paso a paso eligiendo productos del catálogo. La rutina es un plan de uso diario: paso 1 toma/usa esto, paso 2 esto, en orden cronológico.
@@ -165,6 +184,7 @@ Responde SOLO con JSON:
 Reglas estrictas:
 - steps: 4 a 6 pasos (cada paso = un producto DIFERENTE). ${routineSizeSlug ? routineSizeHint[routineSizeSlug] ?? '' : ''}
 - item: el número EXACTO del catálogo (#N). product_name: copia EXACTA del nombre de ese mismo item. Si no coinciden, el paso se descarta — verifica que el número y el nombre sean de la MISMA línea del catálogo.
+- USA EL PERFIL: cada paso debe poder justificarse con un dato concreto del perfil. Si dice que su piel es grasa, no elijas algo formulado para piel seca; si ya toma proteína, no se la repitas; si viene de una quemadura, incluye algo que calme y no solo que proteja.
 - COHERENCIA (lo más importante): TODOS los productos deben servir directamente al objetivo principal de la persona. Nunca incluyas productos de otras áreas solo para llenar (ej: jamás desodorante o proteína de gym en una rutina digestiva). Respeta las características que la persona indicó (ej: si su piel es grasa, no elijas productos formulados para piel seca).
 - VARIEDAD: máximo UN producto por rol e ingrediente activo — nunca dos energizantes, dos probióticos ni el mismo activo en marcas distintas. Cada paso debe cubrir una necesidad DIFERENTE de la rutina.${sunExposure ? '\n- SOL: la persona estará expuesta al sol (viaje, playa u outdoor). La rutina DEBE incluir un protector solar del catálogo como uno de sus pasos.' : ''}
 - Orden cronológico de uso: mañana → noche. step_when corto con emoji y momento, coherente con el tipo de producto (suplementos: en ayunas o con comidas; cosméticos: "🌅 Mañana" / "🌙 Noche" — un sérum no se toma "en ayunas"). Un producto energizante (cafeína, maca, guaraná) JAMÁS va en un paso de noche.
@@ -173,17 +193,17 @@ Reglas estrictas:
 - PRESUPUESTO: ${budget ? `la persona ${budget.label}${budget.max ? ` — suma los precios de tus pasos y NO pases de S/${budget.max}${budget.min ? `; tampoco armes algo muy por debajo de S/${budget.min}` : ''}` : ''}. Si el objetivo no se puede cubrir dentro del rango, acércate lo más posible priorizando lo esencial.` : 'sin dato — apunta a un total moderado (S/200-400).'}
 - RESTRICCIONES: ${restrictions.length ? `la persona evita: ${restrictions.join(', ')}. CRÍTICO para su seguridad — no incluyas productos que los contengan.` : 'sin restricciones.'}
 - PREFERENCIA: ${prefersNatural ? 'para la persona es FUNDAMENTAL que todo sea natural u orgánico — usa EXCLUSIVAMENTE productos naturales (nada de fórmulas sintéticas de laboratorio). Única excepción: si una necesidad esencial (ej. protector solar) no tiene opción natural en el catálogo, elige la más suave y explica en el diagnosis por qué la incluiste.' : 'abierta/o a todo tipo de productos.'}
-- GÉNERO: ${genderLabel ? `la persona es ${genderLabel}; usa pronombres correctos (${pronoun}) en el diagnosis.` : 'no especificado — usa lenguaje neutro.'}
 - routine_name: nombre corto y atractivo en español que describa el objetivo (ej: "Rutina Digestión Ligera").
 - diagnosis: 2-3 oraciones cálidas. Empieza con un insight sobre el perfil (no con "Te recomendamos") y explica por qué esta rutina encaja.${activeSafetyFlags.length ? ' Cierra recordando con calidez consultar a su médico antes de iniciar.' : ''}
 - tags: 3-5 etiquetas cortas en español del perfil.
 - CONTEXTO LOCAL: marca peruana; el clima costero húmedo afecta la piel — menciónalo solo si aplica.${activeSafetyFlags.length ? `\n- ADVERTENCIAS MÉDICAS (CRÍTICO — reportadas por la persona, respetar siempre):\n${activeSafetyFlags.map((f, i) => `  ${i + 1}. ${f}`).join('\n')}` : ''}
+- SIN PROMESAS MÉDICAS: si la persona nombra una condición (gastritis, colon irritable, una enfermedad), habla de apoyo y bienestar, nunca de tratar, curar ni aliviar una enfermedad, y sugiere consulta profesional.
 - Responde completamente en español.`
 
       type ChatMsg = { role: 'system' | 'user' | 'assistant'; content: string }
       const messages: ChatMsg[] = [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: `Respuestas del cuestionario:\n${qaLines.join('\n')}` },
+        { role: 'user', content: `PERFIL DE LA PERSONA\n${renderProfile(perfil)}${bloqueTextoLibre(textoLibre)}` },
       ]
 
       const callAi = async () => {

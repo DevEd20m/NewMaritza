@@ -48,7 +48,7 @@ const PROFILES: ProfileFixture[] = [
   {
     name: 'P06 — Caída de cabello',
     slugs: ['obj-belleza', 'foco-cabello', 'cabello-caida'],
-    expectedTopCategory: 'piel',
+    expectedTopCategory: 'cabello',
     expectedMinScore: 6,
   },
   {

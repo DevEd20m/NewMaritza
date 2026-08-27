@@ -29,6 +29,11 @@ const ROUTINE_BY_CATEGORY: Record<CategorySlug, (has: (s: string) => boolean) =>
     has('cuerpo-rozaduras') || has('cuerpo-muscular')
       ? 'rutina-cuidado-piel-corporal'
       : 'rutina-pies-perfectos',
+  // Todavía no existe un kit curado de cabello. Devolver un slug inexistente es
+  // deliberado: el fallback 1 no encuentra kit y cae al fallback 2, que ahora sí
+  // puede tomar productos de la categoría `cabello`. Antes ni eso era posible,
+  // porque ningún slug la puntuaba y sus 28 productos eran inalcanzables.
+  cabello: () => 'rutina-cabello',
 }
 
 export function selectRoutineKit(slugs: string[]): { kitSlug: string; topCategory: CategorySlug | null } {
@@ -50,6 +55,7 @@ export const FALLBACK_DIAGNOSIS: Record<CategorySlug, string> = {
   viaje:         'Armamos tu kit de viaje con lo esencial para que estés cubierta/o en cualquier destino.',
   hogar:         'Armamos tu botiquín con lo esencial para atender los imprevistos de casa.',
   'pies-cuerpo': 'Armamos tu rutina de cuidado corporal paso a paso, para pies y piel del cuerpo.',
+  cabello:       'Armamos tu rutina capilar paso a paso, pensada para tu tipo de cabello y tu cuero cabelludo.',
 }
 
 export const FALLBACK_TAGS: Record<CategorySlug, string[]> = {
@@ -61,4 +67,5 @@ export const FALLBACK_TAGS: Record<CategorySlug, string[]> = {
   viaje:         ['Viaje', 'Esenciales'],
   hogar:         ['Hogar', 'Primeros auxilios'],
   'pies-cuerpo': ['Cuidado corporal', 'Rutina paso a paso'],
+  cabello:       ['Cabello', 'Rutina paso a paso'],
 }

@@ -2,6 +2,7 @@ export const SLUG_WEIGHTS: Record<string, Record<string, number>> = {
   // ── Objetivos principales ─────────────────────────────
   'obj-rendimiento':  { gym: 3 },
   'obj-belleza':      { piel: 3 },
+  'obj-piel':         { piel: 3 },
   'obj-bienestar':    { bienestar: 3 },
   'obj-digestivo':    { digestivo: 3, gym: 1 },
   'obj-nutricion':    { bienestar: 3, digestivo: 1 },
@@ -44,7 +45,7 @@ export const SLUG_WEIGHTS: Record<string, Record<string, number>> = {
   'gym-hidratacion':    { gym: 2, digestivo: 1 },
   // ── Foco belleza ──────────────────────────────────────
   'foco-piel':      { piel: 3 },
-  'foco-cabello':   { piel: 3 },
+  'foco-cabello':   { cabello: 3 },
   'foco-colageno':  { piel: 2, bienestar: 2 },
   'foco-antiedad':  { piel: 3, bienestar: 2 },
   // ── Foco bienestar ────────────────────────────────────
@@ -78,10 +79,24 @@ export const SLUG_WEIGHTS: Record<string, Record<string, number>> = {
   'piel-rojeces':   { piel: 2 },
   'sin-sensibilidad': {},
   // ── Cabello ───────────────────────────────────────────
-  'cabello-caida':      { piel: 3 },
-  'cabello-sequedad':   { piel: 2 },
-  'cabello-frizz':      { piel: 2 },
-  'cabello-crecimiento':{ piel: 3 },
+  'cabello-caida':      { cabello: 3 },
+  'cabello-sequedad':   { cabello: 2 },
+  'cabello-frizz':      { cabello: 2 },
+  'cabello-crecimiento':{ cabello: 3 },
+  'cabello-grasa':      { cabello: 2 },
+  'cabello-caspa':      { cabello: 3 },
+  // Rama de cabello del cuestionario nuevo
+  'obj-cabello':        { cabello: 3 },
+  'extra-cabello':      { cabello: 1 },
+  'cabello-liso':       { cabello: 1 },
+  'cabello-ondulado':   { cabello: 1 },
+  'cabello-rizado':     { cabello: 2 },
+  'cuero-graso':        { cabello: 2 },
+  'cuero-seco':         { cabello: 2 },
+  'cuero-caspa':        { cabello: 3 },
+  'cabello-tenido':     { cabello: 2 },
+  'cabello-decolorado': { cabello: 2 },
+  'cabello-calor':      { cabello: 1 },
   // ── Bienestar: frecuencia ─────────────────────────────
   'frecuencia-diaria':    { bienestar: 2 },
   'frecuencia-semanal':   { bienestar: 1 },
@@ -124,7 +139,6 @@ export const SLUG_WEIGHTS: Record<string, Record<string, number>> = {
   'guia-viaje':     { viaje: 2, solar: 1 },
   'guia-hogar':     { hogar: 2 },
   // ── Slugs legados (no rompen perfiles históricos) ─────
-  'obj-piel': { piel: 3 }, 'obj-cabello': { piel: 2 },
   'entreno-fuerza': { gym: 3 }, 'entreno-cardio': { gym: 2, bienestar: 1 },
   'entreno-mixto': { gym: 2 }, 'entreno-hiit': { gym: 3 },
   'alto-rendimiento': { gym: 3 }, elite: { gym: 3 }, activo: { gym: 2 }, principiante: { gym: 1 },

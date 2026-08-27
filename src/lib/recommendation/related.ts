@@ -15,6 +15,7 @@ export const CAT_COLORS: Record<string, string> = {
   hogar:         'var(--cat-rosa)',
   digestivo:     'var(--cat-menta)',
   'pies-cuerpo': 'var(--cat-durazno)',
+  cabello:       'var(--cat-rosa)',
 }
 
 export interface CatalogItem {
@@ -34,6 +35,9 @@ export interface CatalogItem {
   description: string | null
   usageInstructions: string | null
   indications: string | null
+  /** Etiquetas curadas del producto. Señal para la IA, nunca un filtro:
+   *  el catálogo cambia y nada puede quedar amarrado a un producto concreto. */
+  tags: string[]
   stepLabel?: string | null
   stepWhen?: string | null
   stepInstruction?: string | null
@@ -41,12 +45,28 @@ export interface CatalogItem {
 
 // Catálogo activo completo con precio vigente (extraído de kit/recommend).
 export async function loadCatalog(admin: AdminClient): Promise<CatalogItem[]> {
-  const [{ data: products }, { data: categories }, { data: variants }, { data: prices }] = await Promise.all([
+  const [{ data: products }, { data: categories }, { data: variants }, { data: prices }, { data: tagRows }, { data: productTags }] = await Promise.all([
     admin.from('products').select('id, name, slug, brand, cover_image_url, category_id, description, usage_instructions, indications').eq('is_active', true),
     admin.from('categories').select('id, name, slug'),
     admin.from('product_variants').select('id, product_id, name, stock_quantity').eq('is_active', true),
     admin.from('product_prices').select('variant_id, amount_cents, currency, effective_to').is('effective_to', null),
+    // El grupo "alias" son ~400 etiquetas generadas por los importadores a
+    // partir del nombre del producto ("proteina-de-lucuma"): puro ruido.
+    // Las 74 curadas (objetivo, uso, piel, preferencia, momento, alerta…) sí
+    // describen al producto y son las que le sirven a la IA.
+    admin.from('tags').select('id, name, group').neq('group', 'alias'),
+    admin.from('product_tags').select('product_id, tag_id'),
   ])
+
+  const tagNames = new Map((tagRows ?? []).map((t) => [t.id, t.name as string]))
+  const tagsByProduct = new Map<string, string[]>()
+  for (const pt of (productTags ?? [])) {
+    const name = tagNames.get(pt.tag_id)
+    if (!name) continue
+    const list = tagsByProduct.get(pt.product_id) ?? []
+    list.push(name)
+    tagsByProduct.set(pt.product_id, list)
+  }
 
   const catMap = Object.fromEntries((categories ?? []).map((c) => [c.id, c]))
   const priceMap = new Map((prices ?? []).map((p) => [p.variant_id, p]))
@@ -77,9 +97,31 @@ export async function loadCatalog(admin: AdminClient): Promise<CatalogItem[]> {
       description: product.description,
       usageInstructions: product.usage_instructions,
       indications: product.indications,
+      tags: tagsByProduct.get(product.id) ?? [],
     })
   }
   return catalog
+}
+
+// El campo `indications` está sucio: en unos productos dice para quién es
+// ("Personas con piel mixta a grasa…") y en otros trae la lista INCI de
+// ingredientes ("AQUA/WATER/EAU, ISODODECANE, OCTYLDODECANOL…"). Meterlo crudo
+// en el prompt inyecta ruido, así que se detecta el formato antes de usarlo y
+// se cae a la descripción cuando no sirve.
+const PARECE_INDICACION = /^\s*(personas|ideal|indicad|para |quienes|recomendad|apto|pensad|uso |util|útil)/i
+// Binomio latino entre paréntesis o apertura por el disolvente: lista INCI.
+const PARECE_LISTA = /\([A-Z][a-z]+\s+[a-z]+\)|^\s*(agua|aqua|water)\b/
+
+/** Texto del producto para el prompt: para quién es, no de qué está hecho. */
+export function describeForPrompt(item: Pick<CatalogItem, 'indications' | 'description'>, max = 130): string | null {
+  const ind = item.indications?.trim()
+  // Solo se acepta `indications` cuando se lee como una indicación de verdad.
+  // `description` está poblada en todo el catálogo, así que caer siempre es seguro.
+  const usaInd = !!ind && PARECE_INDICACION.test(ind) && !PARECE_LISTA.test(ind)
+  const texto = (usaInd ? ind : item.description?.trim()) || ind || null
+  if (!texto) return null
+  const plano = texto.replace(/\s+/g, ' ')
+  return plano.length <= max ? plano : plano.slice(0, max - 1).replace(/[\s,;.]+\S*$/, '') + '…'
 }
 
 // Identidad de producto = nombre + marca (hay productos con el mismo nombre

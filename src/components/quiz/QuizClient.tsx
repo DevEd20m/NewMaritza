@@ -13,6 +13,11 @@ import { trackQuizStart, trackQuizStep, trackQuizComplete } from '@/lib/analytic
 interface QuizOption { id: string; text: string; slug: string; icon_url: string | null; sort_order: number }
 interface QuizQuestion {
   id: string; text: string; subtext: string | null; type: string; sort_order: number
+  is_required?: boolean
+  /** Tope de opciones en las preguntas de varias respuestas. */
+  max_select?: number | null
+  /** Tope de caracteres en las preguntas de texto libre. */
+  max_length?: number | null
   conditions: { if_any_slug?: string[] } | null
   quiz_question_options: QuizOption[]
 }
@@ -62,6 +67,9 @@ const SLUG_ICONS: Record<string, Icon> = {
   'nutricion-superalimentos': Leaf,
 }
 
+const PROGRESO_KEY = 'liora-quiz-progreso'
+const PROGRESO_TTL_MS = 24 * 60 * 60 * 1000
+
 export function QuizClient({ templateId, groups, isLoggedIn = false, userName, userEmail }: Props) {
   const router = useRouter()
   const { addAnswer, setTemplateId, setProfileId, complete } = useQuizStore()
@@ -104,12 +112,36 @@ export function QuizClient({ templateId, groups, isLoggedIn = false, userName, u
   const [whatsappConsent, setWhatsappConsent] = useState(false)
   const [leadStep, setLeadStep] = useState(false)
   const [fading, setFading] = useState(false)
+  const [freeText, setFreeText] = useState('')
   const validEmail = /\S+@\S+\.\S+/.test(leadEmail)
 
   const quizTopRef = useRef<HTMLDivElement | null>(null)
   const submissionIdRef = useRef<string | null>(null)
 
   useEffect(() => { trackQuizStart() }, [])
+
+  // El cuestionario vivía solo en memoria: recargar la página lo perdía todo.
+  // Con el árbol ampliado son diez u once pantallas, así que perderlas es
+  // abandono directo. Se guarda el avance en el navegador y se restaura al
+  // volver; se borra al enviar.
+  useEffect(() => {
+    try {
+      const crudo = localStorage.getItem(PROGRESO_KEY)
+      if (!crudo) return
+      const g = JSON.parse(crudo) as { answers?: Record<string, string[]>; stepIdx?: number; ts?: number }
+      if (!g?.answers || !Object.keys(g.answers).length) return
+      if (!g.ts || Date.now() - g.ts > PROGRESO_TTL_MS) { localStorage.removeItem(PROGRESO_KEY); return }
+      setAnswers(g.answers)
+      setStepIdx(Math.max(0, g.stepIdx ?? 0))
+    } catch { /* almacenamiento no disponible: se empieza de cero */ }
+  }, [])
+
+  useEffect(() => {
+    if (!Object.keys(answers).length) return
+    try {
+      localStorage.setItem(PROGRESO_KEY, JSON.stringify({ answers, stepIdx, ts: Date.now() }))
+    } catch { /* cuota llena o modo privado: el cuestionario sigue funcionando */ }
+  }, [answers, stepIdx])
 
   useLayoutEffect(() => {
     quizTopRef.current?.scrollIntoView({ block: 'start', behavior: 'auto' })
@@ -182,13 +214,25 @@ export function QuizClient({ templateId, groups, isLoggedIn = false, userName, u
   const manyOptions   = step?.kind === 'question' && step.question.quiz_question_options.length > 6
   const compactCards  = step?.kind === 'question' && step.question.quiz_question_options.length >= 5
   const sortedOpts    = step?.kind === 'question'
-    ? [...step.question.quiz_question_options].sort((a, b) => a.sort_order - b.sort_order)
+    ? [...step.question.quiz_question_options]
+        .sort((a, b) => a.sort_order - b.sort_order)
+        // Los objetivos secundarios (extra-X) no repiten el principal (obj-X):
+        // quien ya eligió «Mi cabello» no debe volver a verlo en «¿Algo más?».
+        .filter(o => !(o.slug.startsWith('extra-') && selectedSlugs.includes(`obj-${o.slug.slice(6)}`)))
     : []
   const lastOpt  = (manyOptions && step?.kind === 'question' && step.question.type === 'single')
     ? (sortedOpts[sortedOpts.length - 1] ?? null)
     : null
   const mainOpts = lastOpt ? sortedOpts.slice(0, -1) : sortedOpts
   const LastOptIcon = lastOpt ? (SLUG_ICONS[lastOpt.slug] ?? null) : null
+
+  const isTextStep = step?.kind === 'question' && step.question.type === 'text'
+  const maxLength  = (step?.kind === 'question' && step.question.max_length) || 500
+  const maxSelect  = (step?.kind === 'question' && step.question.max_select) || null
+  // Las preguntas no obligatorias se pueden dejar en blanco: el botón cambia a
+  // "Saltar" en lugar de quedarse inerte.
+  const optionalStep = step?.kind === 'question' && step.question.is_required === false
+  const canAdvance = isTextStep || optionalStep || selected.length > 0
 
   // Gender-aware copy
   const genderSlug = selectedSlugs.find(s => s.startsWith('genero-'))
@@ -224,9 +268,10 @@ export function QuizClient({ templateId, groups, isLoggedIn = false, userName, u
       } else {
         setSelected(prev => {
           const withoutNinguna = ningunaId ? prev.filter(id => id !== ningunaId) : prev
-          return withoutNinguna.includes(optId)
-            ? withoutNinguna.filter(x => x !== optId)
-            : [...withoutNinguna, optId]
+          if (withoutNinguna.includes(optId)) return withoutNinguna.filter(x => x !== optId)
+          const tope = q.max_select ?? null
+          if (tope && withoutNinguna.length >= tope) return withoutNinguna
+          return [...withoutNinguna, optId]
         })
       }
     } else {
@@ -239,6 +284,7 @@ export function QuizClient({ templateId, groups, isLoggedIn = false, userName, u
     setTimeout(() => {
       setAnswers(newAnswers)
       setSelected([])
+      setFreeText('')
       setStepIdx(nextIdx)
       setFading(false)
     }, 150)
@@ -246,11 +292,16 @@ export function QuizClient({ templateId, groups, isLoggedIn = false, userName, u
 
   const next = async () => {
     if (step?.kind === 'question') {
-      const newAnswers = pruneAnswers({ ...answers, [step.question.id]: selected })
-      addAnswer({ questionId: step.question.id, optionIds: selected })
+      // En una pregunta de texto la respuesta es lo escrito, no ids de opción.
+      const respuesta = isTextStep
+        ? (freeText.trim() ? [freeText.trim().slice(0, maxLength)] : [])
+        : selected
+      const newAnswers = pruneAnswers({ ...answers, [step.question.id]: respuesta })
+      addAnswer({ questionId: step.question.id, optionIds: respuesta })
       if (isLast) {
         setAnswers(newAnswers)
         setSelected([])
+        setFreeText('')
         if (isLoggedIn) { submitLead(newAnswers); return }
         setLeadStep(true)
         return
@@ -298,6 +349,7 @@ export function QuizClient({ templateId, groups, isLoggedIn = false, userName, u
       if (data.profileId) {
         setProfileId(data.profileId)
         complete()
+        try { localStorage.removeItem(PROGRESO_KEY) } catch { /* nada que limpiar */ }
         trackQuizComplete()
         router.push(`/carrito?profileId=${data.profileId}`)
       }
@@ -458,6 +510,39 @@ export function QuizClient({ templateId, groups, isLoggedIn = false, userName, u
                 Elige una de {step.question.quiz_question_options.length} opciones
               </p>
             )}
+            {maxSelect && (
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-uva)', opacity: 0.55, marginTop: 8, marginBottom: 0 }}>
+                Elige hasta {maxSelect} · llevas {selected.length}
+              </p>
+            )}
+            {isTextStep ? (
+              <div style={{ marginTop: 28 }}>
+                <textarea
+                  value={freeText}
+                  onChange={e => setFreeText(e.target.value.slice(0, maxLength))}
+                  maxLength={maxLength}
+                  rows={6}
+                  autoFocus
+                  placeholder="Ej: tengo la piel grasa pero se me reseca en las mejillas, probé retinol y me irritó…"
+                  style={{
+                    width: '100%', resize: 'vertical', minHeight: 150,
+                    background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)',
+                    borderRadius: 20, padding: '18px 20px',
+                    fontFamily: 'var(--font-body)', fontSize: 17, lineHeight: 1.55,
+                    color: 'var(--liora-uva)', outline: 'none',
+                  }}
+                />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-uva)', opacity: 0.55 }}>
+                    Opcional — puedes saltarla
+                  </span>
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-uva)', opacity: freeText.length > maxLength - 60 ? 0.85 : 0.45, fontVariantNumeric: 'tabular-nums' }}>
+                    {freeText.length} / {maxLength}
+                  </span>
+                </div>
+              </div>
+            ) : (
+            <>
             <div className={`liora-quiz-options-grid${manyOptions ? ' liora-quiz-options-grid-many' : ''}`} style={{ display: 'grid', gridTemplateColumns: manyOptions ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)', gap: manyOptions ? 12 : 16, marginTop: manyOptions ? 20 : 28, paddingBottom: 8 }}>
               {mainOpts.map((opt, i) => {
                 const isSelected = selected.includes(opt.id)
@@ -523,22 +608,26 @@ export function QuizClient({ templateId, groups, isLoggedIn = false, userName, u
                 <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: 'var(--liora-uva)', lineHeight: 1.2 }}>{lastOpt.text}</span>
               </button>
             )}
+            </>
+            )}
             <div className="liora-quiz-actions" style={{ marginTop: 28, display: 'flex', justifyContent: 'center' }}>
               <button
                 onClick={next}
-                disabled={selected.length === 0}
+                disabled={!canAdvance}
                 style={{
-                  background: selected.length === 0 ? 'transparent' : 'var(--liora-uva)',
-                  color: selected.length === 0 ? 'rgba(61,26,58,0.4)' : 'var(--liora-crema)',
-                  border: selected.length === 0 ? '2px solid rgba(61,26,58,0.25)' : 'none',
+                  background: !canAdvance ? 'transparent' : 'var(--liora-uva)',
+                  color: !canAdvance ? 'rgba(61,26,58,0.4)' : 'var(--liora-crema)',
+                  border: !canAdvance ? '2px solid rgba(61,26,58,0.25)' : 'none',
                   borderRadius: 999, padding: '18px 40px',
                   fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 17,
-                  cursor: selected.length === 0 ? 'not-allowed' : 'pointer',
+                  cursor: !canAdvance ? 'not-allowed' : 'pointer',
                   display: 'inline-flex', alignItems: 'center', gap: 10,
-                  boxShadow: selected.length === 0 ? 'none' : 'var(--shadow-3)',
+                  boxShadow: !canAdvance ? 'none' : 'var(--shadow-3)',
                   outline: 'none', userSelect: 'none',
                 }}>
-                {isLast ? 'Ver mi kit' : 'Siguiente'}
+                {isLast ? 'Ver mi kit'
+                  : (optionalStep || isTextStep) && selected.length === 0 && !freeText.trim() ? 'Saltar'
+                  : 'Siguiente'}
                 <ArrowRight size={18} weight="bold" />
               </button>
             </div>

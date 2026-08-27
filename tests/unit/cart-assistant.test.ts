@@ -24,6 +24,7 @@ function item(overrides: Partial<CatalogItem>): CatalogItem {
     description: null,
     usageInstructions: null,
     indications: null,
+    tags: [],
     ...overrides,
   }
 }

@@ -7,11 +7,12 @@ export type CategorySlug =
   | 'digestivo'
   | 'hogar'
   | 'pies-cuerpo'
+  | 'cabello'
 
 export type CategoryScores = Record<CategorySlug, number>
 
 export const CATEGORY_SLUGS: CategorySlug[] = [
-  'piel', 'solar', 'bienestar', 'gym', 'viaje', 'digestivo', 'hogar', 'pies-cuerpo',
+  'piel', 'solar', 'bienestar', 'gym', 'viaje', 'digestivo', 'hogar', 'pies-cuerpo', 'cabello',
 ]
 
 export interface SafetyFlags {

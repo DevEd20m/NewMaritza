@@ -15,6 +15,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   hogar:         'var(--cat-rosa)',
   digestivo:     'var(--cat-menta)',
   'pies-cuerpo': 'var(--cat-durazno)',
+  cabello:       'var(--cat-uva-clara)',
 }
 
 const PAGE_SIZE = 24

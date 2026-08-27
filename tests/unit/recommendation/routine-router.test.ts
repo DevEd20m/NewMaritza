@@ -31,10 +31,16 @@ describe('selectRoutineKit — enrutador de rutinas curadas', () => {
     expect(kitSlug).toBe('rutina-skin-care-piel-grasa')
   })
 
-  it('cabello → rutina piel grasa (default de belleza)', () => {
-    const { kitSlug, topCategory } = selectRoutineKit(['obj-belleza', 'foco-cabello', 'cabello-caida'])
-    expect(topCategory).toBe('piel')
-    expect(kitSlug).toBe('rutina-skin-care-piel-grasa')
+  // Cabello es su propia categoría: antes puntuaba a `piel` y sus 28 productos
+  // vendibles eran inalcanzables para el motor.
+  it('cabello → categoría cabello, no piel', () => {
+    const { topCategory } = selectRoutineKit(['obj-cabello', 'cabello-caida', 'cuero-graso'])
+    expect(topCategory).toBe('cabello')
+  })
+
+  it('cabello del cuestionario antiguo también enruta a cabello', () => {
+    const { topCategory } = selectRoutineKit(['obj-belleza', 'foco-cabello', 'cabello-caida'])
+    expect(topCategory).toBe('cabello')
   })
 
   it('mal sueño → rutina sueño y descanso', () => {

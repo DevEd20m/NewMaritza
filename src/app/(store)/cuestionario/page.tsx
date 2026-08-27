@@ -41,8 +41,8 @@ async function getQuizData() {
     .select(`
       id, title, sort_order, interstitial_text,
       quiz_questions (
-        id, text, subtext, type, sort_order, is_required, conditions,
-        quiz_question_options!question_id ( id, text, slug, icon_url, sort_order, tag_ids, next_question_id )
+        id, text, subtext, type, sort_order, is_required, conditions, max_select, max_length,
+        quiz_question_options!question_id ( id, text, slug, icon_url, sort_order, tag_ids, next_question_id, render )
       )
     `)
     .eq('template_id', template.id)

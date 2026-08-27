@@ -1,11 +1,12 @@
+import { CATEGORY_SLUGS } from '@/lib/recommendation/types'
 import { describe, it, expect } from 'vitest'
 import { calculateCategoryScores, selectTopCategory, emptyScores } from '@/lib/recommendation/score'
 import type { CategoryScores } from '@/lib/recommendation/types'
 
 describe('emptyScores', () => {
-  it('returns all 8 categories at 0', () => {
+  it('returns all categories at 0', () => {
     const s = emptyScores()
-    expect(Object.keys(s)).toHaveLength(8)
+    expect(Object.keys(s)).toHaveLength(CATEGORY_SLUGS.length)
     for (const v of Object.values(s)) expect(v).toBe(0)
   })
 })

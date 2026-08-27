@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+import { CATEGORY_SLUGS } from '@/lib/recommendation/types'
 import { SLUG_WEIGHTS, ALLERGY_LABELS, SAFETY_FLAG_TEXTS } from '@/lib/recommendation/slug-weights'
 import { ALL_QUIZ_SLUGS } from './fixtures/quiz-structure'
 
@@ -46,7 +47,7 @@ describe('SLUG_WEIGHTS coverage', () => {
   })
 
   it('no weight targets an unknown category', () => {
-    const VALID_CATS = new Set(['piel', 'solar', 'bienestar', 'gym', 'viaje', 'digestivo', 'hogar', 'pies-cuerpo'])
+    const VALID_CATS = new Set<string>(CATEGORY_SLUGS)
     for (const [slug, weights] of Object.entries(SLUG_WEIGHTS)) {
       for (const cat of Object.keys(weights)) {
         expect(VALID_CATS.has(cat), `${slug} → unknown category "${cat}"`).toBe(true)

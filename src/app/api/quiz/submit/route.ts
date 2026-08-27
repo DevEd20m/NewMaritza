@@ -12,7 +12,11 @@ export const maxDuration = 60
 
 const schema = z.object({
   templateId: z.string().min(1),
-  answers: z.record(z.string(), z.array(z.string())),
+  // Los valores son ids de opción (UUID) o, en la pregunta de texto libre, lo
+  // que la persona escribió (tope 500 en el cliente; 600 aquí da margen sin
+  // permitir payloads arbitrarios).
+  answers: z.record(z.string().max(60), z.array(z.string().max(600)).max(40))
+    .refine((a) => Object.keys(a).length <= 60, 'Demasiadas respuestas'),
   email: z.string().email().optional(),
   phone: z.string().trim().max(30).optional(),
   whatsappConsent: z.boolean().optional().default(false),
@@ -35,8 +39,10 @@ export async function POST(request: NextRequest) {
     const email = (parsed.data.email ?? user?.email)?.trim().toLowerCase()
     if (!email) return NextResponse.json({ error: 'El email es obligatorio' }, { status: 400 })
 
-    // Collect applied tags from options
-    const optionIds = Object.values(answers).flat()
+    // Collect applied tags from options. La respuesta de texto libre viaja como
+    // string plano: solo los UUID van al query, o PostgREST lo rechaza entero.
+    const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    const optionIds = Object.values(answers).flat().filter((v) => uuidRe.test(v))
     const { data: options } = await admin
       .from('quiz_question_options')
       .select('id, tag_ids')
