@@ -8,7 +8,7 @@ import {
 } from '@phosphor-icons/react'
 import type { Icon } from '@phosphor-icons/react'
 import { useQuizStore } from '@/lib/store/quiz'
-import { trackQuizStart, trackQuizStep, trackQuizComplete } from '@/lib/analytics/events'
+import { trackQuizStart, trackQuizStep, trackQuizComplete, trackLeadCaptured } from '@/lib/analytics/events'
 
 interface QuizOption { id: string; text: string; slug: string; icon_url: string | null; sort_order: number }
 interface QuizQuestion {
@@ -349,6 +349,8 @@ export function QuizClient({ templateId, groups, isLoggedIn = false, userName, u
       if (data.profileId) {
         setProfileId(data.profileId)
         complete()
+        // El histórico marca que dejó su contacto — nunca el correo en sí.
+        if (leadEmail || leadPhone) trackLeadCaptured('quiz', Boolean(leadPhone))
         try { localStorage.removeItem(PROGRESO_KEY) } catch { /* nada que limpiar */ }
         trackQuizComplete()
         router.push(`/carrito?profileId=${data.profileId}`)
@@ -549,7 +551,7 @@ export function QuizClient({ templateId, groups, isLoggedIn = false, userName, u
                 const PhosphorIcon = SLUG_ICONS[opt.slug]
                 const iconSize = compactCards ? 40 : 52
                 return (
-                  <button key={opt.id} onClick={() => handleSelect(opt.id)}
+                  <button key={opt.id} data-analytics-id={`quiz-opt:${opt.slug}`} onClick={() => handleSelect(opt.id)}
                     className="liora-quiz-option"
                     style={{
                       background: isSelected ? OPTION_COLORS[i % OPTION_COLORS.length] : 'var(--liora-blanco)',
@@ -583,6 +585,7 @@ export function QuizClient({ templateId, groups, isLoggedIn = false, userName, u
             </div>
             {lastOpt && (
               <button
+                data-analytics-id={`quiz-opt:${lastOpt.slug}`}
                 onClick={() => handleSelect(lastOpt.id)}
                 className="liora-quiz-option liora-quiz-option-guide"
                 style={{

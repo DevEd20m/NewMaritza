@@ -5,6 +5,13 @@ export const ANALYTICS_EVENTS = [
   'view_item', 'add_to_cart', 'begin_checkout', 'checkout_error', 'purchase',
   'search', 'search_no_results', 'quiz_start', 'quiz_step', 'quiz_complete',
   'assistant_message', 'assistant_swap_suggested', 'assistant_swap_accepted',
+  // Eventos de negocio: qué se le MOSTRÓ a la persona y qué decisiones tomó.
+  // La columna es text — añadir aquí no requiere migración.
+  'kit_shown', 'view_item_list', 'lead_captured',
+  'coupon_applied', 'coupon_rejected', 'coupon_copied',
+  'exit_modal_shown', 'exit_modal_dismissed',
+  'assistant_opened', 'assistant_closed',
+  'filter_applied', 'sort_changed', 'search_result_click',
 ] as const
 
 const SENSITIVE_KEY = /email|phone|name|address|password|token|document|dni|card|answer/i

@@ -8,13 +8,14 @@ import {
   CaretDown, CaretUp, ShieldCheck, Check,
 } from '@phosphor-icons/react'
 import { useCartStore } from '@/lib/store/cart'
-import { trackAssistantEvent, trackBeginCheckout } from '@/lib/analytics/events'
+import { trackAddToCart, trackAssistantEvent, trackAssistantPanel, trackCoupon, trackKitShown, trackViewItemList } from '@/lib/analytics/events'
 import { createClient } from '@/lib/supabase/client'
 import { formatPEN } from '@/lib/format/money'
 
 interface KitItem {
   variantId: string
   productId: string
+  productSlug?: string
   name: string
   brand?: string | null
   variantName: string
@@ -142,6 +143,14 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
         }
         setKitData(data)
         setSuggestions(data.suggestions ?? [])
+        // El histórico debe registrar QUÉ se le mostró, no solo que llegó aquí.
+        trackKitShown({
+          routineName: data.routineName ?? null,
+          productSlugs: (data.kit ?? []).map((i) => i.productSlug ?? i.name),
+        })
+        if (data.suggestions?.length) {
+          trackViewItemList('carrito:sugerencias', data.suggestions.map((i) => i.productSlug ?? i.name))
+        }
         // Save to localStorage so home page can offer "resume" banner
         try {
           const totalCents = (data.kit ?? []).reduce((s, i) => s + i.priceCents, 0)
@@ -207,8 +216,10 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
       const data = await res.json()
       if (data.valid) {
         setAppliedCoupon(data.code, data.discountCents)
+        trackCoupon('coupon_applied', data.code)
       } else {
         setCouponError(data.message ?? 'Cupón inválido')
+        trackCoupon('coupon_rejected', couponInput.trim().toUpperCase())
       }
     } finally {
       setCouponLoading(false)
@@ -216,11 +227,13 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
   }
 
   const goCheckout = () => {
-    trackBeginCheckout(total, items.map((i) => ({ variantId: i.variantId, name: i.name, priceCents: i.priceCents, quantity: i.quantity })))
+    // begin_checkout se emite una sola vez, al montar /pagar (CheckoutForm).
+    // Este clic queda registrado con nombre por el rastreador global.
     router.push(profileId ? `/pagar?profileId=${encodeURIComponent(profileId)}` : '/pagar')
   }
 
   const addSuggestion = (item: KitItem) => {
+    trackAddToCart({ variantId: item.variantId, productSlug: item.productSlug, name: item.name, priceCents: item.priceCents, quantity: 1 })
     addItem({
       variantId: item.variantId,
       productId: item.productId,
@@ -460,9 +473,9 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
                     <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 17, color: 'var(--liora-uva)', marginTop: 6 }}>{fmt(item.priceCents)}</div>
                   </div>
                   <div className="liora-cart-item-quantity" style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'var(--liora-crema)', borderRadius: 999, padding: 4, flexShrink: 0 }}>
-                    <button onClick={() => updateQuantity(item.variantId, item.quantity - 1)} style={{ width: 30, height: 30, borderRadius: 999, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--liora-uva)' }}><Minus size={14} weight="bold" /></button>
+                    <button data-analytics-id={`cart:menos:${item.name.slice(0, 40)}`} onClick={() => updateQuantity(item.variantId, item.quantity - 1)} style={{ width: 30, height: 30, borderRadius: 999, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--liora-uva)' }}><Minus size={14} weight="bold" /></button>
                     <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 14, minWidth: 22, textAlign: 'center', color: 'var(--liora-uva)' }}>{item.quantity}</span>
-                    <button onClick={() => updateQuantity(item.variantId, item.quantity + 1)} style={{ width: 30, height: 30, borderRadius: 999, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--liora-uva)' }}><Plus size={14} weight="bold" /></button>
+                    <button data-analytics-id={`cart:mas:${item.name.slice(0, 40)}`} onClick={() => updateQuantity(item.variantId, item.quantity + 1)} style={{ width: 30, height: 30, borderRadius: 999, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--liora-uva)' }}><Plus size={14} weight="bold" /></button>
                   </div>
                   <button className="liora-cart-item-remove" onClick={() => removeItem(item.variantId)} aria-label={`Quitar ${item.name}`} style={{ background: 'transparent', border: 'none', cursor: 'pointer', opacity: 0.5, padding: 4, color: 'var(--liora-uva)', flexShrink: 0 }}>
                     <X size={20} />
@@ -531,7 +544,7 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
                     </div>
                   </div>
                 </div>
-                <button onClick={() => setBotOpen(!botOpen)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--liora-crema)', display: 'flex', alignItems: 'center' }}>
+                <button data-analytics-id={botOpen ? 'lia:cerrar' : 'lia:abrir'} onClick={() => { trackAssistantPanel(!botOpen); setBotOpen(!botOpen) }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--liora-crema)', display: 'flex', alignItems: 'center' }}>
                   {botOpen ? <CaretDown size={22} weight="bold" /> : <CaretUp size={22} weight="bold" />}
                 </button>
               </div>
@@ -619,7 +632,7 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
                   placeholder="Cupón"
                   style={{ flex: 1, background: 'rgba(251,241,226,0.08)', color: 'var(--liora-crema)', border: '1.5px solid rgba(251,241,226,0.2)', borderRadius: 12, padding: '10px 14px', fontFamily: 'var(--font-body)', fontSize: 13, outline: 'none' }}
                 />
-                <button onClick={applyCoupon} disabled={couponLoading} style={{ background: 'var(--liora-lima)', color: 'var(--liora-uva)', border: 'none', borderRadius: 12, padding: '0 16px', cursor: 'pointer', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 13 }}>
+                <button data-analytics-id="coupon:aplicar" onClick={applyCoupon} disabled={couponLoading} style={{ background: 'var(--liora-lima)', color: 'var(--liora-uva)', border: 'none', borderRadius: 12, padding: '0 16px', cursor: 'pointer', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 13 }}>
                   {couponLoading ? '…' : 'Aplicar'}
                 </button>
               </div>
@@ -654,7 +667,7 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
               </div>
             )}
 
-            <button onClick={goCheckout} style={{ width: '100%', background: 'var(--liora-lima)', color: 'var(--liora-uva)', border: 'none', borderRadius: 999, padding: '16px 24px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 16, cursor: 'pointer', marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+            <button data-analytics-id="checkout:ir-a-pagar" onClick={goCheckout} style={{ width: '100%', background: 'var(--liora-lima)', color: 'var(--liora-uva)', border: 'none', borderRadius: 999, padding: '16px 24px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 16, cursor: 'pointer', marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
               Ir a pagar <Lock size={18} weight="bold" />
             </button>
 
@@ -687,9 +700,9 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
                 <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 17, color: 'var(--liora-uva)', marginTop: 6 }}>{fmt(item.priceCents)}</div>
               </div>
               <div className="liora-cart-item-quantity" style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'var(--liora-crema)', borderRadius: 999, padding: 4 }}>
-                <button onClick={() => updateQuantity(item.variantId, item.quantity - 1)} style={{ width: 30, height: 30, borderRadius: 999, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Minus size={14} weight="bold" /></button>
+                <button data-analytics-id={`cart:menos:${item.name.slice(0, 40)}`} onClick={() => updateQuantity(item.variantId, item.quantity - 1)} style={{ width: 30, height: 30, borderRadius: 999, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Minus size={14} weight="bold" /></button>
                 <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 14, minWidth: 22, textAlign: 'center' }}>{item.quantity}</span>
-                <button onClick={() => updateQuantity(item.variantId, item.quantity + 1)} style={{ width: 30, height: 30, borderRadius: 999, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Plus size={14} weight="bold" /></button>
+                <button data-analytics-id={`cart:mas:${item.name.slice(0, 40)}`} onClick={() => updateQuantity(item.variantId, item.quantity + 1)} style={{ width: 30, height: 30, borderRadius: 999, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Plus size={14} weight="bold" /></button>
               </div>
               <button className="liora-cart-item-remove" onClick={() => removeItem(item.variantId)} aria-label={`Quitar ${item.name}`} style={{ background: 'transparent', border: 'none', cursor: 'pointer', opacity: 0.5, padding: 4 }}><X size={20} /></button>
             </article>
@@ -746,7 +759,7 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
           <div style={{ marginTop: 24 }}>
             <div style={{ display: 'flex', gap: 8 }}>
               <input value={couponInput} onChange={(e) => setCouponInput(e.target.value.toUpperCase())} placeholder="Cupón" style={{ flex: 1, background: 'rgba(251,241,226,0.08)', color: 'var(--liora-crema)', border: '1.5px solid rgba(251,241,226,0.2)', borderRadius: 12, padding: '10px 14px', fontFamily: 'var(--font-body)', fontSize: 13, outline: 'none' }} />
-              <button onClick={applyCoupon} disabled={couponLoading} style={{ background: 'var(--liora-lima)', color: 'var(--liora-uva)', border: 'none', borderRadius: 12, padding: '0 16px', cursor: 'pointer', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 13 }}>{couponLoading ? '…' : 'Aplicar'}</button>
+              <button data-analytics-id="coupon:aplicar" onClick={applyCoupon} disabled={couponLoading} style={{ background: 'var(--liora-lima)', color: 'var(--liora-uva)', border: 'none', borderRadius: 12, padding: '0 16px', cursor: 'pointer', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 13 }}>{couponLoading ? '…' : 'Aplicar'}</button>
             </div>
             {couponError && <p style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: '#FFB5A8', marginTop: 8 }}>{couponError}</p>}
             {appliedCouponCode && !couponError && (
@@ -758,7 +771,7 @@ export function CartPageClient({ shippingCostCents = 1500, freeShippingThreshold
             {discount > 0 && <SumRow label="Descuento" value={`−${fmt(discount)}`} accent />}
             <SumRow label="Envío" value={shipping === 0 ? 'Gratis' : fmt(shipping)} />
           </div>
-          <button onClick={goCheckout} style={{ width: '100%', background: 'var(--liora-lima)', color: 'var(--liora-uva)', border: 'none', borderRadius: 999, padding: '16px 24px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 16, cursor: 'pointer', marginTop: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+          <button data-analytics-id="checkout:ir-a-pagar" onClick={goCheckout} style={{ width: '100%', background: 'var(--liora-lima)', color: 'var(--liora-uva)', border: 'none', borderRadius: 999, padding: '16px 24px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 16, cursor: 'pointer', marginTop: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
             <Lock size={18} weight="bold" /> Ir a pagar
           </button>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: 11, opacity: 0.6, textAlign: 'center', marginTop: 14 }}>Prueba <strong>{featuredCoupon?.code ?? 'BIENVENIDA10'}</strong> para −15%</p>

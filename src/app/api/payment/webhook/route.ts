@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getPaymentProvider } from '@/lib/payment/provider'
 import { markOrderPaid } from '@/lib/orders/mark-paid'
+import { ingestAnalyticsEvents } from '@/lib/analytics/server'
+import { createHash } from 'node:crypto'
 import { processEmailJob } from '@/lib/email/process-job'
 
 export const dynamic = 'force-dynamic'
@@ -80,6 +82,38 @@ export async function POST(request: NextRequest) {
 
       // Vercel Hobby only permits a daily cron. Deliver day0 immediately from
       // the same retryable outbox; a failure remains queued for the cron.
+      // La conversión se registra AQUÍ, no solo en el navegador: si el
+      // comprador cierra la pestaña tras pagar, el evento no se pierde. El
+      // event_id es determinista por pedido, así el ingest lo deduplica solo.
+      if (finalization === 'paid') {
+        try {
+          const { data: session } = await admin
+            .from('analytics_sessions')
+            .select('id')
+            .eq('order_id', webhookEvent.orderId)
+            .maybeSingle()
+          if (session) {
+            const { data: order } = await admin
+              .from('orders')
+              .select('order_number, total_cents')
+              .eq('id', webhookEvent.orderId)
+              .single()
+            const h = createHash('md5').update(`purchase:${webhookEvent.orderId}`).digest('hex')
+            const eventId = `${h.slice(0, 8)}-${h.slice(8, 12)}-4${h.slice(13, 16)}-8${h.slice(17, 20)}-${h.slice(20, 32)}`
+            await ingestAnalyticsEvents(session.id, [{
+              event_id: eventId,
+              event: 'purchase',
+              occurred_at: new Date().toISOString(),
+              path: '/confirmado',
+              value_cents: order?.total_cents ?? undefined,
+              metadata: { order_number: order?.order_number ?? null, source: 'webhook' },
+            }])
+          }
+        } catch (error) {
+          console.error('[webhook] purchase analytics', error instanceof Error ? error.message : 'unknown')
+        }
+      }
+
       if (finalization === 'paid' || finalization === 'already_paid') {
         const { data: day0Job } = await admin.from('email_queue')
           .select('id, order_id, type')

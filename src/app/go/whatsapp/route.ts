@@ -32,12 +32,26 @@ async function assignWhatsappCode(sessionId: string): Promise<string> {
       if (data?.whatsapp_code) return data.whatsapp_code
     }
   }
-  return `LIO-${sessionId.slice(0, 6).toUpperCase()}`
+  // Último recurso tras las colisiones: derivar el código de la sesión y
+  // PERSISTIRLO — una ref que llega por WhatsApp y no se puede buscar es
+  // una ref inútil.
+  const fallback = `LIO-${sessionId.replace(/-/g, '').slice(0, 6).toUpperCase()}`
+  await admin.from('analytics_sessions').update({ whatsapp_code: fallback }).eq('id', sessionId).is('whatsapp_code', null)
+  return fallback
 }
 
 export async function GET(request: NextRequest) {
   const parsed = querySchema.safeParse(Object.fromEntries(request.nextUrl.searchParams))
   if (!parsed.success) return NextResponse.redirect(new URL('/', request.url), 302)
+
+  // Un prefetch del navegador o de Next no es una persona escribiendo: sin
+  // esta guardia, cada scroll hasta el footer registraba un «clic» de WhatsApp
+  // y asignaba un código Ref a la sesión.
+  const isPrefetch = request.headers.get('next-router-prefetch') === '1'
+    || request.headers.get('purpose') === 'prefetch'
+    || request.headers.get('sec-purpose')?.includes('prefetch')
+    || request.headers.get('x-middleware-prefetch') === '1'
+  if (isPrefetch) return new NextResponse(null, { status: 204 })
 
   const settings = await getStoreSettings()
   const number = settings.whatsapp_number.replace(/\D/g, '')

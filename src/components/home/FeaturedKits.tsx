@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import Link from 'next/link'
+import { ItemListTracker } from '@/components/analytics/ItemListTracker'
 import Image from 'next/image'
 import { ArrowRight, Sparkle, Package } from '@phosphor-icons/react/dist/ssr'
 
@@ -110,6 +111,7 @@ export async function FeaturedKits() {
 
         {/* Kit grid */}
         <div className="liora-kits-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+          <ItemListTracker list="home:kits-destacados" slugs={kits.map(k => k.slug)} />
           {kits.map(kit => {
             const color = inferColor(kit.slug)
             const tint = `color-mix(in srgb, ${color} 30%, white)`

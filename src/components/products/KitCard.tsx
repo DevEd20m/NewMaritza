@@ -72,7 +72,7 @@ export function KitCard({ kit }: KitCardProps) {
   const last = words[words.length - 1]
 
   return (
-    <Link href={`/tienda/kit/${kit.slug}`} style={{ textDecoration: 'none' }}>
+    <Link href={`/tienda/kit/${kit.slug}`} data-analytics-id={`kit-card:${kit.slug}`} style={{ textDecoration: 'none' }}>
       <article
         className="liora-kit-card"
         onMouseEnter={() => setHovered(true)}

@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { MagnifyingGlass, Plus, Package, Check } from '@phosphor-icons/react'
 import { useCartStore } from '@/lib/store/cart'
-import { trackAddToCart, trackSearch } from '@/lib/analytics/events'
+import { trackAddToCart, trackSearch, trackSearchResultClick } from '@/lib/analytics/events'
 
 interface IndexProduct {
   variantId: string
@@ -248,11 +248,11 @@ export function SearchOverlay({ onClose }: Props) {
               <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--liora-uva)', opacity: 0.55, padding: '14px 14px 8px' }}>
                 Productos
               </div>
-              {results.products.map((p) => {
+              {results.products.map((p, resultIndex) => {
                 const inCart = cartItems.some((i) => i.variantId === p.variantId)
                 return (
                   <div key={p.variantId} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '10px 14px', borderRadius: 16 }}>
-                    <Link href={`/tienda/${p.slug}`} onClick={onClose} style={{ display: 'flex', alignItems: 'center', gap: 14, flex: 1, minWidth: 0, textDecoration: 'none' }}>
+                    <Link href={`/tienda/${p.slug}`} onClick={() => { trackSearchResultClick(p.slug, resultIndex + 1); onClose() }} style={{ display: 'flex', alignItems: 'center', gap: 14, flex: 1, minWidth: 0, textDecoration: 'none' }}>
                       <div style={{ width: 52, height: 52, borderRadius: 12, background: p.categoryColor, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
                         {p.imageUrl
                           ? <img src={p.imageUrl} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />

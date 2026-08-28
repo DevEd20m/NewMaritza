@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState, useCallback, useRef } from 'react'
+import { trackExitModal, trackLeadCaptured } from '@/lib/analytics/events'
 import { usePathname } from 'next/navigation'
 
 const STORAGE_KEY = 'liora_exit_shown'
@@ -55,10 +56,12 @@ export function ExitIntentModal({ isLoggedIn }: { isLoggedIn: boolean }) {
     if (wasDismissedRecently()) return
     markDismissed()
     setVisible(true)
+    trackExitModal('exit_modal_shown')
     requestAnimationFrame(() => requestAnimationFrame(() => setAnimIn(true)))
   }, [pathname])
 
   const closeModal = useCallback(() => {
+    trackExitModal('exit_modal_dismissed')
     setAnimIn(false)
     setTimeout(() => setVisible(false), 350)
   }, [])
@@ -107,6 +110,7 @@ export function ExitIntentModal({ isLoggedIn }: { isLoggedIn: boolean }) {
         body: JSON.stringify({ email: email.trim(), source: 'exit_intent' }),
       })
     } catch {}
+    trackLeadCaptured('exit_modal', false)
     setSubmitted(true)
   }
 

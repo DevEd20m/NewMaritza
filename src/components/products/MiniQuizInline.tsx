@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { trackQuizStart, trackQuizStep, trackQuizComplete } from '@/lib/analytics/events'
 import { useRouter } from 'next/navigation'
 import { ArrowRight, Check, Sparkle } from '@phosphor-icons/react'
 
@@ -44,6 +45,10 @@ export function MiniQuizInline({ templateId, groups, kitName }: Props) {
     setAnswers(newAnswers)
     setSelected([])
 
+    // El mini-quiz cuenta en el funnel igual que el cuestionario grande.
+    if (step === 0) trackQuizStart()
+    trackQuizStep(step, questions.length)
+
     if (!isLast) { setStep(step + 1); return }
 
     // Submit and redirect to cart
@@ -65,6 +70,7 @@ export function MiniQuizInline({ templateId, groups, kitName }: Props) {
       if (data.sessionToken) {
         document.cookie = `liora_session=${data.sessionToken}; path=/; max-age=2592000; SameSite=Lax`
       }
+      trackQuizComplete()
       setDone(true)
       setTimeout(() => router.push(`/carrito?profileId=${data.profileId}`), 1200)
     } catch {

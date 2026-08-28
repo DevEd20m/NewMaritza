@@ -68,9 +68,12 @@ export async function Footer() {
           {social.length > 0 && (
             <div style={{ display: 'flex', gap: 14, marginTop: 24 }}>
               {social.map(({ Icon, href, label }) => (
-                <Link key={label} href={href} aria-label={label} style={{ color: 'var(--liora-crema)', display: 'flex' }}>
+                // <a> plano a propósito: un <Link> de Next PREFETCHEA /go/whatsapp
+                // al entrar en pantalla y registraba clics fantasma de WhatsApp
+                // (y quemaba códigos Ref) con solo hacer scroll hasta el footer.
+                <a key={label} href={href} aria-label={label} style={{ color: 'var(--liora-crema)', display: 'flex' }}>
                   <Icon size={22} />
-                </Link>
+                </a>
               ))}
             </div>
           )}

@@ -82,7 +82,9 @@ export function trackPurchase(order: {
       items: order.items.map((i) => ({ item_id: i.variantId, item_name: i.name, price: i.priceCents / 100, quantity: i.quantity })),
     },
   })
-  track({ event: 'purchase', value_cents: order.totalCents, metadata: { order_number: order.orderNumber, items: order.items.map((i) => ({ name: i.name, quantity: i.quantity })) } })
+  // El evento first-party de compra lo emite el webhook de pago con un id
+  // determinista: sobrevive aunque el navegador nunca llegue a /confirmado.
+  // Aquí queda solo la capa GA4/GTM del dataLayer de arriba.
 }
 
 export function trackSearch(query: string, resultsCount: number) {
@@ -109,4 +111,60 @@ export function trackAssistantEvent(
   metadata: Record<string, unknown> = {},
 ) {
   track({ event, metadata })
+}
+
+// ── Qué se le mostró a la persona ───────────────────────────────────────
+// Sin esto, el histórico dice que alguien llegó al carrito y pagó (o no),
+// pero nunca QUÉ vio: qué kit se le recomendó, qué sugerencias, qué grilla.
+
+export function trackKitShown(kit: { routineName: string | null; productSlugs: string[]; engine?: string }) {
+  track({
+    event: 'kit_shown',
+    metadata: {
+      routine: kit.routineName ?? 'sin nombre',
+      products: kit.productSlugs.slice(0, 20),
+      count: kit.productSlugs.length,
+      ...(kit.engine ? { engine: kit.engine } : {}),
+    },
+  })
+}
+
+export function trackViewItemList(listName: string, productSlugs: string[]) {
+  if (!productSlugs.length) return
+  track({
+    event: 'view_item_list',
+    metadata: { list: listName, products: productSlugs.slice(0, 20), count: productSlugs.length },
+  })
+}
+
+// ── Decisiones de la persona ────────────────────────────────────────────
+
+/** Nunca recibe el email ni el teléfono: solo la fuente y si dejó celular. */
+export function trackLeadCaptured(source: 'quiz' | 'exit_modal', withPhone: boolean) {
+  // «con_celular»: el sanitizador borra toda clave que contenga «phone».
+  track({ event: 'lead_captured', metadata: { source, con_celular: withPhone } })
+}
+
+export function trackCoupon(event: 'coupon_applied' | 'coupon_rejected' | 'coupon_copied', code: string) {
+  track({ event, metadata: { code: code.slice(0, 40) } })
+}
+
+export function trackExitModal(event: 'exit_modal_shown' | 'exit_modal_dismissed') {
+  track({ event })
+}
+
+export function trackAssistantPanel(open: boolean) {
+  track({ event: open ? 'assistant_opened' : 'assistant_closed' })
+}
+
+export function trackFilterApplied(category: string) {
+  track({ event: 'filter_applied', metadata: { category: category.slice(0, 60) } })
+}
+
+export function trackSortChanged(sort: string) {
+  track({ event: 'sort_changed', metadata: { sort: sort.slice(0, 40) } })
+}
+
+export function trackSearchResultClick(productSlug: string, position: number) {
+  track({ event: 'search_result_click', product_slug: productSlug, metadata: { position } })
 }

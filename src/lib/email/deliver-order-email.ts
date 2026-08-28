@@ -59,11 +59,14 @@ export async function deliverOrderEmail(
   )
   const guide = await detectKitFromItemsDB(productNames)
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://liora.pe'
-  const { whatsapp_number } = await getStoreSettings()
+  await getStoreSettings() // el número lo resuelve /go/whatsapp
   const waMessage = guide
     ? `Hola, compré el ${guide.kitName} (pedido #${orderData.order_number}) y tengo una pregunta`
     : `Hola, tengo una pregunta sobre mi pedido #${orderData.order_number}`
-  const waUrl = `https://wa.me/${whatsapp_number}?text=${encodeURIComponent(waMessage)}`
+  // Vía /go/whatsapp para que el clic desde el correo también quede en la
+  // analítica y lleve su Ref. LIO-… buscable en el admin.
+  const waPlacement = type === 'day7' ? 'email_checkin' : 'email_order'
+  const waUrl = `${siteUrl}/go/whatsapp?placement=${waPlacement}&message=${encodeURIComponent(waMessage)}`
 
   if (type === 'day7') {
     if (!guide) return { status: 'skipped' }

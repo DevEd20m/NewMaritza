@@ -39,7 +39,7 @@ export function ProductCard({
   const metaLine = [categoryName, subname].filter(Boolean).join(' · ')
 
   return (
-    <Link href={`/tienda/${slug}`} style={{ textDecoration: 'none', display: 'flex', height: '100%' }}>
+    <Link href={`/tienda/${slug}`} data-analytics-id={`product-card:${slug}`} style={{ textDecoration: 'none', display: 'flex', height: '100%' }}>
       <article
         style={{
           background: 'var(--liora-blanco)',

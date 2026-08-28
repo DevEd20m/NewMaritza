@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { MagnifyingGlass, Sparkle } from '@phosphor-icons/react'
 import { ProductCard } from '@/components/products/ProductCard'
-import { trackSearch } from '@/lib/analytics/events'
+import { trackSearch, trackFilterApplied, trackSortChanged, trackViewItemList } from '@/lib/analytics/events'
 
 const CATEGORY_COLORS: Record<string, string> = {
   piel:          'var(--cat-coral)',
@@ -97,6 +97,7 @@ export function ShopProductsSection({ products, initialCategoria = '', initialQ 
   }, [products])
 
   const handleFilter = (slug: string) => {
+    trackFilterApplied(slug || 'todos')
     setCategoria(slug)
     const params = new URLSearchParams()
     if (slug) params.set('categoria', slug)
@@ -126,6 +127,15 @@ export function ShopProductsSection({ products, initialCategoria = '', initialQ 
 
   const visible = filtered.slice(0, visibleCount)
   const activeLabel = categoryFilters.find((f) => f.slug === categoria)?.label
+
+  // Qué productos VIO la persona en la grilla — sin esto el histórico no puede
+  // responder «qué le mostramos». Solo la primera página por combinación de
+  // filtro y orden, para no inundar la cronología con cada «cargar más».
+  useEffect(() => {
+    const slugs = filtered.slice(0, PAGE_SIZE).map((p) => p.slug)
+    trackViewItemList(`tienda:${categoria || 'todos'}:${sort}`, slugs)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categoria, sort])
 
   return (
     <section id="productos-sueltos" style={{ borderTop: '1.5px solid var(--liora-arena)', paddingTop: 72 }}>
@@ -165,7 +175,7 @@ export function ShopProductsSection({ products, initialCategoria = '', initialQ 
           Ordenar:
           <select
             value={sort}
-            onChange={(e) => setSort(e.target.value as SortValue)}
+            onChange={(e) => { trackSortChanged(e.target.value); setSort(e.target.value as SortValue) }}
             style={{ border: 'none', outline: 'none', background: 'transparent', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 13, color: 'var(--liora-uva)', cursor: 'pointer' }}
           >
             {SORTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}

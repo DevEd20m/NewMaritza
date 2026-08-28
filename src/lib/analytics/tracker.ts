@@ -41,6 +41,25 @@ async function bootstrapSession(): Promise<boolean> {
   return sessionReady
 }
 
+// Texto visible del elemento, normalizado a kebab-case sin acentos y sin
+// dígitos largos (precios, cantidades) para que el id sea estable entre
+// renders: «Agregar al carrito — S/49.90» → «agregar-al-carrito».
+export function visibleText(element: HTMLElement): string | null {
+  const raw = element.textContent?.trim()
+  if (!raw) return null
+  const text = raw
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/s\/\s?[\d.,]+/g, '')
+    .replace(/\d{2,}/g, '')
+    .replace(/[^a-z0-9ñ ]+/g, ' ')
+    .trim()
+    .split(/\s+/)
+    .slice(0, 6)
+    .join('-')
+  return text.length >= 3 ? text.slice(0, 60) : null
+}
+
 function safeTargetId(element: HTMLElement): string | null {
   const explicit = element.dataset.analyticsId
   if (explicit) return explicit.slice(0, 160)
@@ -55,6 +74,11 @@ function safeTargetId(element: HTMLElement): string | null {
   if (label) return `${element.tagName.toLowerCase()}:${label}`.replace(/\s+/g, '-').slice(0, 160)
   if (element instanceof HTMLImageElement && element.alt) return `image:${element.alt}`.replace(/\s+/g, '-').slice(0, 160)
   if (element instanceof HTMLButtonElement || element.getAttribute('role') === 'button') {
+    // El texto visible identifica al botón mejor que su posición: «button:ver-mi-kit»
+    // se entiende y sobrevive a los cambios de layout. El índice posicional
+    // («button:button:1») queda solo como último recurso.
+    const text = visibleText(element)
+    if (text) return `button:${text}`.slice(0, 160)
     const parent = element.parentElement
     const peers = parent ? [...parent.querySelectorAll<HTMLElement>(':scope > button, :scope > [role="button"]')] : []
     return `button:${element instanceof HTMLButtonElement ? element.type : 'control'}:${Math.max(0, peers.indexOf(element))}`
@@ -161,6 +185,7 @@ function scheduleFlush() {
 }
 
 export function track(event: TrackedEvent) {
+  console.log('[track-debug]', event.event, typeof window, analyticsEnabled(), window.location.hostname, process.env.NEXT_PUBLIC_ANALYTICS_DEBUG)
   if (typeof window === 'undefined' || !analyticsEnabled()) return
   if (window.location.hostname === 'localhost' && process.env.NEXT_PUBLIC_ANALYTICS_DEBUG !== '1') return
   bindListeners()

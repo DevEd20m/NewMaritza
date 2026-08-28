@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { trackCoupon } from '@/lib/analytics/events'
 import { Tag, Check, Copy } from '@phosphor-icons/react'
 
 export interface PublicCoupon {
@@ -29,6 +30,7 @@ function CouponCard({ c }: { c: PublicCoupon }) {
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(c.code)
+      trackCoupon('coupon_copied', c.code)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {

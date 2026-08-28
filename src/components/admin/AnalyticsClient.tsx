@@ -251,7 +251,7 @@ function JourneySection({ journeys, days, filters }: { journeys: JourneySummary[
         </div>
         <form method="get" action="/admin/analytics" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <input type="hidden" name="dias" value={days} />
-          <input aria-label="Buscar recorrido" name="q" defaultValue={filters.query} placeholder="Email, pedido o código" style={{ border: '1px solid var(--liora-arena)', borderRadius: 999, padding: '9px 14px', background: 'var(--liora-blanco)', color: 'var(--liora-uva)' }} />
+          <input aria-label="Buscar recorrido" name="q" defaultValue={filters.query} placeholder="Email, pedido o Ref. WhatsApp (LIO-…)" style={{ border: '1px solid var(--liora-arena)', borderRadius: 999, padding: '9px 14px', background: 'var(--liora-blanco)', color: 'var(--liora-uva)' }} />
           <select aria-label="Filtrar por identidad" name="identidad" defaultValue={filters.identity} style={{ border: '1px solid var(--liora-arena)', borderRadius: 999, padding: '9px 12px', background: 'var(--liora-blanco)', color: 'var(--liora-uva)' }}>
             <option value="all">Todos</option><option value="identified">Identificados</option><option value="anonymous">Anónimos</option>
           </select>
