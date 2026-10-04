@@ -303,7 +303,7 @@ export default async function KitPage({ params }: Props) {
           </div>
 
           {/* Panel de acción: Quiz o compra */}
-          <div style={{ position: 'sticky', top: 24 }}>
+          <div className="liora-product-media" style={{ position: 'sticky', top: 24 }}>
             {miniQuiz ? (
               /* ── Mini-quiz disponible: es el protagonista ── */
               <div style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 24, overflow: 'hidden' }}>

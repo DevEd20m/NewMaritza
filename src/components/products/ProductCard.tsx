@@ -48,6 +48,8 @@ export function ProductCard({
           display: 'flex',
           flexDirection: 'column',
           flex: 1,
+          // AC-002-02 · flex item sin esto no baja de su min-content y desborda su pista
+          minWidth: 0,
           position: 'relative',
           cursor: 'pointer',
           boxShadow: 'var(--shadow-1)',
@@ -114,7 +116,7 @@ export function ProductCard({
         </div>
 
         {/* Info */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 5, padding: '16px 12px 12px', flex: 1 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 5, padding: '16px 12px 12px', flex: 1, minWidth: 0, overflowWrap: 'anywhere' }}>
           {metaLine && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
               <span style={{ width: 6, height: 6, borderRadius: 999, background: categoryColor, flexShrink: 0 }} />
@@ -125,8 +127,11 @@ export function ProductCard({
           )}
           <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20, lineHeight: 1.2, color: 'var(--liora-uva)', margin: 0, fontVariationSettings: "'opsz' 80,'SOFT' 60,'WONK' 0", display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{name}</h3>
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: 'auto', paddingTop: 8 }}>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+          {/* AC-002-02 · esta fila fijaba el ancho mínimo de toda la tarjeta —y por tanto de la
+              rejilla— en ~187px: precio a 21px + precio tachado + botón de 40px que no encoge.
+              Con `wrap` y `min-width: 0` la tarjeta puede bajar de ahí en pantallas angostas. */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: 'auto', paddingTop: 8, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, minWidth: 0, flexWrap: 'wrap' }}>
               <span style={{ fontFamily: 'var(--font-display)', fontSize: 21, fontWeight: 800, color: 'var(--liora-uva)' }}>
                 {formatPEN(priceCents)}
               </span>

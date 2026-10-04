@@ -31,7 +31,12 @@
   padding: 24px 28px;
   gap: 0;
 }
-.liora-mobile-nav.open { display: flex; }
+/* AC-002-05 · el menú a pantalla completa solo existe en móvil. La clase `open` la pone
+   el estado de React, que no mira el ancho; la media query es lo único que impide que el
+   overlay se dibuje sobre el escritorio. Recoge AUD-009. */
+@media (max-width: 768px) {
+  .liora-mobile-nav.open { display: flex; }
+}
 .liora-mobile-nav-link {
   font-family: var(--font-display);
   font-weight: 800;
@@ -104,19 +109,24 @@
 }
 
 /* ── Products grid (4-col) ───────────────────────────── */
+/* AC-002-02 · `1fr` es `minmax(auto, 1fr)`: la pista nunca baja del min-content de la tarjeta,
+   así que dos tarjetas de 187px desbordaban una ventana de 320. `minmax(0, 1fr)` deja que la
+   pista encoja, y `min-width: 0` deja que lo haga también el contenido. */
 @media (max-width: 900px) {
-  .liora-grid-4 { grid-template-columns: repeat(2, 1fr) !important; }
+  .liora-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .liora-grid-4 > * { min-width: 0 !important; }
 }
 @media (max-width: 480px) {
   .liora-grid-4 {
-    grid-template-columns: repeat(2, 1fr) !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     gap: 10px !important;
   }
 }
 
 /* ── Reviews (3-col) ─────────────────────────────────── */
 @media (max-width: 900px) {
-  .liora-grid-3 { grid-template-columns: repeat(2, 1fr) !important; }
+  .liora-grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .liora-grid-3 > * { min-width: 0 !important; }
 }
 @media (max-width: 600px) {
   .liora-grid-3 { grid-template-columns: 1fr !important; }
@@ -143,14 +153,15 @@
 /* ── Personalize section ─────────────────────────────── */
 @media (max-width: 900px) {
   .liora-personalize-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: minmax(0, 1fr) !important;
     gap: 40px !important;
   }
+  .liora-personalize-grid > * { min-width: 0 !important; }
   .liora-personalize-section {
     padding: 64px 20px !important;
     border-radius: 24px 24px 0 0 !important;
   }
-  .liora-personalize-title { font-size: 44px !important; }
+  .liora-personalize-title { font-size: 44px !important; overflow-wrap: anywhere; }
   .liora-personalize-body { font-size: 16px !important; max-width: 100% !important; }
 }
 
@@ -474,4 +485,109 @@
   .liora-quiz-lead-grid > div:last-child {
     padding: 24px !important;
   }
+}
+
+/* =====================================================
+   US-002 · Comprar desde el celular
+   docs/specs/TIENDA/comprar-desde-el-celular.md
+   ===================================================== */
+
+/* AC-002-01 · La columna de la foto es sticky para que acompañe al texto mientras se lee en
+   escritorio. Al colapsar la rejilla a una sola columna la foto pasa a ser la fila 1 y el
+   bloque de info la fila 2: la foto se queda clavada y el texto, que es hermano posterior,
+   le pasa por encima. El carrito ya resolvía esto en .liora-cart-summary; la ficha no. */
+@media (max-width: 900px) {
+  .liora-product-media {
+    position: static !important;
+    top: auto !important;
+  }
+  .liora-product-media > * { min-width: 0 !important; }
+}
+
+/* AC-002-03 · El título de la ficha tiene 52px fijos y el eje óptico de Fraunces al máximo,
+   pensado para carteles. En una pantalla angosta hay que bajarlo y dejar que parta palabras
+   largas («MULTIVITAMÍNICO») en vez de desbordar la columna. */
+@media (max-width: 900px) {
+  .liora-product-title {
+    font-size: 38px !important;
+    line-height: 1.05 !important;
+    overflow-wrap: anywhere;
+  }
+}
+@media (max-width: 480px) {
+  .liora-product-title { font-size: 32px !important; }
+  .liora-product-price { font-size: 32px !important; }
+}
+
+/* AC-002-02 · Las miniaturas de la galería son 4 × 80px + gaps = 356px mínimos, en un flex
+   sin wrap: en 320px de ventana se salen. Se convierten en una tira con scroll propio. */
+@media (max-width: 480px) {
+  .liora-product-thumbs {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  .liora-product-thumbs > * { flex: 0 0 auto !important; }
+}
+
+/* AC-002-04 · El panel del carrito tenía 420px duros: en una ventana de 360 se salía 60px
+   por la izquierda, porque está anclado a la derecha. */
+.liora-cart-drawer {
+  width: min(420px, 100vw) !important;
+  max-width: 100vw !important;
+}
+
+/* AC-002-02 · /ayuda — seis columnas de categorías y un aside de 320px fijos. */
+@media (max-width: 900px) {
+  .liora-ayuda-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  .liora-ayuda-grid > * { min-width: 0 !important; }
+  .liora-ayuda-aside {
+    position: static !important;
+    width: 100% !important;
+  }
+}
+@media (max-width: 768px) {
+  .liora-ayuda-chips {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+}
+
+/* AC-002-02 · /nosotros — rejillas de 3 y 4 columnas sin ningún gancho, y el h1 más grande
+   del repositorio (96px). */
+@media (max-width: 900px) {
+  .liora-nosotros-4,
+  .liora-nosotros-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 20px !important;
+  }
+  .liora-nosotros-2 {
+    grid-template-columns: minmax(0, 1fr) !important;
+    padding: 28px !important;
+    gap: 28px !important;
+  }
+  .liora-nosotros-4 > *,
+  .liora-nosotros-3 > *,
+  .liora-nosotros-2 > * { min-width: 0 !important; }
+}
+@media (max-width: 560px) {
+  .liora-nosotros-4,
+  .liora-nosotros-3 { grid-template-columns: minmax(0, 1fr) !important; }
+}
+
+/* AC-002-02 · /nosotros tiene el h1 más grande del repositorio (96px): a 360px una sola
+   palabra —«Bienestar»— es 105px más ancha que su caja y empuja el documento entero. */
+@media (max-width: 900px) {
+  .liora-nosotros-h1 {
+    font-size: 48px !important;
+    line-height: 1.05 !important;
+    overflow-wrap: anywhere;
+  }
+  .liora-nosotros-h2 { font-size: 36px !important; overflow-wrap: anywhere; }
+  .liora-nosotros-h3 { font-size: 28px !important; overflow-wrap: anywhere; }
+}
+@media (max-width: 480px) {
+  .liora-nosotros-h1 { font-size: 38px !important; }
 }

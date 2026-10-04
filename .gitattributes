@@ -1,0 +1,6 @@
+# La matriz de trazabilidad es un archivo GENERADO. Tras un merge nunca se resuelve a mano:
+# git se queda con la versión propia sin marcar conflicto, y CI —la única fuente de veredictos—
+# dice si hace falta traer la regenerada (node herramientas/traer-matriz.ts).
+# Para que `merge=ours` funcione, cada clon lo activa una vez:
+#   git config merge.ours.driver true
+docs/specs/TRAZABILIDAD.md merge=ours linguist-generated=true

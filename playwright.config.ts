@@ -9,7 +9,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: 'html',
+  // El JUnit XML lo lee el guardián de trazabilidad (node herramientas/trazabilidad.ts).
+  reporter: [['html'], ['junit', { outputFile: 'build/test-results/playwright.xml' }]],
   use: {
     baseURL: externalBaseUrl ?? 'http://localhost:3000',
     trace: 'on-first-retry',

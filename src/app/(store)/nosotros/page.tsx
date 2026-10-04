@@ -41,7 +41,7 @@ export default function NosotrosPage() {
       {/* Hero */}
       <div style={{ padding: '48px 48px 96px' }}>
         <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, color: 'var(--liora-uva)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 16 }}>Sobre nosotros</div>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 96, lineHeight: 1.05, letterSpacing: '-0.03em', color: 'var(--liora-uva)', margin: 0, maxWidth: 1000, paddingBottom: 16, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>
+        <h1 className="liora-nosotros-h1" style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 96, lineHeight: 1.05, letterSpacing: '-0.03em', color: 'var(--liora-uva)', margin: 0, maxWidth: 1000, paddingBottom: 16, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>
           Bienestar que <span style={{ fontFamily: 'var(--font-script)' }}>cabe</span> en tu vida.
         </h1>
         <p style={{ fontFamily: 'var(--font-body)', fontSize: 20, lineHeight: 1.5, color: 'var(--liora-uva)', opacity: 0.85, marginTop: 28, maxWidth: 720 }}>
@@ -53,7 +53,7 @@ export default function NosotrosPage() {
 
       {/* Stats band */}
       <div style={{ background: 'var(--liora-uva)', color: 'var(--liora-crema)', padding: '64px 48px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 32, maxWidth: 1280, margin: '0 auto' }}>
+        <div className="liora-nosotros-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 32, maxWidth: 1280, margin: '0 auto' }}>
           {STATS.map(([num, label]) => (
             <div key={num}>
               <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 72, lineHeight: 0.95, color: 'var(--liora-lima)', letterSpacing: '-0.03em', fontVariationSettings: "'opsz' 144,'SOFT' 60,'WONK' 0" }}>{num}</div>
@@ -67,8 +67,8 @@ export default function NosotrosPage() {
       <div style={{ padding: '96px 48px' }}>
         <div style={{ maxWidth: 1280, margin: '0 auto' }}>
           <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, color: 'var(--liora-uva)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12 }}>Nuestros valores</div>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 56, lineHeight: 1, letterSpacing: '-0.025em', color: 'var(--liora-uva)', margin: 0, marginBottom: 48, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>Lo que nos guía.</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+          <h2 className="liora-nosotros-h2" style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 56, lineHeight: 1, letterSpacing: '-0.025em', color: 'var(--liora-uva)', margin: 0, marginBottom: 48, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>Lo que nos guía.</h2>
+          <div className="liora-nosotros-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
             {VALUES.map(v => (
               <article key={v.n} style={{ background: v.bg, borderRadius: 28, padding: 32, minHeight: 320, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 48, color: 'var(--liora-uva)', lineHeight: 1, fontVariationSettings: "'opsz' 144,'SOFT' 60,'WONK' 0" }}>{v.n}</div>
@@ -84,10 +84,10 @@ export default function NosotrosPage() {
 
       {/* Team */}
       <div style={{ padding: '0 48px 96px' }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto', background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 32, padding: 48, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, alignItems: 'center' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto', background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 32, padding: 48, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, alignItems: 'center' }} className="liora-nosotros-2">
           <div>
             <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, color: 'var(--liora-uva)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12 }}>Quienes lo hacen</div>
-            <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 40, color: 'var(--liora-uva)', margin: 0, lineHeight: 1, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>14 personas. Un taller en Lima. Cero magia.</h3>
+            <h3 className="liora-nosotros-h3" style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 40, color: 'var(--liora-uva)', margin: 0, lineHeight: 1, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>14 personas. Un taller en Lima. Cero magia.</h3>
             <p style={{ fontFamily: 'var(--font-body)', fontSize: 16, lineHeight: 1.5, color: 'var(--liora-uva)', opacity: 0.85, marginTop: 20 }}>
               Diseñamos cada kit con información clara, reglas de seguridad y guías de uso.
               Cuando una respuesta requiere atención profesional, lo decimos.
@@ -97,7 +97,7 @@ export default function NosotrosPage() {
               Hacer mi cuestionario <ArrowRight size={16} weight="bold" />
             </Link>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+          <div className="liora-nosotros-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
             {TEAM.map(p => (
               <div key={p.name} style={{ background: p.bg, borderRadius: 20, aspectRatio: '1/1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, padding: 12 }}>
                 <div style={{ width: 44, height: 44, borderRadius: 999, background: 'var(--liora-crema)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 18, color: 'var(--liora-uva)' }}>{p.name.charAt(0)}</div>

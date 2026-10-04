@@ -17,6 +17,9 @@ const eslintConfig = defineConfig([
     "test-results/**",
     "supabase/.temp/**",
     "next-env.d.ts",
+    // Herramientas del kit SDD: codigo de terceros, con sus propias pruebas dentro
+    // del kit. Se versionan tal cual para poder traer correcciones sin conflictos.
+    "herramientas/**",
   ]),
   {
     files: ["**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}"],

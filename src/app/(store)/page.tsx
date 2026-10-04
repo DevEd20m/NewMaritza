@@ -244,7 +244,7 @@ export default async function HomePage() {
             <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, color: 'var(--liora-lima)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 16 }}>
               Cómo funciona
             </div>
-            <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 64, lineHeight: 0.98, letterSpacing: '-0.025em', color: 'var(--liora-crema)', margin: 0, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>
+            <h2 className="liora-personalize-title" style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 64, lineHeight: 0.98, letterSpacing: '-0.025em', color: 'var(--liora-crema)', margin: 0, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>
               Personaliza en{' '}
               <span style={{ fontFamily: 'var(--font-script)', color: 'var(--liora-lima)' }}>tres</span>{' '}
               pasos.

@@ -1,0 +1,42 @@
+# Lo que depende de la FECHA o de la RED no es una puerta.
+#
+# «Hay una versión nueva de esta dependencia» es verdad hoy y no ayer, sin que el código haya
+# cambiado. Si esa comprobación vive en la puerta de lint, CI se pone rojo solo, la gente aprende a
+# ignorar el rojo, y el día que falle por un motivo real nadie lo distingue del ruido.
+#
+# Así que va aquí: un workflow programado que AVISA (abre o actualiza una issue) y nunca bloquea.
+# En la puerta de lint, esas reglas se desactivan (ejemplos/android-lint.xml).
+name: dependencias
+
+on:
+  schedule:
+    - cron: '0 7 * * 1'   # los lunes a las 07:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  versiones:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: npm
+        continue-on-error: true
+        run: npm outdated > informe-npm.txt || true
+
+      - name: Abrir o actualizar la issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          [ -s informe-npm.txt ] || exit 0
+          titulo="Dependencias con versión nueva"
+          numero=$(gh issue list --state open --search "$titulo in:title" --json number --jq '.[0].number')
+          cuerpo=$(printf 'Informe del %s. No bloquea nada: decide si actualizar y abre un B-NNN.\n\n```\n%s\n```\n' "$(date -u +%F)" "$(cat informe-npm.txt)")
+          if [ -n "$numero" ]; then gh issue comment "$numero" --body "$cuerpo"; else gh issue create --title "$titulo" --body "$cuerpo"; fi

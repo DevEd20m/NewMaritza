@@ -1,0 +1,66 @@
+{
+  "specs": "docs/specs",
+  "matriz": "docs/specs/TRAZABILIDAD.md",
+  "comando": "node herramientas/trazabilidad.ts",
+  "historia": "US-\\d{3}",
+  "etiqueta": "AC-\\d{3}-\\d{2}",
+  "acDeLaHistoria": true,
+  "asercion": "\\b(assert\\w*|expect|verify)(<[^>]*>)?\\s*[({]|\\bshould[A-Z]\\w*\\b|\\braise\\s+exception\\b|\\b(ok|is|throws_ok|lives_ok|results_eq|set_eq|has_column|col_is_null|col_not_null)\\s*\\(",
+  "estados": [
+    "DRAFT",
+    "SPECIFIED",
+    "IMPLEMENTING",
+    "TESTING",
+    "DONE"
+  ],
+  "exigencia": {
+    "DRAFT": "avisa",
+    "SPECIFIED": "avisa",
+    "IMPLEMENTING": "sin-fallos",
+    "TESTING": "todo-verde",
+    "DONE": "todo-verde"
+  },
+  "estadoFinal": "DONE",
+  "fallosConocidos": "fallos-conocidos.json",
+  "plataformas": {
+    "web": {
+      "tests": [
+        "tests/unit"
+      ],
+      "archivos": "\\.test\\.tsx?$",
+      "lenguaje": "js",
+      "resultados": [
+        "build/test-results"
+      ],
+      "runner": true
+    },
+    "e2e": {
+      "tests": [
+        "tests/e2e"
+      ],
+      "archivos": "\\.spec\\.tsx?$",
+      "lenguaje": "js",
+      "resultados": [
+        "build/test-results"
+      ],
+      "runner": true
+    },
+    "backend": {
+      "tests": [
+        "supabase/tests"
+      ],
+      "archivos": "\\.sql$",
+      "lenguaje": "sql",
+      "resultados": [
+        "build/test-results/sql"
+      ],
+      "runner": false,
+      "servidor": true
+    }
+  },
+  "notas": [
+    "El guardián corre dentro de ci.yml («Production gate»), no en un workflow aparte: ese job ya ejecuta las tres suites con los secretos y la base de datos que necesitan. Los pasos del guardián llevan `if: always()`, que cumple el papel del `continue-on-error` que pide el kit. Ver docs/adr/0002.",
+    "backend.runner = false a propósito: `supabase test db` ejecuta pgTAP, que emite TAP y no JUnit XML. Un criterio demostrado solo en SQL sale ⚠️ en vez de exigir un veredicto que nadie produce. Se liquida con B-002 del backlog.",
+    "asercion incluye las funciones de pgTAP (ok, is, throws_ok, results_eq…) para que un test .sql etiquetado sin ninguna aserción se detecte igual que uno de Vitest."
+  ]
+}

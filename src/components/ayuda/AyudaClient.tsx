@@ -138,7 +138,7 @@ export function AyudaClient({ whatsappNumber, deliveryTime, shippingCostCents, f
       </div>
 
       {!query && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 12, marginBottom: 48, maxWidth: 1280, margin: '0 auto 48px' }}>
+        <div className="liora-ayuda-chips" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 12, marginBottom: 48, maxWidth: 1280, margin: '0 auto 48px' }}>
           {HELP_CATEGORIES.map(c => {
             const Icon = c.icon
             const active = cat === c.id
@@ -152,7 +152,7 @@ export function AyudaClient({ whatsappNumber, deliveryTime, shippingCostCents, f
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 32, alignItems: 'flex-start', maxWidth: 1280, margin: '0 auto' }}>
+      <div className="liora-ayuda-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 32, alignItems: 'flex-start', maxWidth: 1280, margin: '0 auto' }}>
         <div>
           <div style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 28, padding: 12 }}>
             {filtered.length === 0 && (
@@ -197,7 +197,7 @@ export function AyudaClient({ whatsappNumber, deliveryTime, shippingCostCents, f
           </div>
         </div>
 
-        <aside style={{ display: 'flex', flexDirection: 'column', gap: 12, position: 'sticky', top: 100 }}>
+        <aside className="liora-ayuda-aside" style={{ display: 'flex', flexDirection: 'column', gap: 12, position: 'sticky', top: 100 }}>
           <ContactCard href={waLink} bg="#25D366" Icon={WhatsappLogo} title="WhatsApp" value={waDisplay} cta="Chatear ahora →" inkColor="#FBF1E2" />
           <ContactCard href="mailto:hola@liora.pe" bg="var(--cat-cielo)" Icon={EnvelopeSimple} title="Email" value="hola@liora.pe" cta="Escribir →" />
           <ContactCard href={waCallLink} bg="var(--cat-mostaza)" Icon={Phone} title="Solicita una llamada" value="L–V · 9:00–19:00" cta="Coordinar por WhatsApp →" />

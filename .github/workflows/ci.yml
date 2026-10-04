@@ -49,6 +49,36 @@ jobs:
       - run: npx playwright install --with-deps chromium webkit
       - run: npm run test:e2e
 
+      # ── Guardián SDD ──────────────────────────────────────────────────────
+      # Corre aquí y no en su propio workflow porque este job ya ejecuta las tres
+      # suites con los secretos y la base de datos que necesitan: duplicarlo sería
+      # 25 minutos repetidos y dos copias de la misma configuración divergiendo.
+      # `if: always()` cumple el papel del `continue-on-error` que pide el kit —
+      # si una suite falla, el guardián lo refleja como ❌ en su criterio en vez de
+      # no llegar a contarlo. Ver docs/adr/0002.
+      - name: Guardián — cada criterio tiene quien lo demuestre
+        if: always()
+        run: node herramientas/trazabilidad.ts
+
+      - name: Documentación (enlaces, anclas y diagramas)
+        if: always()
+        run: node herramientas/verificar-docs.ts
+
+      - name: La matriz generada tiene que estar commiteada
+        if: always()
+        run: |
+          if ! git diff --exit-code -- docs/specs/TRAZABILIDAD.md; then
+            echo "::error::La matriz commiteada no coincide con la de CI. Tráela con: node herramientas/traer-matriz.ts"
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trazabilidad
+          path: docs/specs/TRAZABILIDAD.md
+          retention-days: 14
+
   migration-dry-run:
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest

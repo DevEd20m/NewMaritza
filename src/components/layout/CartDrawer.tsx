@@ -107,6 +107,7 @@ export function CartDrawer({ shippingThresholdCents, shippingCostCents }: CartDr
 
       {/* Drawer */}
       <aside
+        className="liora-cart-drawer"
         style={{
           position: 'fixed', top: 0, right: 0, bottom: 0, width: 420,
           background: 'var(--liora-crema)', zIndex: 101,

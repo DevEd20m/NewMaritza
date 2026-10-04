@@ -150,7 +150,7 @@ export default async function ProductDetailPage({ params }: Props) {
       <div className="liora-cart-outer" style={{ background: 'var(--liora-crema)', padding: '48px 48px 96px', maxWidth: 1280, margin: '0 auto' }}>
         <div className="liora-product-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'flex-start' }}>
           {/* Image */}
-          <div style={{ position: 'sticky', top: 120 }}>
+          <div className="liora-product-media" style={{ position: 'sticky', top: 120 }}>
             <div style={{ background: catColor, borderRadius: 32, aspectRatio: '1/1', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
               {product.cover_image_url ? (
                 /* El PNG recortado ya trae 15% de margen y la sombra de contacto horneada */
@@ -161,7 +161,7 @@ export default async function ProductDetailPage({ params }: Props) {
             </div>
             {/* Gallery thumbnails */}
             {product.gallery_urls?.length > 0 && (
-              <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
+              <div className="liora-product-thumbs" style={{ display: 'flex', gap: 12, marginTop: 16 }}>
                 {product.gallery_urls.slice(0, 4).map((url: string, i: number) => (
                   <div key={i} style={{ width: 80, height: 80, borderRadius: 16, background: catColor, overflow: 'hidden', border: '2px solid var(--liora-arena)' }}>
                     <img src={url} alt={`${product.name} ${i + 2}`} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
@@ -176,7 +176,7 @@ export default async function ProductDetailPage({ params }: Props) {
             <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12, color: 'var(--liora-uva)', opacity: 0.7 }}>
               {product.categories?.name ?? 'Producto'}
             </div>
-            <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 52, lineHeight: 1, letterSpacing: '-0.025em', color: 'var(--liora-uva)', margin: 0, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>
+            <h1 className="liora-product-title" style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 52, lineHeight: 1, letterSpacing: '-0.025em', color: 'var(--liora-uva)', margin: 0, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>
               {product.name}
             </h1>
             {activeVariant && (
@@ -191,7 +191,7 @@ export default async function ProductDetailPage({ params }: Props) {
             )}
 
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginTop: 20 }}>
-              <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 44, color: 'var(--liora-uva)' }}>
+              <span className="liora-product-price" style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 44, color: 'var(--liora-uva)' }}>
                 {formatPEN(price?.amount_cents ?? 0)}
               </span>
               {price?.compare_at_cents && (
