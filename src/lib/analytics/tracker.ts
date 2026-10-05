@@ -185,7 +185,8 @@ function scheduleFlush() {
 }
 
 export function track(event: TrackedEvent) {
-  console.log('[track-debug]', event.event, typeof window, analyticsEnabled(), window.location.hostname, process.env.NEXT_PUBLIC_ANALYTICS_DEBUG)
+  // El guard va primero: cualquier cosa que lea `window` antes de comprobarlo revienta con
+  // ReferenceError si track() llega a llamarse durante el renderizado en servidor.
   if (typeof window === 'undefined' || !analyticsEnabled()) return
   if (window.location.hostname === 'localhost' && process.env.NEXT_PUBLIC_ANALYTICS_DEBUG !== '1') return
   bindListeners()

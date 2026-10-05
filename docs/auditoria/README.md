@@ -18,3 +18,4 @@ Cada auditoría declara:
 | Auditoría | Commit | Hallazgos |
 |---|---|---|
 | [2026-10-04](hallazgos.md) | `080d0e1` | AUD-001 … AUD-011 |
+| [2026-10-04 · ejecución](hallazgos-2026-10-04-ejecucion.md) | `b0e640a` | AUD-012 |

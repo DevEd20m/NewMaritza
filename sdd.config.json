@@ -54,13 +54,13 @@
       "resultados": [
         "build/test-results/sql"
       ],
-      "runner": false,
+      "runner": true,
       "servidor": true
     }
   },
   "notas": [
     "El guardián corre dentro de ci.yml («Production gate»), no en un workflow aparte: ese job ya ejecuta las tres suites con los secretos y la base de datos que necesitan. Los pasos del guardián llevan `if: always()`, que cumple el papel del `continue-on-error` que pide el kit. Ver docs/adr/0002.",
-    "backend.runner = false a propósito: `supabase test db` ejecuta pgTAP, que emite TAP y no JUnit XML. Un criterio demostrado solo en SQL sale ⚠️ en vez de exigir un veredicto que nadie produce. Se liquida con B-002 del backlog.",
+    "Los tests pgTAP dan veredicto a través de scripts/tests-sql-junit.mjs, que los ejecuta con psql en crudo y traduce su TAP a JUnit. `supabase test db` sigue corriendo en CI como puerta; el script corre además, por los veredictos.",
     "asercion incluye las funciones de pgTAP (ok, is, throws_ok, results_eq…) para que un test .sql etiquetado sin ninguna aserción se detecte igual que uno de Vitest."
   ]
 }

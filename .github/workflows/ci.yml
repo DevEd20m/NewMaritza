@@ -42,6 +42,9 @@ jobs:
       - run: supabase db reset
       - run: supabase db lint --local --fail-on error
       - run: supabase test db
+      # Los mismos tests, traducidos a JUnit para que el guardián tenga veredictos del
+      # servidor. `supabase test db` arriba sigue siendo la puerta. Ver B-002.
+      - run: node scripts/tests-sql-junit.mjs
       - run: npm run typecheck
       - run: npm test
       - run: npm run lint

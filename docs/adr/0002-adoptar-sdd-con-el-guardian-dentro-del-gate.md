@@ -1,5 +1,8 @@
 # ADR-0002 · Adoptar SDD con el guardián dentro de la puerta de producción
 **Estado:** Aceptado · **Fecha:** 2026-10-04
+> **Nota de estado (2026-10-04):** su **§3 ya no describe la realidad**. `backend.runner` pasó a
+> `true` el mismo día, al cerrarse `B-002` con `scripts/tests-sql-junit.mjs`. Con ello decae
+> también la tercera consecuencia «en contra» que este ADR aceptaba. El resto sigue vigente.
 
 ## Contexto
 

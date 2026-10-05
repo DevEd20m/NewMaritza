@@ -22,24 +22,19 @@ no son secretos y no sirven fuera de `localhost`.
 
 ## 2. La cuenta administrativa
 
-`seed.sql` crea dos productos de prueba y ningún usuario: no puede crearlos, porque un usuario vive
-en el esquema `auth`, que gestiona GoTrue. Se crea por su API y después se le cambia el rol, que es
-lo único que mira `verifyAdminPage()`:
+`seed.sql` crea datos de catálogo y ningún usuario: no puede, porque un usuario vive en el esquema
+`auth`, que gestiona GoTrue. Lo hace un script:
 
 ```bash
-# 1 · crear el usuario (email_confirm evita el paso por el buzón)
-curl -X POST http://127.0.0.1:54321/auth/v1/admin/users \
-  -H "apikey: $SERVICE_ROLE_KEY" -H "Authorization: Bearer $SERVICE_ROLE_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"email":"admin@local.test","password":"<una contraseña cualquiera>","email_confirm":true}'
-
-# 2 · el trigger on_auth_user_created ya creó su fila en profiles con role='customer';
-#     solo hay que promoverla
-curl -X PATCH "http://127.0.0.1:54321/rest/v1/profiles?id=eq.<uid>" \
-  -H "apikey: $SERVICE_ROLE_KEY" -H "Authorization: Bearer $SERVICE_ROLE_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"role":"admin"}'
+node scripts/crear-admin-local.mjs                       # usa .env.local
+node scripts/crear-admin-local.mjs admin@local.test 1234 # o se le pasan
 ```
+
+Crea el usuario por la API de administración, lo confirma sin pasar por el buzón, y promueve su fila
+de `profiles` a `role = 'admin'`, que es lo único que mira `verifyAdminPage()`. Es idempotente y se
+niega a ejecutarse contra cualquier cosa que no sea `localhost`.
+
+**Hay que volver a ejecutarlo después de cada `supabase db reset`**, que borra la base entera.
 
 Las credenciales que uses van en `.env.local` como `E2E_ADMIN_EMAIL` y `E2E_ADMIN_PASSWORD`, que es
 donde las buscan los tests de extremo a extremo. **`.env.local` está ignorado por git**, y esa

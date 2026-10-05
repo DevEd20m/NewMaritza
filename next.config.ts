@@ -20,6 +20,9 @@ const securityHeaders = [
       "font-src 'self' https://fonts.gstatic.com data:",
       "img-src 'self' data: blob: https://*.supabase.co https://organaperu.vtexassets.com https://lh3.googleusercontent.com",
       "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://www.google-analytics.com https://analytics.google.com https://stats.g.doubleclick.net https://api.openai.com",
+      // media-src NO hereda de img-src: sin declararlo cae a default-src 'self' y el navegador
+      // bloquea cualquier <video> servido desde Supabase Storage. AUD-008.
+      "media-src 'self' blob: https://*.supabase.co",
       "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
       "worker-src 'self' blob:",
       "form-action 'self'",

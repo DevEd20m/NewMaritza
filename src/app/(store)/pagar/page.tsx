@@ -19,11 +19,11 @@ export default async function CheckoutPage({ searchParams }: { searchParams?: Pr
   if (user) {
     const [{ data: profileRaw }, { data: addressRaw }] = await Promise.all([
       supabase.from('profiles').select('first_name, last_name, phone').eq('id', user.id).single(),
-      supabase.from('addresses').select('first_name, last_name, phone, address_line1, address_line2, city, state, postal_code').eq('user_id', user.id).order('is_default', { ascending: false }).limit(1).single(),
+      supabase.from('addresses').select('first_name, last_name, phone, address_line1, address_line2, city, district, postal_code').eq('user_id', user.id).order('is_default', { ascending: false }).limit(1).single(),
     ])
 
     const profile = profileRaw as { first_name: string | null; last_name: string | null; phone: string | null } | null
-    const address = addressRaw as { first_name: string; last_name: string; phone: string | null; address_line1: string; address_line2: string | null; city: string; state: string | null; postal_code: string | null } | null
+    const address = addressRaw as { first_name: string; last_name: string; phone: string | null; address_line1: string; address_line2: string | null; city: string; district: string | null; postal_code: string | null } | null
 
     prefill = {
       isLoggedIn: true,
@@ -33,7 +33,9 @@ export default async function CheckoutPage({ searchParams }: { searchParams?: Pr
       phone: address?.phone ?? profile?.phone ?? '',
       addressLine1: address?.address_line1 ?? '',
       city: address?.city ?? '',
-      district: address?.state ?? '',
+      // AUD-007 · leía `state`, columna que nada escribe nunca, así que el distrito guardado
+      // jamás se re-prellenaba. El checkout lo guarda en `district` (api/checkout/route.ts:169).
+      district: address?.district ?? '',
       postalCode: address?.postal_code ?? '',
     }
   }

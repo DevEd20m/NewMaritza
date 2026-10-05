@@ -25,7 +25,7 @@ function getPageTitle(pathname: string) {
   return found?.label ?? 'Admin'
 }
 
-export function AdminShell({ children, adminName }: { children: React.ReactNode; adminName: string }) {
+export function AdminShell({ children, adminName, sinAtender = 0 }: { children: React.ReactNode; adminName: string; sinAtender?: number }) {
   const pathname = usePathname()
   const title = getPageTitle(pathname)
   const initials = adminName.slice(0, 2).toUpperCase()
@@ -101,10 +101,23 @@ export function AdminShell({ children, adminName }: { children: React.ReactNode;
             <span style={{ fontWeight: 700 }}>{title}</span>
           </div>
           <div style={{ marginLeft: 'auto' }}>
-            <button style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', color: 'var(--liora-uva)', width: 38, height: 38, borderRadius: 999, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+            {/* AC-004-05 · era un <button> sin onClick con un punto verde fijo: parecía un aviso
+                y no avisaba de nada. Ahora dice cuántos pedidos están sin atender y lleva a ellos. */}
+            <Link
+              href="/admin/pedidos"
+              data-sin-atender={sinAtender}
+              aria-label={sinAtender > 0
+                ? `${sinAtender} ${sinAtender === 1 ? 'pedido sin atender' : 'pedidos sin atender'}`
+                : 'No hay pedidos sin atender'}
+              style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', color: 'var(--liora-uva)', minWidth: 38, height: 38, padding: sinAtender > 0 ? '0 12px 0 10px' : 0, borderRadius: 999, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 7, textDecoration: 'none', flexShrink: 0 }}
+            >
               <Bell size={15} weight="bold" />
-              <span style={{ position: 'absolute', top: 6, right: 7, width: 8, height: 8, borderRadius: 999, background: 'var(--liora-lima)', border: '1.5px solid var(--liora-blanco)' }} />
-            </button>
+              {sinAtender > 0 && (
+                <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 13, lineHeight: 1 }}>
+                  {sinAtender}
+                </span>
+              )}
+            </Link>
           </div>
         </header>
 

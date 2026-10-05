@@ -173,10 +173,13 @@ select is(
   'already_paid',
   'duplicate fulfillment is idempotent'
 );
+-- AC-004-02 · tres jobs desde US-004: day0 y day7 al cliente, y el aviso al negocio. Que una
+-- segunda confirmación no los duplique es lo que este test comprueba desde siempre; lo único
+-- que cambió es cuántos son.
 select is(
   (select count(*)::integer from public.email_queue where order_id = '50000000-0000-0000-0000-000000000005'),
-  2,
-  'duplicate fulfillment creates one day0 and one day7 outbox job'
+  3,
+  'AC-004-02 duplicate fulfillment creates one day0, one day7 and one admin_new_order job'
 );
 select is(
   (select stock_quantity from public.product_variants where id = '30000000-0000-0000-0000-000000000001'),

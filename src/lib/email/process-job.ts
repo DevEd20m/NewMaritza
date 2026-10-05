@@ -3,6 +3,7 @@ import 'server-only'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { deliverOrderEmail, type OrderEmailType } from '@/lib/email/deliver-order-email'
 import { deliverQuizWelcomeEmail } from '@/lib/email/deliver-quiz-email'
+import { deliverAdminNewOrderEmail } from '@/lib/email/deliver-admin-order-email'
 import type { Json } from '@/types/database'
 
 export interface EmailJob {
@@ -47,13 +48,17 @@ export async function processEmailJob(
   }
 
   try {
+    // US-004 · el aviso al negocio es un tipo más de la misma cola, así que hereda los
+    // reintentos, el repesque por cron y la idempotencia sin inventar otro camino.
     const result = job.type === 'quiz_welcome'
       ? await deliverQuizWelcomeEmail(
           job.quiz_profile_id ?? '',
           job.recipient_email ?? '',
           (job.payload ?? {}) as Record<string, unknown>,
         )
-      : await deliverOrderEmail(job.order_id ?? '', job.type as OrderEmailType)
+      : job.type === 'admin_new_order'
+        ? await deliverAdminNewOrderEmail(job.order_id ?? '')
+        : await deliverOrderEmail(job.order_id ?? '', job.type as OrderEmailType)
     const captured = result.status === 'captured'
     await admin.from('email_queue').update({
       status: captured ? 'captured' : 'sent',
