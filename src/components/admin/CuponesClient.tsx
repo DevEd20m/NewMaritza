@@ -342,7 +342,7 @@ function CouponDrawer({ editing, onClose, onSaved, categories }: {
   return (
     <>
       <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(61,26,58,0.35)', zIndex: 50, backdropFilter: 'blur(2px)' }} />
-      <div style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: 600, background: 'var(--liora-crema)', zIndex: 51, boxShadow: '-8px 0 40px rgba(61,26,58,0.18)', display: 'flex', flexDirection: 'column' }}>
+      <div className="liora-admin-drawer" style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: 600, background: 'var(--liora-crema)', zIndex: 51, boxShadow: '-8px 0 40px rgba(61,26,58,0.18)', display: 'flex', flexDirection: 'column' }}>
 
         {/* Header */}
         <div style={{ padding: '20px 24px', borderBottom: '1.5px solid var(--liora-arena)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>

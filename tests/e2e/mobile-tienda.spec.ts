@@ -54,6 +54,10 @@ function seSolapan(a: { x: number; y: number; width: number; height: number }, b
 }
 
 test.describe('US-002 · Comprar desde el celular', () => {
+  // En desarrollo Next compila cada ruta la primera vez que se pide; el recorrido por las nueve
+  // pantallas públicas no cabe en el timeout por defecto de 30 s con el servidor en frío.
+  test.setTimeout(120_000)
+
   test(`AC-002-01 en la ficha de producto el texto nunca se dibuja sobre la foto`, async ({ page }) => {
     await abrirPrimeraFicha(page, ANCHO_REFERENCIA)
 

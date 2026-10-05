@@ -1,7 +1,8 @@
 'use client'
+import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { SquaresFour, Receipt, Package, Sparkle, UsersThree, Bell, ClipboardText, Ticket, GearSix, Tag, ChartBar, FolderSimple, BookOpen, Pulse } from '@phosphor-icons/react'
+import { SquaresFour, Receipt, Package, Sparkle, UsersThree, Bell, ClipboardText, Ticket, GearSix, Tag, ChartBar, FolderSimple, BookOpen, Pulse, List, X } from '@phosphor-icons/react'
 
 const NAV = [
   { href: '/admin',                  label: 'Dashboard',    Icon: SquaresFour },
@@ -28,11 +29,23 @@ export function AdminShell({ children, adminName }: { children: React.ReactNode;
   const pathname = usePathname()
   const title = getPageTitle(pathname)
   const initials = adminName.slice(0, 2).toUpperCase()
+  // AC-003-02 · en pantalla angosta la barra lateral se esconde, así que hace falta otra
+  // puerta de entrada a las secciones. Se cierra sola al navegar.
+  const [menuOpen, setMenuOpen] = useState(false)
+  useEffect(() => { setMenuOpen(false) }, [pathname])
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--liora-crema)' }}>
+      {menuOpen && (
+        <div
+          className="liora-admin-backdrop"
+          onClick={() => setMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Sidebar */}
-      <aside style={{ background: 'var(--liora-uva)', width: 240, flexShrink: 0, minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'sticky', top: 0 }}>
+      <aside className={`liora-admin-sidebar${menuOpen ? ' open' : ''}`} style={{ background: 'var(--liora-uva)', width: 240, flexShrink: 0, minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'sticky', top: 0 }}>
         {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '20px 22px 18px' }}>
           <div style={{ width: 32, height: 32, borderRadius: 10, background: 'var(--liora-lima)', color: 'var(--liora-uva)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 18, fontVariationSettings: "'opsz' 144,'SOFT' 80,'WONK' 1" }}>L</div>
@@ -72,8 +85,17 @@ export function AdminShell({ children, adminName }: { children: React.ReactNode;
       {/* Main */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: '100vh', overflow: 'hidden' }}>
         {/* Topbar */}
-        <header style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 32px', background: 'rgba(251,241,226,0.92)', backdropFilter: 'saturate(160%) blur(12px)', borderBottom: '1.5px solid var(--liora-arena)', position: 'sticky', top: 0, zIndex: 20 }}>
-          <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-uva)', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+        <header className="liora-admin-topbar" style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 32px', background: 'rgba(251,241,226,0.92)', backdropFilter: 'saturate(160%) blur(12px)', borderBottom: '1.5px solid var(--liora-arena)', position: 'sticky', top: 0, zIndex: 20 }}>
+          <button
+            className="liora-admin-menu-btn"
+            onClick={() => setMenuOpen(v => !v)}
+            aria-label="Menú"
+            aria-expanded={menuOpen}
+            style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', color: 'var(--liora-uva)', width: 38, height: 38, borderRadius: 999, cursor: 'pointer', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+          >
+            {menuOpen ? <X size={16} weight="bold" /> : <List size={16} weight="bold" />}
+          </button>
+          <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--liora-uva)', display: 'inline-flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
             <span style={{ opacity: 0.55 }}>Panel</span>
             <span style={{ opacity: 0.4, fontSize: 12 }}>›</span>
             <span style={{ fontWeight: 700 }}>{title}</span>
@@ -86,7 +108,7 @@ export function AdminShell({ children, adminName }: { children: React.ReactNode;
           </div>
         </header>
 
-        <main style={{ flex: 1, padding: '40px 40px', overflowY: 'auto' }}>
+        <main className="liora-admin-main" style={{ flex: 1, padding: '40px 40px', overflowY: 'auto' }}>
           {children}
         </main>
       </div>

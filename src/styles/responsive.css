@@ -591,3 +591,75 @@
 @media (max-width: 480px) {
   .liora-nosotros-h1 { font-size: 38px !important; }
 }
+
+/* =====================================================
+   US-003 · Atender el negocio desde el celular
+   docs/specs/ADMIN/atender-desde-el-celular.md
+   ===================================================== */
+
+/* El botón de menú solo existe donde la barra lateral se esconde. */
+.liora-admin-menu-btn { display: none; }
+.liora-admin-backdrop { display: none; }
+
+@media (max-width: 900px) {
+  /* AC-003-01 · la barra de 240px fijos se quedaba con dos tercios de la pantalla: en 360px
+     el área de contenido medía 120 y su interior 40. Pasa a ser un cajón que se abre. */
+  .liora-admin-sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0;
+    bottom: 0;
+    z-index: 300;
+    transform: translateX(-100%);
+    transition: transform 220ms var(--ease, ease);
+    box-shadow: var(--shadow-3);
+    overflow-y: auto;
+  }
+  .liora-admin-sidebar.open { transform: translateX(0); }
+
+  .liora-admin-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(61, 26, 58, 0.4);
+    z-index: 299;
+  }
+
+  .liora-admin-menu-btn { display: inline-flex !important; }
+
+  /* 40px de relleno a cada lado sobre 360 de ventana es el 22% de la pantalla. */
+  .liora-admin-main { padding: 20px 16px !important; }
+  .liora-admin-topbar { padding: 12px 16px !important; gap: 10px !important; }
+
+  /* AC-003-03 · las tablas del panel son rejillas con columnas en px fijos (la de pedidos
+     suma ~592px). Quedaban recortadas por el `overflow: hidden` del contenedor, sin ninguna
+     forma de alcanzar lo que sobresalía. El patrón ya existía en la tabla de analítica. */
+  .liora-admin-tabla {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  .liora-admin-tabla > * { min-width: 620px; }
+
+  /* Rejillas de indicadores: cuatro columnas sobre 328px útiles dan tarjetas de ~75px. */
+  .liora-admin-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+  .liora-admin-split {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 16px !important;
+  }
+  .liora-admin-kpis > *,
+  .liora-admin-split > * { min-width: 0 !important; }
+
+  .liora-admin-h1 { font-size: 28px !important; overflow-wrap: anywhere; }
+}
+
+/* AC-003-04 · los cuatro paneles de detalle tienen anchos fijos distintos (580, 680, 680 y
+   600) y están anclados a la derecha: lo que se sale lo hace por la izquierda. */
+.liora-admin-drawer {
+  max-width: 100vw !important;
+}
+@media (max-width: 900px) {
+  .liora-admin-drawer { width: 100vw !important; }
+}

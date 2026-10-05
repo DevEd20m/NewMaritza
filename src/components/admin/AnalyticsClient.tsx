@@ -149,7 +149,7 @@ function VisitorsSection({ v }: { v: VisitorsData }) {
         <KPI label="Conversión a compra" value={`${pct(v.funnel.purchased, v.sessions)}%`} sub={`${v.funnel.purchased} compras`} icon={ShoppingCart} color="var(--cat-durazno)" />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 20 }}>
+      <div className="liora-admin-split" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 20 }}>
         {/* Embudo de visitantes */}
         <div>
           <div style={PANEL_LABEL}>¿Dónde se quedan los clientes?</div>
@@ -310,7 +310,7 @@ export function AnalyticsClient({ data, visitors, journeys, filters }: { data: A
         <KPI label="Ingresos este mes" value={`S/${Math.round(data.monthRevenueCents / 100)}`} sub="pedidos pagados" icon={TrendUp} color="var(--cat-mostaza)" />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 20 }}>
+      <div className="liora-admin-split" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 20 }}>
 
         {/* Recent quiz profiles */}
         <div>

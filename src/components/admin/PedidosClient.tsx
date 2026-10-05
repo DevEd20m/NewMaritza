@@ -129,7 +129,7 @@ function OrderDrawer({
         onClick={onClose}
         style={{ position: 'fixed', inset: 0, background: 'rgba(61,26,58,0.35)', zIndex: 50, backdropFilter: 'blur(2px)' }}
       />
-      <div style={{
+      <div className="liora-admin-drawer" style={{
         position: 'fixed', top: 0, right: 0, bottom: 0, width: 580, background: 'var(--liora-crema)',
         zIndex: 51, overflowY: 'auto', boxShadow: '-8px 0 40px rgba(61,26,58,0.18)',
         display: 'flex', flexDirection: 'column',
@@ -374,7 +374,7 @@ export function PedidosClient({
       </div>
 
       {/* Filters + search + table */}
-      <div style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 22, overflow: 'hidden' }}>
+      <div className="liora-admin-tabla" style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 22, overflow: 'hidden' }}>
         {/* Filter bar */}
         <div style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1.5px solid var(--liora-arena)', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>

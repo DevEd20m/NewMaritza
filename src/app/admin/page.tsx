@@ -162,7 +162,7 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Two-column: pedidos por preparar + stock crítico */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: 16, marginBottom: 16 }}>
+      <div className="liora-admin-split" style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: 16, marginBottom: 16 }}>
         {/* Pedidos por preparar */}
         <div style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 22, overflow: 'hidden' }}>
           {sectionHead('Pedidos por preparar', 'Orden de antigüedad', 'Ver todos', '/admin/pedidos')}
@@ -221,7 +221,7 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Performance: kits + top products */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+      <div className="liora-admin-split" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
         {/* Kits activos */}
         <div style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 22, overflow: 'hidden' }}>
           {sectionHead('Kits activos', 'Por precio total', 'Ver kits', '/admin/kits')}

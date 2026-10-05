@@ -97,7 +97,7 @@ export function TagsClient({ initialTags }: { initialTags: AdminTag[] }) {
       {showForm && (
         <div style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-uva)', borderRadius: 20, padding: 24, marginBottom: 28, display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 13, color: 'var(--liora-uva)' }}>Nuevo tag</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+          <div className="liora-admin-kpis" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
             <div>
               <label style={labelStyle}>Nombre *</label>
               <input

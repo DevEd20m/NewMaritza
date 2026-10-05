@@ -9,4 +9,5 @@ la arquitectura se mueva, no es arquitectura, es un criterio de aceptación.
 
 | Documento | Pregunta que responde |
 |---|---|
+| [`entorno-local.md`](entorno-local.md) | ¿Cómo levanto LIORA entero en mi máquina, incluido el panel? |
 | {{`modelo-datos.md`}} | {{¿Qué se guarda y cómo se relaciona?}} |

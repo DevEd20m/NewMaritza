@@ -76,7 +76,7 @@ export default async function AdminCustomersPage() {
       </div>
 
       {/* Table */}
-      <div style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 22, overflow: 'hidden' }}>
+      <div className="liora-admin-tabla" style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 22, overflow: 'hidden' }}>
         {/* Table header */}
         <div style={{ display: 'grid', gridTemplateColumns: '44px 1.6fr 1fr 100px 130px 130px 80px', gap: 14, padding: '12px 22px', background: 'var(--liora-crema)', borderBottom: '1.5px solid var(--liora-arena)', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 10, color: 'var(--liora-uva)', opacity: 0.7, textTransform: 'uppercase', letterSpacing: '0.12em' }}>
           <div />

@@ -105,7 +105,11 @@ export function KitBanner({ kit }: { kit: RelatedKit }) {
               {kit.productCount} productos seleccionados para usarse juntos
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexShrink: 0 }}>
+          {/* AC-002-02 · el grupo llevaba `flexShrink: 0` y su píldora es `nowrap` de 203px, así
+              que en 360px se salía 10px. Con `flexShrink` por defecto el grupo puede encoger y
+              entonces el `wrap` lo parte en dos líneas. En escritorio cabe de sobra, y flex solo
+              encoge cuando falta sitio, así que allí no cambia nada. */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap', minWidth: 0 }}>
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 10, color: 'var(--liora-uva)', opacity: 0.55, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Rutina completa</div>
               <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 26, color: 'var(--liora-uva)', lineHeight: 1 }}>S/{Math.round(kit.totalCents / 100)}</div>
