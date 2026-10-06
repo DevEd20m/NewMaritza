@@ -1,4 +1,6 @@
 'use client'
+
+import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
 import { Heart, Plus } from '@phosphor-icons/react'
@@ -103,7 +105,18 @@ export function ProductCard({
               (scripts/product-images-process.mjs), no se dibuja aquí.
               El PNG ya reserva un 15% de margen, por eso ocupa el 92%. */}
           {imageUrl ? (
-            <img src={imageUrl} alt={name} style={{ width: '92%', height: '92%', objectFit: 'contain', position: 'relative' }} />
+            // AC-006-01/02 · el original mide 1600×1600 y la tarjeta lo pinta a ~124 px en un
+            // celular. `sizes` le dice al navegador cuánto espacio ocupará, y el optimizador
+            // sirve esa anchura en AVIF/WebP en vez del PNG entero.
+            <div style={{ position: 'relative', width: '92%', height: '92%' }}>
+              <Image
+                src={imageUrl}
+                alt={name}
+                fill
+                sizes="(max-width: 900px) 35vw, 300px"
+                style={{ objectFit: 'contain' }}
+              />
+            </div>
           ) : (
             <div style={{
               background: 'var(--liora-blanco)', padding: '12px 14px', borderRadius: 12,

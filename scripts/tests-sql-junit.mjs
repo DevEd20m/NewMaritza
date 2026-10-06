@@ -19,14 +19,32 @@ const salidaIdx = process.argv.indexOf('--salida')
 const DIR_SALIDA = salidaIdx !== -1 ? process.argv[salidaIdx + 1] : 'build/test-results/sql'
 
 function contenedorDb() {
-  // El nombre lleva el `project_id` de supabase/config.toml, que cambia por proyecto.
-  const ids = execFileSync('docker', ['ps', '-qf', 'name=supabase_db_'], { encoding: 'utf-8' }).trim()
-  const primero = ids.split('\n').filter(Boolean)[0]
-  if (!primero) {
-    console.error('No hay ningún contenedor supabase_db_* corriendo. Levanta el stack con `supabase start`.')
-    process.exit(1)
+  // El contenedor se resuelve por el `project_id` de supabase/config.toml, NO por «el primero
+  // que aparezca». En una máquina con varios proyectos de Supabase levantados a la vez, coger
+  // `docker ps -q | head -1` ejecuta los tests de este repositorio contra la base de otro
+  // proyecto: pasó el 2026-10-05 y dejó una extensión instalada donde no tocaba.
+  const config = readFileSync('supabase/config.toml', 'utf-8')
+  const projectId = config.match(/^\s*project_id\s*=\s*"([^"]+)"/m)?.[1]
+  if (!projectId) {
+    console.error('No se pudo leer project_id de supabase/config.toml.')
+    process.exit(2)
   }
-  return primero
+
+  const nombre = `supabase_db_${projectId}`
+  const vivos = execFileSync('docker', ['ps', '--format', '{{.Names}}'], { encoding: 'utf-8' })
+    .split(/\r?\n/)
+    .map((n) => n.trim())
+    .filter(Boolean)
+
+  if (!vivos.includes(nombre)) {
+    const otros = vivos.filter((n) => n.startsWith('supabase_db_'))
+    console.error(`No está corriendo el contenedor ${nombre}. Levanta el stack con \`supabase start\`.`)
+    if (otros.length) console.error(`Hay otros proyectos de Supabase levantados: ${otros.join(', ')} — no se usan.`)
+    // Código 2: «no se pudo ejecutar», distinto de 1, que es «hay tests en rojo». Confundirlos
+    // hace que un problema de entorno se lea como un fallo de producto.
+    process.exit(2)
+  }
+  return nombre
 }
 
 /** Ejecuta un fichero con psql en crudo (-At) y devuelve sus líneas TAP. */

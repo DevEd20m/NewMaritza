@@ -1,21 +1,11 @@
 'use client'
 import { useRef, useState } from 'react'
 import { UploadSimple, Spinner } from '@phosphor-icons/react'
-import { createClient } from '@/lib/supabase/client'
 
-// Sube una imagen al bucket product-images y devuelve su URL pública.
-// Requiere las políticas admin_* sobre storage.objects (migración 20260714000000).
-export async function uploadAdminImage(file: File, path: string): Promise<{ url?: string; error?: string }> {
-  if (!file.type.startsWith('image/')) return { error: 'Solo se aceptan imágenes' }
-  if (file.size > 5 * 1024 * 1024) return { error: 'La imagen no puede superar 5 MB' }
-  const supabase = createClient()
-  const { error } = await supabase.storage
-    .from('product-images')
-    .upload(path, file, { upsert: true, contentType: file.type })
-  if (error) return { error: 'Error al subir: ' + error.message }
-  const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(path)
-  return { url: publicUrl }
-}
+// La política de subida vive en src/lib/storage/subir-imagen.ts. Se reexporta porque
+// ProductsClient la importa desde aquí desde antes.
+import { uploadAdminImage } from '@/lib/storage/subir-imagen'
+export { uploadAdminImage }
 
 export function fileExt(file: File) {
   return file.name.split('.').pop()?.toLowerCase() ?? 'png'

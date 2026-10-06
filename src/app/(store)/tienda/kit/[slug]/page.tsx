@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
@@ -217,7 +218,7 @@ export default async function KitPage({ params }: Props) {
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, flexShrink: 0 }}>
                         <div style={{ width: 58, height: 58, borderRadius: 12, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                           {product.cover_image_url
-                            ? <img src={product.cover_image_url} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                            ? <Image src={product.cover_image_url} alt={product.name} width={58} height={58} style={{ objectFit: 'contain' }} />
                             : <Package size={24} weight="bold" color="var(--liora-uva)" style={{ opacity: 0.4 }} />
                           }
                         </div>
@@ -233,7 +234,7 @@ export default async function KitPage({ params }: Props) {
                   <Link key={i} href={`/tienda/${product.slug}`} style={{ background: 'var(--liora-blanco)', border: '1.5px solid var(--liora-arena)', borderRadius: 20, padding: '16px 18px', display: 'flex', gap: 14, alignItems: 'center', textDecoration: 'none' }}>
                     <div style={{ width: 68, height: 68, borderRadius: 14, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
                       {product.cover_image_url
-                        ? <img src={product.cover_image_url} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                        ? <Image src={product.cover_image_url} alt={product.name} width={68} height={68} style={{ objectFit: 'contain' }} />
                         : <Package size={28} weight="bold" color="var(--liora-uva)" style={{ opacity: 0.4 }} />
                       }
                     </div>

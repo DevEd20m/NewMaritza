@@ -139,6 +139,22 @@ mano**: se genera, o se cita junto al comando que la produce.
   fallidos. Un correo nuevo se añade como un tipo más de la cola, nunca con un `emails.send` suelto.
 - **Los crons de Vercel corren una vez al día** (límite del plan Hobby). Nada que necesite
   reaccionar en minutos puede depender de ellos.
+- **Nunca `| grep` ni `| tail` sobre un comando cuyo resultado importa.** Playwright imprime la
+  lista de fallos ANTES de los contadores, así que un `tail -4` deja «55 passed» y se come el
+  «1 failed»; y encadenar con `grep` devuelve el código de salida del `grep`, no el del comando.
+  Escribe la salida completa a un fichero, captura `$?` en la línea siguiente, y filtra después.
+- **Nunca `--reporter=X` en Playwright si luego vas a mirar el guardián.** La opción de línea de
+  comandos **sustituye** a los reporters del config, así que el JUnit no se regenera y queda el de
+  la corrida anterior. El guardián lee el JUnit, no la consola: son dos fuentes de verdad que
+  divergen en silencio y te hacen certificar como verde algo que ya no lo está.
+- **Un contenedor «healthy» de Docker no significa nada.** Kong puede estar muerto dentro de un
+  contenedor que se reporta sano: la app tarda exactamente 14 s en cada página y sirve HTML sin
+  datos, mientras `psql` sigue funcionando porque va directo a la base y no pasa por el gateway.
+  Antes de correr la suite, comprueba el stack de verdad:
+  `curl -s -o /dev/null -w "%{http_code}" "$NEXT_PUBLIC_SUPABASE_URL/rest/v1/"`.
+- **Las suites de navegador no se corren contra producción.** No es solo por la analítica: una
+  visita a la tienda descarga ~8 MB de imágenes, y Playwright estrena caché en cada test. Lo impide
+  una guarda en `playwright.config.ts`; si la ves saltar, no la rodees.
 - **Las migraciones son la fuente de verdad del esquema**, no la base remota: CI hace `db reset` +
   `db lint --fail-on error` + `test db` sobre un Postgres limpio. Una columna que solo existe en
   producción rompe el CI.

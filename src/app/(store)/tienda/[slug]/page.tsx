@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
@@ -154,7 +155,9 @@ export default async function ProductDetailPage({ params }: Props) {
             <div style={{ background: catColor, borderRadius: 32, aspectRatio: '1/1', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
               {product.cover_image_url ? (
                 /* El PNG recortado ya trae 15% de margen y la sombra de contacto horneada */
-                <img src={product.cover_image_url} alt={product.name} style={{ width: '94%', height: '94%', objectFit: 'contain' }} />
+                <div style={{ position: 'relative', width: '94%', height: '94%' }}>
+                  <Image src={product.cover_image_url} alt={product.name} fill sizes="(max-width: 900px) 92vw, 560px" style={{ objectFit: 'contain' }} priority />
+                </div>
               ) : (
                 <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 48, color: 'var(--liora-uva)', textAlign: 'center', padding: 32 }}>{product.name}</div>
               )}
@@ -164,7 +167,7 @@ export default async function ProductDetailPage({ params }: Props) {
               <div className="liora-product-thumbs" style={{ display: 'flex', gap: 12, marginTop: 16 }}>
                 {product.gallery_urls.slice(0, 4).map((url: string, i: number) => (
                   <div key={i} style={{ width: 80, height: 80, borderRadius: 16, background: catColor, overflow: 'hidden', border: '2px solid var(--liora-arena)' }}>
-                    <img src={url} alt={`${product.name} ${i + 2}`} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                    <Image src={url} alt={`${product.name} ${i + 2}`} width={80} height={80} style={{ objectFit: 'contain' }} />
                   </div>
                 ))}
               </div>

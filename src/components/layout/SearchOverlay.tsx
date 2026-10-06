@@ -1,5 +1,7 @@
 'use client'
 
+import Image from 'next/image'
+
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -222,7 +224,7 @@ export function SearchOverlay({ onClose }: Props) {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 16, background: 'var(--cat-menta)', borderRadius: 18, padding: '12px 16px', margin: '0 4px 6px', cursor: 'pointer' }}>
                     <div style={{ width: 56, height: 56, borderRadius: 12, overflow: 'hidden', background: 'rgba(255,255,255,0.6)', flexShrink: 0 }}>
                       {k.coverImageUrl
-                        ? <img src={k.coverImageUrl} alt={k.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ? <Image src={k.coverImageUrl} alt={k.name} width={56} height={56} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Package size={22} color="var(--liora-uva)" /></div>}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -255,7 +257,7 @@ export function SearchOverlay({ onClose }: Props) {
                     <Link href={`/tienda/${p.slug}`} onClick={() => { trackSearchResultClick(p.slug, resultIndex + 1); onClose() }} style={{ display: 'flex', alignItems: 'center', gap: 14, flex: 1, minWidth: 0, textDecoration: 'none' }}>
                       <div style={{ width: 52, height: 52, borderRadius: 12, background: p.categoryColor, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
                         {p.imageUrl
-                          ? <img src={p.imageUrl} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                          ? <Image src={p.imageUrl} alt={p.name} width={52} height={52} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                           : <Package size={20} color="var(--liora-uva)" style={{ opacity: 0.5 }} />}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>

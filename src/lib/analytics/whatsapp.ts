@@ -1,5 +1,5 @@
 export const WHATSAPP_PLACEMENTS = [
-  'floating', 'footer', 'help', 'guide_public', 'guide_private', 'order_confirmation',
+  'floating', 'footer', 'help', 'contacto', 'guide_public', 'guide_private', 'order_confirmation',
   // Enlaces desde correos: sin esto iban directo a wa.me, sin ref ni evento.
   'email_order', 'email_checkin',
 ] as const

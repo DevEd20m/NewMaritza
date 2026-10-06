@@ -1,4 +1,6 @@
 'use client'
+
+import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
 import { Package, ShieldCheck } from '@phosphor-icons/react'
@@ -112,12 +114,12 @@ export function KitCard({ kit }: KitCardProps) {
             overflow: 'hidden',
           }}>
             {coverUrl ? (
-              <img
+              <Image
                 src={coverUrl}
                 alt={kit.name}
-                style={hasOwnCover
-                  ? { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }
-                  : { width: '100%', height: '100%', objectFit: 'contain' }}
+                fill
+                sizes="(max-width: 900px) 92vw, 420px"
+                style={{ objectFit: hasOwnCover ? 'cover' : 'contain' }}
               />
             ) : (
               <span style={{ fontSize: 48, opacity: 0.3 }}>🌿</span>
